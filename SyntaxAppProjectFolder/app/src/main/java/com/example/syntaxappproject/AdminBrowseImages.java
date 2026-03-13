@@ -11,13 +11,16 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+
 /**
  * fragment for admin to browse all uploaded images in the system
- * it gets image data from firestore and displays them in a recyclerview
+ * it gets image data from Firebase Realtime Database and displays them in a recyclerview
  * admin can look at the images and manage them from here
  */
 public class AdminBrowseImages extends Fragment {
@@ -32,16 +35,15 @@ public class AdminBrowseImages extends Fragment {
     public AdminBrowseImages() {
     }
 
-
-/**
- * creates the view for the admin browse images page
- * it sets up the recyclerview and loads image data from firestore
- *
- * @param inflater used to inflate the fragment layout
- * @param container parent view that the fragment layout will be attached to
- * @param savedInstanceState previous saved state if there is one
- * @return the root view for this fragment
- */
+    /**
+     * creates the view for the admin browse images page
+     * it sets up the recyclerview and loads image data from Firebase Realtime Database
+     *
+     * @param inflater           used to inflate the fragment layout
+     * @param container          parent view that the fragment layout will be attached to
+     * @param savedInstanceState previous saved state if there is one
+     * @return the root view for this fragment
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_admin_browse_images, container, false);
@@ -51,23 +53,31 @@ public class AdminBrowseImages extends Fragment {
         imageIds = new ArrayList<>();
         adapter = new ImageAdapter(imageList, imageIds);
         recyclerView.setAdapter(adapter);
-        FirebaseFirestore.getInstance()
-                .collection("events")
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    imageList.clear();
-                    imageIds.clear();
-                    // loop through all image documents and add them into the list
-                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
-                        String posterUrl = doc.getString("poster");
-                        if (posterUrl != null && !posterUrl.isEmpty()) {
-                            String uploadedBy = doc.getString("name");
-                            imageList.add(new ImageItem(posterUrl, uploadedBy));
-                            imageIds.add(doc.getId());   //  eventId
-                      }
+
+        // Fetch posters from Realtime Database
+        FirebaseDatabase.getInstance().getReference("event_posters")
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        imageList.clear();
+                        imageIds.clear();
+                        for (DataSnapshot postSnapshot : snapshot.getChildren()) {
+                            String eventId = postSnapshot.getKey();
+                            String base64Image = postSnapshot.child("image").getValue(String.class);
+                            if (base64Image != null) {
+                                imageList.add(new ImageItem(base64Image, "Event: " + eventId));
+                                imageIds.add(eventId);
+                            }
+                        }
+                        adapter.notifyDataSetChanged();
                     }
-                    adapter.notifyDataSetChanged();
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        // Handle potential errors
+                    }
                 });
+
         return view;
     }
 }
