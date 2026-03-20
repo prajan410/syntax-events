@@ -1,37 +1,50 @@
 package com.example.syntaxappproject;
 
 import android.os.Bundle;
+
 import androidx.fragment.app.testing.FragmentScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+/**
+ * Instrumented UI tests for {@link AdminEventDetails}.
+ *
+ * <p>Verifies that event detail fields are correctly populated from a {@link Bundle}
+ * and that the remove event button is visible on screen.</p>
+ */
 @RunWith(AndroidJUnit4.class)
 public class AdminEventDetailsTest {
+
+    /**
+     * Verifies that launching {@link AdminEventDetails} with a populated {@link Bundle}
+     * correctly displays the event title, description, location, and remove button.
+     *
+     * <p>The fragment is launched in isolation via {@link FragmentScenario} with
+     * pre-set bundle arguments. Each field is asserted using its expected formatted
+     * string (e.g. {@code "Title: Swimming Lessons"}).</p>
+     */
     @Test
     public void testEventDetailsScreenDisplays() {
         Bundle bundle = new Bundle();
         bundle.putString("eventId", "testevent2");
-        bundle.putString("name", "Swimming Lessons");
+        bundle.putString("title", "Swimming Lessons");
         bundle.putString("description", "Beginner swimming lessons");
         bundle.putString("location", "Edmonton");
-        bundle.putString("organizerUid", "organizer123");
-        bundle.putLong("capacity", 20);
-        bundle.putBoolean("geoReq", false);
-        bundle.putString("startingEventDate", "2026/03/20");
-        bundle.putString("endingEventDate", "2026/03/30");
-        bundle.putString("startingRegistrationPeriod", "2026/03/01");
-        bundle.putString("endingRegistrationPeriod", "2026/03/10");
-        bundle.putLong("waitlistCount", 15);
-        bundle.putString("lotteryCriteria", "Random");
-        bundle.putString("poster", "https://example.com/poster.jpg");
+        bundle.putString("organizer", "organizer123");
+
         FragmentScenario.launchInContainer(AdminEventDetails.class, bundle);
-        onView(withText("Event Details")).check(matches(isDisplayed()));
+
+        onView(withId(R.id.tv_detail_event_title)).check(matches(withText("Title: Swimming Lessons")));
+        onView(withId(R.id.tv_detail_event_description)).check(matches(withText("Description: Beginner swimming lessons")));
+        onView(withId(R.id.tv_detail_event_location)).check(matches(withText("Location: Edmonton")));
         onView(withId(R.id.btn_remove_event)).check(matches(isDisplayed()));
     }
 }

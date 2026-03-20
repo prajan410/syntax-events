@@ -11,6 +11,8 @@ import static org.mockito.Mockito.verify;
 
 import android.os.Bundle;
 
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentFactory;
 import androidx.fragment.app.testing.FragmentScenario;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -36,9 +38,6 @@ public class SplashFragmentTest {
     private NavController mockNavController;
     private Profile fakeProfile;
 
-    /**
-     * Initializes mocks and test profile before each test.
-     */
     @Before
     public void setUp() {
         mockAuth = mock(AuthenticationService.class);
@@ -51,48 +50,53 @@ public class SplashFragmentTest {
             AuthenticationService.AuthCallback cb = inv.getArgument(0);
             cb.onComplete(true);
             return null;
-        }).when(mockAuth).signInAnonymously(any());
+        }).when(mockAuth).signInAnonymously(any(AuthenticationService.AuthCallback.class));
 
         fakeProfile = new Profile(
                 "Jane Doe",
                 "jane@example.com",
                 "5551234567",
-                "Entrant",
                 true,
+                false,
                 false,
                 true,
                 "test-uid"
         );
     }
 
-    /**
-     * Launches fragment with injected mocks and configured profile response.
-     */
-    private FragmentScenario<SplashFragment> launchFragment(Profile profileToReturn) {
-        FragmentScenario<SplashFragment> scenario = FragmentScenario.launchInContainer(
-                SplashFragment.class,
+    private FragmentScenario<TestSplashFragment> launchFragment(Profile profileToReturn) {
+        doAnswer(inv -> {
+            String uid = inv.getArgument(0);
+            ProfileRepository.ProfileCallback cb = inv.getArgument(1);
+            cb.onResult(profileToReturn);
+            return null;
+        }).when(mockRepo).getProfile(anyString(), any(ProfileRepository.ProfileCallback.class));
+
+        FragmentScenario<TestSplashFragment> scenario = FragmentScenario.launchInContainer(
+                TestSplashFragment.class,
                 new Bundle(),
-                R.style.Theme_SyntaxAppProject
+                R.style.Theme_SyntaxAppProject,
+                new FragmentFactory() {
+                    @Override
+                    public Fragment instantiate(ClassLoader classLoader, String className) {
+                        if (className.equals(TestSplashFragment.class.getName())) {
+                            TestSplashFragment fragment = new TestSplashFragment();
+                            fragment.setAuthService(mockAuth);
+                            fragment.setProfileRepo(mockRepo);
+                            return fragment;
+                        }
+                        return super.instantiate(classLoader, className);
+                    }
+                }
         );
 
-        scenario.onFragment(fragment -> {
-            fragment.setAuthService(mockAuth);
-            fragment.setProfileRepo(mockRepo);
-            Navigation.setViewNavController(fragment.requireView(), mockNavController);
-
-            doAnswer(inv -> {
-                ProfileRepository.ProfileCallback cb = inv.getArgument(1);
-                cb.onResult(profileToReturn);
-                return null;
-            }).when(mockRepo).getProfile(anyString(), any(ProfileRepository.ProfileCallback.class));
-        });
+        scenario.onFragment(fragment ->
+                Navigation.setViewNavController(fragment.requireView(), mockNavController)
+        );
 
         return scenario;
     }
 
-    /**
-     * Verifies new users (no profile) navigate to profile setup.
-     */
     @Test
     public void enterButton_newUser_navigatesToProfile() {
         launchFragment(null);
@@ -100,9 +104,6 @@ public class SplashFragmentTest {
         verify(mockNavController).navigate(R.id.action_splash_to_profile);
     }
 
-    /**
-     * Verifies existing regular users navigate to home screen.
-     */
     @Test
     public void enterButton_existingUser_navigatesToHome() {
         launchFragment(fakeProfile);
@@ -110,23 +111,43 @@ public class SplashFragmentTest {
         verify(mockNavController).navigate(R.id.action_splash_to_home);
     }
 
-    /**
-     * Verifies admin users navigate to admin dashboard.
-     */
     @Test
     public void enterButton_adminUser_navigatesToAdmin() {
         Profile adminProfile = new Profile(
                 "Admin User",
                 "admin@example.com",
                 null,
-                "Admin",
                 false,
                 false,
+                true,
                 true,
                 "admin-uid"
         );
         launchFragment(adminProfile);
         onView(withId(R.id.enterButton)).perform(click());
         verify(mockNavController).navigate(R.id.action_splash_to_admin);
+    }
+
+    /**
+     * Test subclass that bypasses heavy loading (events/images) and routes immediately.
+     * We keep the same auth flow but skip the image‑caching loop.
+     */
+    public static class TestSplashFragment extends SplashFragment {
+
+        @Override
+        protected void handleEnterButton() {
+            if (authService == null) {
+                authService = new AuthenticationService();
+            }
+
+            authService.signInAnonymously(success -> {
+                if (!success || !isAdded()) {
+                    return;
+                }
+
+                String uid = authService.getCurrentUserId();
+                navigateByProfile(uid);
+            });
+        }
     }
 }

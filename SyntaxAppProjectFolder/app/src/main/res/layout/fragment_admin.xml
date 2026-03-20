@@ -1,72 +1,428 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:paddingStart="28dp"
-    android:paddingTop="40dp"
-    android:paddingEnd="28dp"
-    android:background="#F7F3FA">
+    android:background="#F5F5F5">
 
     <TextView
-        android:id="@+id/tv_admin_title"
-        android:layout_width="wrap_content"
+        android:id="@+id/headerTitle"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Admin Dashboard"
-        android:textSize="20sp"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginTop="24dp"
+        android:alpha="0"
+        android:fontFamily="serif"
+        android:text="Admin"
+        android:textColor="#1A1A1A"
+        android:textSize="52sp"
         android:textStyle="bold"
-        android:textColor="#222222"
-        android:layout_marginBottom="28dp" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btn_browse_events"
-        android:layout_width="220dp"
-        android:layout_height="48dp"
-        android:text="Browse Events"
-        android:textAllCaps="false"
-        android:textSize="14sp"
-        android:textStyle="normal"
-        android:textColor="#000000"
-        android:background="@drawable/rounded_black_button"
-        android:backgroundTint="@null"
-        android:layout_marginBottom="18dp" />
+    <ScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:fillViewport="true"
+        android:overScrollMode="never"
+        app:layout_constraintBottom_toTopOf="@+id/backCard"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/headerTitle">
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btn_browse_profiles"
-        android:layout_width="220dp"
-        android:layout_height="48dp"
-        android:text="Browse Profiles"
-        android:textAllCaps="false"
-        android:textSize="14sp"
-        android:textStyle="normal"
-        android:textColor="#000000"
-        android:background="@drawable/rounded_black_button"
-        android:backgroundTint="@null"
-        android:layout_marginBottom="18dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:paddingBottom="40dp">
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btn_browse_images"
-        android:layout_width="220dp"
-        android:layout_height="48dp"
-        android:text="Browse Images"
-        android:textAllCaps="false"
-        android:textSize="14sp"
-        android:textStyle="normal"
-        android:textColor="#000000"
-        android:background="@drawable/rounded_black_button"
-        android:backgroundTint="@null"
-        android:layout_marginBottom="18dp" />
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/heroCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:alpha="0"
+                app:cardBackgroundColor="#1A1A1A"
+                app:cardCornerRadius="28dp"
+                app:cardElevation="8dp">
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btn_notification_logs"
-        android:layout_width="220dp"
-        android:layout_height="48dp"
-        android:text="Notification Logs"
-        android:textAllCaps="false"
-        android:textSize="14sp"
-        android:textStyle="normal"
-        android:textColor="#000000"
-        android:background="@drawable/rounded_black_button"
-        android:backgroundTint="@null" />
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="24dp">
 
-</LinearLayout>
+                    <View
+                        android:layout_width="140dp"
+                        android:layout_height="140dp"
+                        android:layout_marginEnd="-36dp"
+                        android:layout_marginTop="-36dp"
+                        android:alpha="0.08"
+                        android:background="@drawable/circle_bg"
+                        android:backgroundTint="#FFFFFF"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <View
+                        android:layout_width="90dp"
+                        android:layout_height="90dp"
+                        android:layout_marginStart="-18dp"
+                        android:layout_marginBottom="-18dp"
+                        android:alpha="0.06"
+                        android:background="@drawable/circle_bg"
+                        android:backgroundTint="#FFFFFF"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent" />
+
+                    <TextView
+                        android:id="@+id/heroDashboardLabel"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="24dp"
+                        android:layout_marginTop="24dp"
+                        android:layout_marginEnd="24dp"
+                        android:fontFamily="serif"
+                        android:text="Dashboard"
+                        android:textColor="#FFFFFF"
+                        android:textSize="26sp"
+                        android:textStyle="bold"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/headerSubtitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="24dp"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginEnd="24dp"
+                        android:alpha="0"
+                        android:text="Manage events, profiles, and media"
+                        android:textColor="#AAAAAA"
+                        android:textSize="13sp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/heroDashboardLabel" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/adminBadge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="24dp"
+                        android:layout_marginTop="12dp"
+                        android:alpha="0"
+                        android:text="● ADMIN ACCESS"
+                        android:textColor="#2ECC71"
+                        android:textSize="11sp"
+                        app:chipBackgroundColor="#1F2ECC71"
+                        app:chipStrokeColor="#2ECC71"
+                        app:chipStrokeWidth="1dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/headerSubtitle" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:id="@+id/toolsLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginBottom="12dp"
+                android:alpha="0"
+                android:letterSpacing="0.15"
+                android:text="TOOLS"
+                android:textColor="#AAAAAA"
+                android:textSize="12sp" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/actionsCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="8dp"
+                android:layout_marginBottom="16dp"
+                android:alpha="0"
+                app:cardBackgroundColor="#FFFFFF"
+                app:cardCornerRadius="28dp"
+                app:cardElevation="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp">
+
+                    <!-- Browse Events -->
+                    <LinearLayout
+                        android:id="@+id/cardBrowseEvents"
+                        android:layout_width="match_parent"
+                        android:layout_height="72dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="?attr/selectableItemBackground">
+
+                        <androidx.appcompat.widget.AppCompatImageView
+                            android:layout_width="42dp"
+                            android:layout_height="42dp"
+                            android:background="@drawable/circle_bg"
+                            android:backgroundTint="#1A1A1A"
+                            android:padding="10dp"
+                            android:src="@android:drawable/ic_menu_agenda"
+                            app:tint="#FFFFFF" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="16dp"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Browse Events"
+                                android:textColor="#1A1A1A"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="View and manage all events"
+                                android:textColor="#AAAAAA"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="›"
+                            android:textColor="#CCCCCC"
+                            android:textSize="26sp" />
+
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="78dp"
+                        android:background="#F3F3F3" />
+
+                    <!-- Browse Profiles -->
+                    <LinearLayout
+                        android:id="@+id/cardBrowseProfiles"
+                        android:layout_width="match_parent"
+                        android:layout_height="72dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="?attr/selectableItemBackground">
+
+                        <androidx.appcompat.widget.AppCompatImageView
+                            android:layout_width="42dp"
+                            android:layout_height="42dp"
+                            android:background="@drawable/circle_bg"
+                            android:backgroundTint="#1A1A1A"
+                            android:padding="10dp"
+                            android:src="@android:drawable/ic_menu_myplaces"
+                            app:tint="#FFFFFF" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="16dp"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Browse Profiles"
+                                android:textColor="#1A1A1A"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="Manage user accounts"
+                                android:textColor="#AAAAAA"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="›"
+                            android:textColor="#CCCCCC"
+                            android:textSize="26sp" />
+
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="78dp"
+                        android:background="#F3F3F3" />
+
+                    <!-- Browse Images -->
+                    <LinearLayout
+                        android:id="@+id/cardBrowseImages"
+                        android:layout_width="match_parent"
+                        android:layout_height="72dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="?attr/selectableItemBackground">
+
+                        <androidx.appcompat.widget.AppCompatImageView
+                            android:layout_width="42dp"
+                            android:layout_height="42dp"
+                            android:background="@drawable/circle_bg"
+                            android:backgroundTint="#1A1A1A"
+                            android:padding="10dp"
+                            android:src="@android:drawable/ic_menu_gallery"
+                            app:tint="#FFFFFF" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="16dp"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Browse Images"
+                                android:textColor="#1A1A1A"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="Review all uploaded media"
+                                android:textColor="#AAAAAA"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="›"
+                            android:textColor="#CCCCCC"
+                            android:textSize="26sp" />
+
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="78dp"
+                        android:background="#F3F3F3" />
+
+                    <!-- Notification Logs -->
+                    <LinearLayout
+                        android:id="@+id/cardNotificationLogs"
+                        android:layout_width="match_parent"
+                        android:layout_height="72dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="?attr/selectableItemBackground">
+
+                        <androidx.appcompat.widget.AppCompatImageView
+                            android:layout_width="42dp"
+                            android:layout_height="42dp"
+                            android:background="@drawable/circle_bg"
+                            android:backgroundTint="#1A1A1A"
+                            android:padding="10dp"
+                            android:src="@android:drawable/ic_popup_reminder"
+                            app:tint="#FFFFFF" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="16dp"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Notification Logs"
+                                android:textColor="#1A1A1A"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="View sent alerts and history"
+                                android:textColor="#AAAAAA"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="›"
+                            android:textColor="#CCCCCC"
+                            android:textSize="26sp" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/backCard"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="24dp"
+        android:backgroundTint="#1A1A1A"
+        android:text="Back Home"
+        android:textColor="#FFFFFF"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:cornerRadius="16dp"
+        app:elevation="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

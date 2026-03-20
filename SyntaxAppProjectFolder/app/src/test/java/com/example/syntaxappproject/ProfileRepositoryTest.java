@@ -105,8 +105,8 @@ public class ProfileRepositoryTest {
                 "Jane Doe",
                 "jane.doe@ualberta.ca",
                 "780-555-0192",
-                "Entrant",
                 true,
+                false,
                 false,
                 true,
                 "device-uid-00412"
@@ -184,9 +184,9 @@ public class ProfileRepositoryTest {
                 "Jane Smith",
                 "jane.smith@ualberta.ca",
                 null,
-                "Entrant",
                 true,
                 true,
+                false,
                 false,
                 "device-uid-00412"
         );
@@ -206,9 +206,9 @@ public class ProfileRepositoryTest {
                 "Jane Smith",
                 "jane.smith@ualberta.ca",
                 null,
-                "Entrant",
                 true,
                 true,
+                false,
                 false,
                 "device-uid-00412"
         );

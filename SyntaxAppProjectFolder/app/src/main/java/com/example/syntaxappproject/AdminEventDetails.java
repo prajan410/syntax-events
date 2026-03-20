@@ -61,9 +61,11 @@ public class AdminEventDetails extends Fragment {
                     .collection("events")
                     .document(eventId)
                     .delete()
-                    .addOnSuccessListener(unused ->
-                            NavHostFragment.findNavController(this).navigateUp()
-                    );
+                    .addOnSuccessListener(unused -> {
+                                if (isAdded()) {
+                                    NavHostFragment.findNavController(this).navigateUp();
+                                }
+                            });
         });
         return view;
     }

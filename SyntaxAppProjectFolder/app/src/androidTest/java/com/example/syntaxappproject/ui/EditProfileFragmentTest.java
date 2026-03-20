@@ -90,8 +90,8 @@ public class EditProfileFragmentTest {
                 "Jane Doe",
                 "jane@example.com",
                 "5551234567",
-                "Entrant",
                 true,
+                false,
                 false,
                 true,
                 "test-uid-123"

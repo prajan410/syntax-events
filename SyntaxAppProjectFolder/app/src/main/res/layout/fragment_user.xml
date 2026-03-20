@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     android:background="#F5F5F5">
 
-    <!-- Header -->
     <TextView
         android:id="@+id/headerTitle"
         android:layout_width="0dp"
@@ -22,7 +21,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Scrollable content -->
     <ScrollView
         android:id="@+id/scrollView"
         android:layout_width="0dp"
@@ -40,35 +38,59 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Avatar + name card -->
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/avatarCard"
+                android:id="@+id/heroCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
                 android:layout_marginBottom="16dp"
                 android:alpha="0"
                 app:cardBackgroundColor="#2ECC71"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="4dp">
+                app:cardCornerRadius="28dp"
+                app:cardElevation="8dp">
 
-                <LinearLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:paddingTop="32dp"
                     android:paddingBottom="24dp">
 
-                    <!-- Avatar circle -->
-                    <com.google.android.material.card.MaterialCardView
+                    <View
+                        android:layout_width="140dp"
+                        android:layout_height="140dp"
+                        android:layout_marginEnd="-36dp"
+                        android:layout_marginTop="-36dp"
+                        android:alpha="0.12"
+                        android:background="@drawable/circle_bg"
+                        android:backgroundTint="#FFFFFF"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <View
                         android:layout_width="90dp"
                         android:layout_height="90dp"
-                        android:layout_marginBottom="16dp"
+                        android:layout_marginStart="-18dp"
+                        android:layout_marginBottom="-18dp"
+                        android:alpha="0.08"
+                        android:background="@drawable/circle_bg"
+                        android:backgroundTint="#FFFFFF"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent" />
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/avatarCircle"
+                        android:layout_width="64dp"
+                        android:layout_height="64dp"
+                        android:layout_marginStart="24dp"
+                        android:layout_marginTop="24dp"
                         app:cardBackgroundColor="#FFFFFF"
-                        app:cardCornerRadius="45dp"
+                        app:cardCornerRadius="32dp"
                         app:cardElevation="0dp"
                         app:strokeColor="#FFFFFF"
-                        app:strokeWidth="3dp">
+                        app:strokeWidth="3dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent">
 
                         <TextView
                             android:id="@+id/avatarInitial"
@@ -77,33 +99,95 @@
                             android:gravity="center"
                             android:text="?"
                             android:textColor="#2ECC71"
-                            android:textSize="36sp"
+                            android:textSize="26sp"
                             android:textStyle="bold" />
 
                     </com.google.android.material.card.MaterialCardView>
 
                     <TextView
                         android:id="@+id/profileName"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="24dp"
+                        android:layout_marginTop="6dp"
+                        android:layout_marginEnd="24dp"
                         android:text="Loading..."
-                        android:textColor="@android:color/white"
+                        android:textColor="#FFFFFF"
                         android:textSize="24sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:fontFamily="serif"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/avatarCircle" />
 
                     <TextView
                         android:id="@+id/profileEmail"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="24dp"
                         android:layout_marginTop="4dp"
+                        android:layout_marginEnd="24dp"
                         android:text="Loading..."
                         android:textColor="#CCFFFFFF"
-                        android:textSize="15sp" />
+                        android:textSize="13sp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/profileName" />
 
-                </LinearLayout>
+                    <LinearLayout
+                        android:id="@+id/badgeContainer"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="24dp"
+                        android:layout_marginTop="12dp"
+                        android:orientation="horizontal"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/profileEmail">
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/badgeEntrant"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="6dp"
+                            android:text="● ENTRANT"
+                            android:textColor="#FFFFFF"
+                            android:textSize="11sp"
+                            android:visibility="gone"
+                            app:chipBackgroundColor="#1AFFFFFF"
+                            app:chipStrokeColor="#FFFFFF"
+                            app:chipStrokeWidth="1dp" />
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/badgeOrganizer"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="6dp"
+                            android:text="● ORGANIZER"
+                            android:textColor="#FFFFFF"
+                            android:textSize="11sp"
+                            android:visibility="gone"
+                            app:chipBackgroundColor="#1AFFFFFF"
+                            app:chipStrokeColor="#FFFFFF"
+                            app:chipStrokeWidth="1dp" />
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/badgeAdmin"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="● ADMIN"
+                            android:textColor="#FFFFFF"
+                            android:textSize="11sp"
+                            android:visibility="gone"
+                            app:chipBackgroundColor="#1AFFFFFF"
+                            app:chipStrokeColor="#FFFFFF"
+                            app:chipStrokeWidth="1dp" />
+
+                    </LinearLayout>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Details card -->
+
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/detailsCard"
                 android:layout_width="match_parent"
@@ -120,7 +204,6 @@
                     android:orientation="vertical"
                     android:padding="20dp">
 
-                    <!-- Phone row -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -164,7 +247,6 @@
                         android:layout_height="1dp"
                         android:background="#F0F0F0" />
 
-                    <!-- Email row -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -206,7 +288,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Action buttons card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/actionsCard"
                 android:layout_width="match_parent"

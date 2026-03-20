@@ -23,6 +23,7 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.syntaxappproject.AuthenticationService;
 import com.example.syntaxappproject.EventViewModel;
+import com.example.syntaxappproject.ImageCacheManager;
 import com.example.syntaxappproject.R;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -33,6 +34,15 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Fragment that allows the organizer to upload an event poster image.
+ * <p>
+ * The user can select an image from the gallery, preview it, or skip the poster.
+ * The event data from {@link EventViewModel} is saved to Firestore; if an image
+ * is selected, it is also uploaded to Firebase Realtime Database and cached with
+ * {@link ImageCacheManager}. On success, the fragment navigates to the QR code step.
+ * </p>
+ */
 public class CreateEventUploadPosterFragment extends Fragment {
 
     private ImageView posterPreview;
@@ -79,7 +89,6 @@ public class CreateEventUploadPosterFragment extends Fragment {
         View posterCard   = view.findViewById(R.id.posterCard);
         View actionCard   = view.findViewById(R.id.actionCard);
 
-        // --- Entrance Animations ---
         headerTitle.setTranslationY(-20f);
         headerTitle.animate().alpha(1f).translationY(0f)
                 .setDuration(400).setStartDelay(100).start();
@@ -95,10 +104,8 @@ public class CreateEventUploadPosterFragment extends Fragment {
         actionCard.animate().alpha(1f).translationY(0f)
                 .setDuration(500).setStartDelay(370).start();
 
-        // --- Tap to pick image ---
         view.findViewById(R.id.posterTapArea).setOnClickListener(v -> openGallery());
 
-        // --- Continue button ---
         view.findViewById(R.id.continueToQRButton).setOnClickListener(v -> {
             if (selectedImageUri == null) {
                 Toast.makeText(getContext(), "Please select a poster", Toast.LENGTH_SHORT).show();
@@ -108,7 +115,6 @@ public class CreateEventUploadPosterFragment extends Fragment {
             saveEventToFirebase();
         });
 
-        // --- Skip button ---
         view.findViewById(R.id.skipPosterButton).setOnClickListener(v -> saveEventToFirebase());
     }
 
@@ -151,7 +157,6 @@ public class CreateEventUploadPosterFragment extends Fragment {
                     String eventId = documentReference.getId();
                     viewModel.setEventId(eventId);
 
-                    // If we have an image, upload it to Realtime Database
                     if (selectedImageUri != null) {
                         uploadPosterToRealtimeDatabase(eventId);
                     } else {
@@ -164,11 +169,15 @@ public class CreateEventUploadPosterFragment extends Fragment {
     }
 
     /**
-     * Handles the result from the gallery picker.
+     * Uploads the selected poster image to Firebase Realtime Database.
      * <p>
-     * If the user selected an image, stores the URI in {@link #selectedImageUri},
-     * displays a preview in {@link #posterPreview}, and hides the upload hint.
+     * Reads the image from {@link #selectedImageUri}, compresses it as PNG or JPEG,
+     * Base64‑encodes it, and stores it under {@code event_posters/{eventId}}.
+     * The bitmap is also cached in {@link ImageCacheManager}. On success or failure,
+     * the fragment navigates to the QR code step.
      * </p>
+     *
+     * @param eventId the ID of the event whose poster is being uploaded
      */
     private void uploadPosterToRealtimeDatabase(String eventId) {
         ContentResolver resolver = requireContext().getContentResolver();
@@ -177,7 +186,6 @@ public class CreateEventUploadPosterFragment extends Fragment {
             Bitmap imageBitmap = BitmapFactory.decodeStream(imageStream);
             String imageType = resolver.getType(selectedImageUri);
 
-            // Check for image type
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             if (imageType != null && imageType.equals("image/png")) {
                 imageBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
@@ -185,9 +193,9 @@ public class CreateEventUploadPosterFragment extends Fragment {
                 imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
             }
 
-            // Setting up data to push to store in json
             byte[] byteArray = byteArrayOutputStream.toByteArray();
             String base64Image = android.util.Base64.encodeToString(byteArray, android.util.Base64.DEFAULT);
+            ImageCacheManager.put(eventId, imageBitmap);
 
             FirebaseDatabase database = FirebaseDatabase.getInstance();
             DatabaseReference reference = database.getReference("event_posters");
@@ -200,9 +208,8 @@ public class CreateEventUploadPosterFragment extends Fragment {
                     .addOnSuccessListener(aVoid -> navigateToQRFragment(eventId))
                     .addOnFailureListener(e -> {
                         Toast.makeText(getContext(), "Failed to upload poster", Toast.LENGTH_SHORT).show();
-                        navigateToQRFragment(eventId); // Navigate anyway
+                        navigateToQRFragment(eventId);
                     });
-
         } catch (Exception e) {
             Toast.makeText(getContext(), "Failed to process image", Toast.LENGTH_SHORT).show();
             navigateToQRFragment(eventId);
