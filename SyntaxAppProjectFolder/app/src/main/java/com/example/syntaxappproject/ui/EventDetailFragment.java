@@ -58,6 +58,7 @@ public class EventDetailFragment extends HomeBar {
         TextView wLCount            = view.findViewById(R.id.eventWLCount);
         TextView lotteryCriteria    = view.findViewById(R.id.eventLotteryCriteria);
         MaterialButton joinButton   = view.findViewById(R.id.joinButton);
+        MaterialButton btnViewSignups = view.findViewById(R.id.btnViewSignups);
 
         View headerTitle  = view.findViewById(R.id.headerTitle);
         View backButton   = view.findViewById(R.id.eventDetailBackButton);
@@ -107,6 +108,17 @@ public class EventDetailFragment extends HomeBar {
                     capacity.setText("Capacity: " + event.getCapacity());
                     wLCount.setText("Waitlist: " + event.getWaitlistCount());
                     lotteryCriteria.setText(event.getLotteryCriteria());
+
+                    // Check if current user is the organizer
+                    if (uid != null && uid.equals(event.getOrganizerUid())) {
+                        btnViewSignups.setVisibility(View.VISIBLE);
+                        btnViewSignups.setOnClickListener(v -> {
+                            Bundle args = new Bundle();
+                            args.putString("eventId", eventId);
+                            NavHostFragment.findNavController(this)
+                                    .navigate(R.id.toEventSignupList, args);
+                        });
+                    }
                 });
             });
         }

@@ -333,7 +333,7 @@
                 android:id="@+id/qrCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="32dp"
+                android:layout_marginBottom="16dp"
                 android:alpha="0"
                 app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="24dp"
@@ -364,6 +364,20 @@
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+
+            <!-- View Signups Button (Organizer Only) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnViewSignups"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginBottom="32dp"
+                android:backgroundTint="#2ECC71"
+                android:text="View Signups"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:cornerRadius="16dp" />
 
         </LinearLayout>
     </ScrollView>

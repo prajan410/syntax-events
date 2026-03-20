@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/white"
     android:fillViewport="true">
 
     <LinearLayout
@@ -14,26 +15,30 @@
 
         <!-- Final Entrants -->
         <TextView
-            android:id="@+id/tvFinalEntrantsTitle"
+            android:id="@+id/finalEntrantsTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Final Entrants"
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="@android:color/black"
-            android:paddingBottom="4dp" />
+            android:padding="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground" />
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvFinalEntrants"
+            android:id="@+id/finalEntrants"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             android:nestedScrollingEnabled="false"
             tools:listitem="@android:layout/simple_list_item_1"
             tools:itemCount="3" />
 
         <!-- Invited Entrants -->
         <TextView
-            android:id="@+id/tvInvitedEntrantsTitle"
+            android:id="@+id/invitedEntrantsTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
@@ -41,19 +46,23 @@
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="@android:color/black"
-            android:paddingBottom="4dp" />
+            android:padding="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground" />
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvInvitedEntrants"
+            android:id="@+id/invitedEntrants"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             android:nestedScrollingEnabled="false"
             tools:listitem="@android:layout/simple_list_item_1"
             tools:itemCount="3" />
 
         <!-- Entrants on Waiting List -->
         <TextView
-            android:id="@+id/tvWaitingListTitle"
+            android:id="@+id/waitingListTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
@@ -61,19 +70,23 @@
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="@android:color/black"
-            android:paddingBottom="4dp" />
+            android:padding="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground" />
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvWaitingList"
+            android:id="@+id/waitingList"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             android:nestedScrollingEnabled="false"
             tools:listitem="@android:layout/simple_list_item_1"
             tools:itemCount="3" />
 
         <!-- Cancelled Entrants -->
         <TextView
-            android:id="@+id/tvCancelledEntrantsTitle"
+            android:id="@+id/cancelledEntrantsTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
@@ -81,12 +94,16 @@
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="@android:color/black"
-            android:paddingBottom="4dp" />
+            android:padding="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground" />
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvCancelledEntrants"
+            android:id="@+id/cancelledEntrants"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             android:nestedScrollingEnabled="false"
             tools:listitem="@android:layout/simple_list_item_1"
             tools:itemCount="3" />

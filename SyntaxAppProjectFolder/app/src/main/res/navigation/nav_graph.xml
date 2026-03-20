@@ -231,6 +231,19 @@
         <action
             android:id="@+id/toOrganizerEventsFragment"
             app:destination="@id/organizerEventsFragment" />
+        <action
+            android:id="@+id/toEventSignupList"
+            app:destination="@id/eventSignupList" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/eventSignupList"
+        android:name="com.example.syntaxappproject.ui.EventSignupList"
+        android:label="Event Signups"
+        tools:layout="@layout/event_signup_list">
+        <argument
+            android:name="eventId"
+            app:argType="string" />
     </fragment>
 
     <fragment
