@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="#F5F5F5">
 
-    <!-- Header -->
     <TextView
         android:id="@+id/textView"
         android:layout_width="0dp"
@@ -23,7 +22,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Tab buttons -->
     <LinearLayout
         android:id="@+id/tabRow"
         android:layout_width="0dp"
@@ -54,13 +52,12 @@
             android:layout_marginStart="6dp"
             android:layout_weight="1"
             android:backgroundTint="#2ECC71"
-            android:text="Create Event"
+            android:text="My Events"
             android:textColor="@android:color/white"
             app:cornerRadius="12dp" />
 
     </LinearLayout>
 
-    <!-- Main card -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/mainCard"
         android:layout_width="0dp"
@@ -94,7 +91,7 @@
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- FAB sits above the nav bar -->
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabNewEvent"
         android:layout_width="wrap_content"
@@ -107,6 +104,21 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:tint="@android:color/white" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAdmin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="8dp"
+        android:alpha="0"
+        android:src="@android:drawable/ic_menu_manage"
+        android:visibility="gone"
+        app:backgroundTint="#1A1A1A"
+        app:fabSize="mini"
+        app:layout_constraintBottom_toTopOf="@id/fabNewEvent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
 
     <include
         android:id="@+id/homebarFragment"

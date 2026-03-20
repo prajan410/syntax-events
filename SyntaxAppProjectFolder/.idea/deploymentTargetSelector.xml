@@ -2,10 +2,16 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
-      <SelectionState runConfigName="TestFirebaseConnection">
+      <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="writeAndReadBackImage()">
+      <SelectionState runConfigName="OrganizerEventsFragmentTest">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="ProfileSetupFragmentTest">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="Tests in 'com.example.syntaxappproject'">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>

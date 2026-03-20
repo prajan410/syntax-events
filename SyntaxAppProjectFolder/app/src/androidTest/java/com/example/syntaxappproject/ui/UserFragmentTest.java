@@ -2,13 +2,17 @@ package com.example.syntaxappproject.ui;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentFactory;
 import androidx.fragment.app.testing.FragmentScenario;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -47,37 +51,50 @@ public class UserFragmentTest {
                 "Jane Doe",
                 "jane@example.com",
                 "5551234567",
-                "Entrant",
                 true,
+                false,
                 false,
                 true,
                 "test-uid"
         );
 
-        doAnswer(invocation -> "test-uid").when(mockAuth).getCurrentUserId();
+        doAnswer(inv -> "test-uid").when(mockAuth).getCurrentUserId();
     }
 
     /**
-     * Launches test fragment with injected mocks and specified profile response.
+     * Launches the fragment with injected mocks and a configured profile response.
+     *
+     * @param profileToReturn the {@link Profile} the mock repo will return, or {@code null}
+     * @return the active {@link FragmentScenario}
      */
-    private FragmentScenario<TestUserFragment> launchFragment(final Profile profileToReturn) {
+    private FragmentScenario<TestUserFragment> launchFragment(Profile profileToReturn) {
+        doAnswer(inv -> {
+            ProfileRepository.ProfileCallback cb = inv.getArgument(1);
+            cb.onResult(profileToReturn);
+            return null;
+        }).when(mockRepo).getProfile(anyString(), any(ProfileRepository.ProfileCallback.class));
+
         FragmentScenario<TestUserFragment> scenario = FragmentScenario.launchInContainer(
                 TestUserFragment.class,
                 null,
-                R.style.Theme_SyntaxAppProject
+                R.style.Theme_SyntaxAppProject,
+                new FragmentFactory() {
+                    @Override
+                    public Fragment instantiate(ClassLoader classLoader, String className) {
+                        if (className.equals(TestUserFragment.class.getName())) {
+                            TestUserFragment fragment = new TestUserFragment();
+                            fragment.setAuthService(mockAuth);
+                            fragment.setProfileRepo(mockRepo);
+                            return fragment;
+                        }
+                        return super.instantiate(classLoader, className);
+                    }
+                }
         );
 
-        scenario.onFragment(fragment -> {
-            Navigation.setViewNavController(fragment.requireView(), mockNavController);
-            fragment.setAuthService(mockAuth);
-            fragment.setProfileRepo(mockRepo);
-
-            doAnswer(invocation -> {
-                ProfileRepository.ProfileCallback cb = invocation.getArgument(1);
-                cb.onResult(profileToReturn);
-                return null;
-            }).when(mockRepo).getProfile(anyString(), any(ProfileRepository.ProfileCallback.class));
-        });
+        scenario.onFragment(fragment ->
+                Navigation.setViewNavController(fragment.requireView(), mockNavController)
+        );
 
         return scenario;
     }
@@ -103,19 +120,20 @@ public class UserFragmentTest {
     }
 
     /**
-     * Verifies profile data loads and displays correctly in UI.
+     * Verifies profile name and email display correctly after load.
      */
     @Test
     public void profileLoadsAndDisplaysCorrectly() {
         launchFragment(fakeProfile);
+        onView(withId(R.id.profileName)).check(matches(withText("Jane Doe")));
+        onView(withId(R.id.profileEmail)).check(matches(withText("jane@example.com")));
     }
 
     /**
-     * Test subclass that skips hotbar setup to avoid test crashes.
+     * Test subclass that skips hotbar setup to avoid NavHostFragment crashes in isolation.
      */
     public static class TestUserFragment extends UserFragment {
         @Override
-        protected void setupHotbar(android.view.View view) {
-        }
+        protected void setupHotbar(android.view.View view) {}
     }
 }

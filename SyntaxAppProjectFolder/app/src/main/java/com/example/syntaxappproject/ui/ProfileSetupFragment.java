@@ -20,33 +20,40 @@ import com.google.android.material.textfield.TextInputEditText;
 
 /**
  * Fragment for initial user profile setup during onboarding.
- *
- * <p>Allows users to select roles (Entrant/Organizer), enter personal info,
- * and create their Firestore profile. Handles both new profile creation and
- * updates to existing profiles.</p>
+ * <p>
+ * Allows the user to select roles (Entrant, Organizer, or both), enter personal
+ * information, and create or update their profile in Firestore. On successful save,
+ * the fragment navigates to either the home screen or the user profile fragment,
+ * depending on whether this is a new profile or an update.
+ * </p>
  */
 public class ProfileSetupFragment extends Fragment {
 
-    /** Tracks user's entrant role selection. */
-    private boolean isEntrant   = true;
+    /** Whether the user has selected the entrant role. */
+    private boolean isEntrant = true;
 
-    /** Tracks user's organizer role selection. */
+    /** Whether the user has selected the organizer role. */
     private boolean isOrganizer = false;
 
-    /** Entrant role selection button. */
+    /** Button to select or deselect the entrant role. */
     private MaterialButton entrantButton;
 
-    /** Organizer role selection button. */
+    /** Button to select or deselect the organizer role. */
     private MaterialButton organizerButton;
 
-    /** Lazy-initialized profile repository. */
-    ProfileRepository profileRepo;
+    /** Repository for profile creation, update, and retrieval. */
+    private ProfileRepository profileRepo;
 
-    /** Lazy-initialized auth service. */
-    AuthenticationService authService;
+    /** Service for user authentication during setup. */
+    private AuthenticationService authService;
 
     /**
-     * Inflates profile setup layout.
+     * Inflates the profile setup layout.
+     *
+     * @param inflater  the layout inflater
+     * @param container the parent view group
+     * @param savedInstanceState previously saved state, or {@code null}
+     * @return the inflated view for this fragment
      */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -56,13 +63,16 @@ public class ProfileSetupFragment extends Fragment {
     }
 
     /**
-     * Initializes views, animations, role toggles, and confirm button handler.
+     * Binds views, runs entrance animations, sets up role toggles,
+     * and configures the confirm button handler.
+     *
+     * @param view               the root view returned by {@link #onCreateView}
+     * @param savedInstanceState previously saved state, or {@code null}
      */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Cache UI element references
         entrantButton   = view.findViewById(R.id.entrantButton);
         organizerButton = view.findViewById(R.id.organizerButton);
 
@@ -113,16 +123,25 @@ public class ProfileSetupFragment extends Fragment {
             updateRoleButtons();
         });
 
-        view.findViewById(R.id.confirmButton).setOnClickListener(v -> confirmProfile(firstName, lastName, email, phone));
+        view.findViewById(R.id.confirmButton).setOnClickListener(
+                v -> confirmProfile(firstName, lastName, email, phone));
     }
 
     /**
-     * Validates form and triggers profile save workflow.
+     * Validates user input and initiates the profile save workflow.
+     *
+     * <p>Requires at least one role (entrant or organizer) and non‑empty name and email.
+     * If the profile already exists, it is updated; otherwise a new profile is created.</p>
+     *
+     * @param firstName the first name input field
+     * @param lastName  the last name input field
+     * @param email     the email input field
+     * @param phone     the phone number input field
      */
     private void confirmProfile(TextInputEditText firstName, TextInputEditText lastName,
                                 TextInputEditText email, TextInputEditText phone) {
 
-        if (!isEntrant && !isOrganizer) { // Role validation (at least one required)
+        if (!isEntrant && !isOrganizer) {
             Toast.makeText(requireContext(), "Please select at least one role", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -150,23 +169,14 @@ public class ProfileSetupFragment extends Fragment {
             String uid = authService.getCurrentUserId();
             String fullName = firstNameVal + (lastNameVal.isEmpty() ? "" : " " + lastNameVal);
 
-            String role;
-            if (isOrganizer) {
-                role = "Organizer";
-            } else if (isEntrant) {
-                role = "Entrant";
-            } else {
-                role = "None";
-            }
-
             Profile profile = new Profile(
                     fullName,
                     emailVal,
                     phoneVal.isEmpty() ? null : phoneVal,
-                    role,
                     isEntrant,
                     isOrganizer,
-                    true,  // Default: notifications enabled
+                    false,
+                    true,
                     uid
             );
 
@@ -190,7 +200,13 @@ public class ProfileSetupFragment extends Fragment {
     }
 
     /**
-     * Handles save completion: shows feedback and navigates.
+     * Handles the result of a profile save operation.
+     *
+     * <p>On success, navigates to the destination specified by {@code navAction} and
+     * shows a confirmation toast. On failure, shows an error toast without navigation.</p>
+     *
+     * @param saved     whether the save operation was successful
+     * @param navAction the navigation action ID to use on success
      */
     private void handleSaveResult(boolean saved, int navAction) {
         if (!isAdded()) return;
@@ -205,7 +221,8 @@ public class ProfileSetupFragment extends Fragment {
     }
 
     /**
-     * Updates role button visual states based on current selections.
+     * Updates the visual state of the role selection buttons according to
+     * the current role flags ({@link #isEntrant} and {@link #isOrganizer}).
      */
     private void updateRoleButtons() {
         entrantButton.setBackgroundTintList(

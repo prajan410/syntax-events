@@ -15,6 +15,7 @@ import com.example.syntaxappproject.AuthenticationService;
 import com.example.syntaxappproject.Profile;
 import com.example.syntaxappproject.ProfileRepository;
 import com.example.syntaxappproject.R;
+import com.google.android.material.chip.Chip;
 
 /**
  * Fragment displaying the currently authenticated user's profile summary.
@@ -32,6 +33,7 @@ public class UserFragment extends HomeBar {
 
     /** UI elements for displaying profile data. */
     private TextView nameText, emailText, phoneText, emailDetailText, avatarInitial;
+    private Chip badgeEntrant, badgeOrganizer, badgeAdmin;
 
     /**
      * Inflates user profile layout.
@@ -71,9 +73,13 @@ public class UserFragment extends HomeBar {
         avatarInitial   = view.findViewById(R.id.avatarInitial);
 
         View headerTitle  = view.findViewById(R.id.headerTitle);
-        View avatarCard   = view.findViewById(R.id.avatarCard);
+        View avatarCard   = view.findViewById(R.id.heroCard);
         View detailsCard  = view.findViewById(R.id.detailsCard);
         View actionsCard  = view.findViewById(R.id.actionsCard);
+
+        badgeEntrant   = view.findViewById(R.id.badgeEntrant);
+        badgeOrganizer = view.findViewById(R.id.badgeOrganizer);
+        badgeAdmin     = view.findViewById(R.id.badgeAdmin);
 
         headerTitle.setTranslationY(-20f);
         headerTitle.animate().alpha(1f).translationY(0f)
@@ -127,6 +133,11 @@ public class UserFragment extends HomeBar {
             String name  = profile.getName()  != null ? profile.getName()  : "No name set";
             String email = profile.getEmail() != null ? profile.getEmail() : "No email set";
             String phone = profile.getPhone() != null ? profile.getPhone() : "No phone set";
+
+            badgeEntrant.setVisibility(profile.isEntrant()   ? View.VISIBLE : View.GONE);
+            badgeOrganizer.setVisibility(profile.isOrganizer() ? View.VISIBLE : View.GONE);
+            badgeAdmin.setVisibility(profile.isAdmin()       ? View.VISIBLE : View.GONE);
+
 
             nameText.setText(name);
             emailText.setText(email);
