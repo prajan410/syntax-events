@@ -19,24 +19,34 @@ import androidx.navigation.Navigation;
 
 import com.example.syntaxappproject.QRCodeService;
 import com.example.syntaxappproject.R;
+import com.google.firebase.database.FirebaseDatabase;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
 
+/**
+ * Fragment that displays the generated QR code for a successfully created event
+ * and allows the organizer to either download it or finish setup.
+ * <p>
+ * The QR is generated from the event ID on a background thread, shown in a preview,
+ * and stored in Firebase Realtime Database. The user can then save it to device storage
+ * or navigate back to the home screen.
+ * </p>
+ */
 public class CreateEventQRFragment extends HomeBar {
 
     private String eventId;
     private Bitmap qrBitmap;
-
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_create_event_qr_step, container, false);
     }
-
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -78,9 +88,9 @@ public class CreateEventQRFragment extends HomeBar {
                         qrPreview.setImageBitmap(bitmap);
                     }
                 });
+                if (bitmap != null) uploadQRToFirebase(bitmap);
             }).start();
         }
-
 
         view.findViewById(R.id.download_button).setOnClickListener(v -> downloadQRCode());
 
@@ -89,6 +99,32 @@ public class CreateEventQRFragment extends HomeBar {
         );
     }
 
+    /**
+     * Encodes the QR bitmap as Base64 and stores it under
+     * {@code event_qr_codes/{eventId}} in Firebase Realtime Database.
+     *
+     * @param bitmap the generated QR code bitmap to upload
+     */
+    private void uploadQRToFirebase(Bitmap bitmap) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+        String base64 = android.util.Base64.encodeToString(baos.toByteArray(), android.util.Base64.DEFAULT);
+
+        HashMap<String, String> qrData = new HashMap<>();
+        qrData.put("image", base64);
+        qrData.put("type", "image/png");
+
+        FirebaseDatabase.getInstance()
+                .getReference("event_qr_codes")
+                .child(eventId)
+                .setValue(qrData)
+                .addOnFailureListener(e -> {
+                    if (!isAdded()) return;
+                    requireActivity().runOnUiThread(() ->
+                            Toast.makeText(getContext(), "Failed to save QR to cloud", Toast.LENGTH_SHORT).show()
+                    );
+                });
+    }
 
     /**
      * Saves the generated QR code bitmap as a PNG file to the device.

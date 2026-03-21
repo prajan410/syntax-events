@@ -62,7 +62,7 @@ public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.Ev
         holder.locationText.setText(event.getLocation());
         holder.detailsButton.setOnClickListener(v -> {
             Bundle bundle = new Bundle();
-            bundle.putString("eventId", event.getEventId());
+            bundle.putString("eventId", eventIds.get(position));
             bundle.putString("organizerUid", event.getOrganizerUid());
             bundle.putString("name", event.getName());
             bundle.putString("description", event.getDescription());

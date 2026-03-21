@@ -28,9 +28,8 @@ public class ProfileTest {
                 "Jane Doe",
                 "jane.doe@ualberta.ca",
                 "780-555-0192",
-                "Entrant",
-
                 true,
+                false,
                 false,
                 true,
                 "device-uid-00412"
@@ -40,10 +39,9 @@ public class ProfileTest {
                 "Marcus Lee",
                 "marcus.lee@ualberta.ca",
                 null,
-                "Entrant",
-
                 false,
                 true,
+                false,
                 true,
                 "device-uid-00881"
         );
@@ -52,13 +50,13 @@ public class ProfileTest {
                 "Alex Ray",
                 "alex.ray@ualberta.ca",
                 "587-555-0344",
-                "Entrant",
-
                 true,
                 true,
                 false,
+                false,
                 "device-uid-00777"
         );
+
     }
 
     /**

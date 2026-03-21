@@ -5,47 +5,11 @@
     android:layout_height="match_parent"
     android:background="#F5F5F5">
 
-    <!-- Header -->
     <TextView
         android:id="@+id/headerTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="80dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginTop="24dp"
-        android:alpha="0"
-        android:fontFamily="serif"
-        android:text="Event Detail"
-        android:textColor="#1A1A1A"
-        android:textSize="48sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <!-- Back button -->
-    <androidx.appcompat.widget.AppCompatImageButton
-        android:id="@+id/eventDetailBackButton"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="20dp"
-        android:alpha="0"
-        android:background="@drawable/bg_green_circle"
-        android:padding="12dp"
-        android:scaleType="centerInside"
-        android:src="@android:drawable/ic_menu_revert"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:tint="#FFFFFF" />
-
-    <!-- Attendees Button -->
-    <Button
-        android:id="@+id/attendeesButton"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="80dp"
-        android:layout_marginEnd="24dp"
+        android:layout_marginHorizontal="24dp"
         android:layout_marginTop="24dp"
         android:alpha="0"
         android:fontFamily="serif"
@@ -73,25 +37,64 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Poster card -->
+
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/posterCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:alpha="0"
+                app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="24dp"
                 app:cardElevation="4dp">
 
-                <ImageView
-                    android:id="@+id/eventPoster"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="220dp"
-                    android:scaleType="centerCrop" />
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="12dp">
+
+                    <ImageView
+                        android:id="@+id/eventPoster"
+                        android:layout_width="0dp"
+                        android:layout_height="200dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="8dp"
+                        android:scaleType="fitCenter"
+                        android:background="#F0F0F0"
+                        android:clipToOutline="true"
+                        app:shapeAppearanceOverlay="@style/RoundedImageStyle" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="200dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            android:letterSpacing="0.1"
+                            android:text="EVENT QR CODE"
+                            android:textColor="#2ECC71"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+
+                        <ImageView
+                            android:id="@+id/eventQRCode"
+                            android:layout_width="150dp"
+                            android:layout_height="150dp"
+                            android:scaleType="fitCenter" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Name + join card -->
+
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/nameCard"
                 android:layout_width="match_parent"
@@ -133,7 +136,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Details card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/detailsCard"
                 android:layout_width="match_parent"
@@ -160,7 +162,6 @@
                         android:textSize="13sp"
                         android:textStyle="bold" />
 
-                    <!-- Description -->
                     <TextView
                         android:id="@+id/eventDescription"
                         android:layout_width="match_parent"
@@ -176,7 +177,6 @@
                         android:layout_marginBottom="12dp"
                         android:background="#F0F0F0" />
 
-                    <!-- Date row -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -201,7 +201,6 @@
 
                     </LinearLayout>
 
-                    <!-- Location row -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -226,7 +225,6 @@
 
                     </LinearLayout>
 
-                    <!-- Registration period row -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -251,7 +249,6 @@
 
                     </LinearLayout>
 
-                    <!-- Capacity row -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -276,7 +273,6 @@
 
                     </LinearLayout>
 
-                    <!-- Waitlist row -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -301,7 +297,6 @@
 
                     </LinearLayout>
 
-                    <!-- Lottery criteria row -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -328,9 +323,9 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- QR Code Card -->
+
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/qrCard"
+                android:id="@+id/actionCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
@@ -342,25 +337,21 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
                     android:orientation="vertical"
                     android:padding="20dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
-                        android:letterSpacing="0.1"
-                        android:text="EVENT QR CODE"
-                        android:textColor="#2ECC71"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
-
-                    <ImageView
-                        android:id="@+id/eventQRCode"
-                        android:layout_width="200dp"
-                        android:layout_height="200dp"
-                        android:scaleType="fitCenter" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/doneButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:backgroundTint="#2ECC71"
+                        android:text="Done"
+                        android:textColor="#FFFFFF"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        app:cornerRadius="16dp"
+                        app:strokeColor="#E0E0E0"
+                        app:strokeWidth="1dp" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

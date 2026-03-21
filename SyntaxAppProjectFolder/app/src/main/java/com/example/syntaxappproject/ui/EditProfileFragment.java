@@ -161,7 +161,6 @@ public class EditProfileFragment extends HomeBar {
      * settings that are not editable on this screen.</p>
      */
     private void saveEdit() {
-        // Extract and trim form values safely (null text → empty string)
         String firstName = editFirstName.getText() != null ? editFirstName.getText().toString().trim() : "";
         String lastName  = editLastName.getText()  != null ? editLastName.getText().toString().trim()  : "";
         String email     = editEmail.getText()     != null ? editEmail.getText().toString().trim()     : "";
@@ -173,25 +172,21 @@ public class EditProfileFragment extends HomeBar {
         }
 
         String uid = authService.getCurrentUserId();
-        // Fetch existing profile to preserve uneditable fields
         profileRepo.getProfile(uid, existing -> {
             boolean isEntrant   = existing != null && existing.isEntrant();
             boolean isOrganizer = existing != null && existing.isOrganizer();
+            boolean isAdmin     = existing != null && existing.isAdmin();
             boolean notifs      = existing != null && existing.isNotificationsEnabled();
-            String role;
-            if (isOrganizer)    role = "Organizer";
-            else if (isEntrant) role = "Entrant";
-            else                role = "None";
 
             Profile updated = new Profile(
                     firstName + (lastName.isEmpty() ? "" : " " + lastName),
                     email,
                     phone.isEmpty() ? null : phone,
-                    role,
                     isEntrant,
                     isOrganizer,
+                    isAdmin,
                     notifs,
-                    uid // Use UID as deviceId for anonymous auth
+                    uid
             );
             profileRepo.updateProfile(uid, updated, success -> {
                 if (!isAdded()) return;
@@ -206,6 +201,7 @@ public class EditProfileFragment extends HomeBar {
             });
         });
     }
+
 
     /**
      * Displays a confirmation {@link AlertDialog} warning the user that

@@ -31,17 +31,6 @@ import com.google.android.material.textfield.TextInputEditText;
  * this screen; lottery criteria input is also absent.</p>
  */
 
-/**
- * Fragment that presents the event creation form to an organizer.
- * <p>
- * Collects event name, description, location, capacity, event dates,
- * registration period dates, and geolocation requirement flag. On successful
- * validation, the input is stored in a shared {@link EventViewModel} and the
- * user is navigated to the poster upload step.
- * </p>
- *
- * <p>Extends {@link HomeBar} to inherit the bottom navigation hotbar.</p>
- */
 public class CreateEventFragment extends HomeBar {
 
     private TextInputEditText eventNameInput, descriptionInput, locationInput, capacityInput;
@@ -99,9 +88,13 @@ public class CreateEventFragment extends HomeBar {
         View datesCard = view.findViewById(R.id.datesCard);
         View actionCard = view.findViewById(R.id.actionCard);
         View geolocationCard = view.findViewById(R.id.GeolocationCard);
+        View stepIndicator = view.findViewById(R.id.stepIndicator);
 
         headerTitle.setTranslationY(-20f);
         headerTitle.animate().alpha(1f).translationY(0f).setDuration(400).setStartDelay(100).start();
+
+        stepIndicator.setTranslationY(-20f);
+        stepIndicator.animate().alpha(1f).translationY(0f).setDuration(400).setStartDelay(150).start();
 
         detailsCard.setTranslationY(30f);
         detailsCard.animate().alpha(1f).translationY(0f).setDuration(500).setStartDelay(200).start();
