@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Final Entrants -->
+        <TextView
+            android:id="@+id/finalEntrantsTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Final Entrants"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            android:padding="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/finalEntrants"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:nestedScrollingEnabled="false"
+            tools:listitem="@android:layout/simple_list_item_1"
+            tools:itemCount="3" />
+
+        <!-- Invited Entrants -->
+        <TextView
+            android:id="@+id/invitedEntrantsTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="invited entrants"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            android:padding="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/invitedEntrants"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:nestedScrollingEnabled="false"
+            tools:listitem="@android:layout/simple_list_item_1"
+            tools:itemCount="3" />
+
+        <!-- Entrants on Waiting List -->
+        <TextView
+            android:id="@+id/waitingListTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="entrants on waiting list"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            android:padding="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/waitingList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:nestedScrollingEnabled="false"
+            tools:listitem="@android:layout/simple_list_item_1"
+            tools:itemCount="3" />
+
+        <!-- Cancelled Entrants -->
+        <TextView
+            android:id="@+id/cancelledEntrantsTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="cancelled entrants"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            android:padding="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/cancelledEntrants"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:nestedScrollingEnabled="false"
+            tools:listitem="@android:layout/simple_list_item_1"
+            tools:itemCount="3" />
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>
