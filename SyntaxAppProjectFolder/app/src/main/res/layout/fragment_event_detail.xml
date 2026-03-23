@@ -54,16 +54,37 @@
                     android:orientation="horizontal"
                     android:padding="12dp">
 
-                    <ImageView
-                        android:id="@+id/eventPoster"
+                    <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="200dp"
                         android:layout_weight="1"
                         android:layout_marginEnd="8dp"
-                        android:scaleType="fitCenter"
-                        android:background="#F0F0F0"
-                        android:clipToOutline="true"
-                        app:shapeAppearanceOverlay="@style/RoundedImageStyle" />
+                        android:orientation="vertical"
+                        android:gravity="center">
+
+                        <TextView
+                            android:visibility="gone"
+                            android:id="@+id/editImageText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            android:letterSpacing="0.1"
+                            android:text="EDIT IMAGE"
+                            android:textColor="#2ECC71"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+
+                        <ImageView
+                            android:id="@+id/eventPoster"
+                            android:layout_width="150dp"
+                            android:layout_height="150dp"
+                            android:scaleType="fitCenter"
+                            android:background="#F0F0F0"
+                            android:clipToOutline="true"
+                            android:clickable="true"
+                            app:shapeAppearanceOverlay="@style/RoundedImageStyle" />
+
+                    </LinearLayout>
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -381,5 +402,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,6 +1,9 @@
 package com.example.syntaxappproject.ui;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -14,8 +17,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.syntaxappproject.AuthenticationService;
@@ -26,25 +32,19 @@ import com.example.syntaxappproject.ImageCacheManager;
 import com.example.syntaxappproject.ImageItem;
 import com.example.syntaxappproject.R;
 import com.google.android.material.button.MaterialButton;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.util.HashMap;
 
 /**
  * Fragment that displays full details for a single event, including its poster,
  * QR code, metadata, and a context-sensitive action button.
- *
- * <p>If the current user is the event organizer, the action button becomes a
- * red "Delete Event" button that removes the event from Firestore and cleans up
- * associated media from Realtime Database and the image cache.</p>
- *
- * <p>If the current user is an entrant, the action button allows joining or
- * leaving the event, subject to registration window and capacity constraints.</p>
- *
- * <p>Supports a {@code testingMode} flag (passed via arguments or set directly)
- * to bypass Firestore calls and NavController dependencies during instrumented tests.</p>
  */
 public class EventDetailFragment extends HomeBar {
 
-    /** Firestore document ID of the event being displayed. */
     private String eventId;
 
     /** Service for retrieving the current authenticated user's UID. */
@@ -58,6 +58,47 @@ public class EventDetailFragment extends HomeBar {
 
     /** UID of the currently authenticated user. */
     private String uid;
+
+    /** Editing the image of an event TODO: extract code here and @CreateEventUploadPosterFragment into a static function */
+    private ActivityResultLauncher<String> imagePickerLauncher =
+            registerForActivityResult(new ActivityResultContracts.GetContent(), selectedImageUri -> {
+                if (selectedImageUri != null) {
+                    ContentResolver resolver = requireContext().getContentResolver();
+                    try {
+                        InputStream imageStream = resolver.openInputStream(selectedImageUri);
+                        Bitmap imageBitmap = BitmapFactory.decodeStream(imageStream);
+                        String imageType = resolver.getType(selectedImageUri);
+
+                        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                        if (imageType != null && imageType.equals("image/png")) {
+                            imageBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+                        } else {
+                            imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+                        }
+
+                        byte[] byteArray = byteArrayOutputStream.toByteArray();
+                        String base64Image = android.util.Base64.encodeToString(byteArray, android.util.Base64.DEFAULT);
+                        ImageCacheManager.put(eventId, imageBitmap);
+
+                        FirebaseDatabase database = FirebaseDatabase.getInstance();
+                        DatabaseReference reference = database.getReference("event_posters");
+
+                        HashMap<String, String> imageData = new HashMap<>();
+                        imageData.put("image", base64Image);
+                        imageData.put("type", imageType);
+
+                        reference.child(eventId).setValue(imageData).addOnSuccessListener(aVoid -> {
+                            if (isAdded()) {
+                                ImageView eventPoster = getView().findViewById(R.id.eventPoster);
+                                if (eventPoster != null) eventPoster.setImageBitmap(imageBitmap);
+                                Toast.makeText(getContext(), "Poster updated", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    } catch (Exception e) {
+                        Toast.makeText(getContext(), "Failed to process image", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
 
     /**
      * Inflates the event detail layout.
@@ -108,6 +149,8 @@ public class EventDetailFragment extends HomeBar {
         View nameCard             = view.findViewById(R.id.nameCard);
         View detailsCard          = view.findViewById(R.id.detailsCard);
         View actionCard           = view.findViewById(R.id.actionCard);
+        View btnViewSignups       = view.findViewById(R.id.btnViewSignups);
+        View editImageText        = view.findViewById(R.id.editImageText);
 
         headerTitle.setTranslationY(-20f);
         headerTitle.animate().alpha(1f).translationY(0f).setDuration(400).setStartDelay(100).start();
@@ -125,6 +168,8 @@ public class EventDetailFragment extends HomeBar {
         uid = authService.getCurrentUserId();
         if (testingMode && uid == null) uid = "test_user";
 
+        if(uid != null) btnViewSignups.setVisibility(View.VISIBLE);
+
         if (testingMode) {
             joinButton.setOnClickListener(v -> {
                 if (uid == null) return;
@@ -141,6 +186,7 @@ public class EventDetailFragment extends HomeBar {
             return;
         }
 
+
         new EventDetailRepository().getEventDetail(eventId, event -> {
             if (!isAdded()) return;
             requireActivity().runOnUiThread(() -> {
@@ -153,7 +199,7 @@ public class EventDetailFragment extends HomeBar {
                 wLCount.setText("Waitlist: " + event.getWaitlistCount());
                 lotteryCriteria.setText(event.getLotteryCriteria());
 
-                loadPoster(eventPoster);
+                loadPoster(eventPoster, event);
                 loadQRCode(eventQRCode);
                 configureActionButton(joinButton, wLCount, event);
             });
@@ -166,11 +212,18 @@ public class EventDetailFragment extends HomeBar {
      *
      * @param eventPoster the {@link ImageView} to display the poster in
      */
-    private void loadPoster(ImageView eventPoster) {
+    private void loadPoster(ImageView eventPoster, EventDetail event) {
+        if (uid != null && uid.equals(event.getOrganizerUid())) {
+            eventPoster.setOnClickListener(v -> {
+                imagePickerLauncher.launch("image/*");
+            });
+        }
+
         if (ImageCacheManager.has(eventId)) {
             eventPoster.setImageBitmap(ImageCacheManager.get(eventId));
             return;
         }
+
         ImageItem.fetchByEventId(eventId, new ImageItem.ImageCallback() {
             @Override
             public void onImageLoaded(ImageItem imageItem) {
