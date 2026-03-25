@@ -366,11 +366,11 @@
                         android:id="@+id/eventLotteryCriteria"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Lottery Criteria"
-                        android:textColor="#444444"
+                        android:layout_marginTop="8dp"
+                        android:textColor="#666666"
                         android:textSize="14sp"
-                        android:lineSpacingExtra="6dp"
-                        android:paddingVertical="8dp" />
+                        android:visibility="gone"
+                        android:lineSpacingExtra="4dp" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

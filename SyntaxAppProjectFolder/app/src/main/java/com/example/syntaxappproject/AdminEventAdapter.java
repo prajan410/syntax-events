@@ -11,12 +11,13 @@ import androidx.annotation.NonNull;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.ArrayList;
 
 /**
- * adapter used to display event items in the admin event list
- * it connects event data with the recyclerview item layout
- * each row represents one event that the admin can view
+ * RecyclerView adapter for displaying a list of events to admin users.
+ * Binds event data to item views and handles navigation to event details.
  */
 public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.EventViewHolder> {
 
@@ -24,10 +25,10 @@ public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.Ev
     private ArrayList<String> eventIds;
 
     /**
-     * creates the adapter with the event data and their firestore ids
+     * Constructs the adapter with event data and their corresponding Firestore document IDs.
      *
-     * @param eventList list of events to display
-     * @param eventIds firestore document ids for each event
+     * @param eventList list of event detail objects
+     * @param eventIds  list of Firestore document IDs matching the events
      */
     public AdminEventAdapter(ArrayList<EventDetail> eventList, ArrayList<String> eventIds) {
         this.eventList = eventList;
@@ -36,34 +37,47 @@ public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.Ev
 
     @NonNull
     @Override
-    /**
-     * creates the view holder for each event row in the recyclerview
-     *
-     * @param parent parent view group
-     * @param viewType type of the view
-     * @return a new EventViewHolder
-     */
     public EventViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.event_item, parent, false);
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.event_item, parent, false);
         return new EventViewHolder(view);
     }
 
     @Override
-    /**
-     * binds the event data to the view holder so it shows correctly
-     *
-     * @param holder the view holder for the row
-     * @param position position of the event in the list
-     */
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
         EventDetail event = eventList.get(position);
+        String organizerUid = event.getOrganizerUid();
+
         holder.titleText.setText(event.getName());
-        holder.organizerText.setText(event.getOrganizerUid());
+        holder.organizerIdText.setText(organizerUid);
         holder.locationText.setText(event.getLocation());
+        holder.organizerNameText.setText("Loading...");
+
+        // Async fetch: get organizer's name from profiles collection using their UID
+        if (organizerUid != null && !organizerUid.isEmpty()) {
+            FirebaseFirestore.getInstance()
+                    .collection("profiles")
+                    .document(organizerUid)
+                    .get()
+                    .addOnSuccessListener(doc -> {
+                        if (doc.exists()) {
+                            String name = doc.getString("name");
+                            holder.organizerNameText.setText(
+                                    name != null && !name.isEmpty() ? name : "Unknown"
+                            );
+                        } else {
+                            holder.organizerNameText.setText("Unknown");
+                        }
+                    })
+                    .addOnFailureListener(e -> holder.organizerNameText.setText("Unknown"));
+        } else {
+            holder.organizerNameText.setText("Unknown");
+        }
+
         holder.detailsButton.setOnClickListener(v -> {
             Bundle bundle = new Bundle();
             bundle.putString("eventId", eventIds.get(position));
-            bundle.putString("organizerUid", event.getOrganizerUid());
+            bundle.putString("organizerUid", organizerUid);
             bundle.putString("name", event.getName());
             bundle.putString("description", event.getDescription());
             bundle.putString("location", event.getLocation());
@@ -81,31 +95,27 @@ public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.Ev
     }
 
     @Override
-    /**
-     * returns the number of events in the list
-     *
-     * @return number of events
-     */
     public int getItemCount() {
         return eventList.size();
     }
 
-    // create the view holder for each event item in the recyclerview
+    /**
+     * ViewHolder class that caches references to the views in each event item.
+     */
     static class EventViewHolder extends RecyclerView.ViewHolder {
         TextView titleText;
-        TextView organizerText;
+        TextView organizerNameText;
+        TextView organizerIdText;
         TextView locationText;
         Button detailsButton;
 
-        /**
-         * view holder class that stores the views for one event item
-         */
         public EventViewHolder(@NonNull View itemView) {
             super(itemView);
-            titleText = itemView.findViewById(R.id.tv_event_title);
-            organizerText = itemView.findViewById(R.id.tv_event_organizer);
-            locationText = itemView.findViewById(R.id.tv_event_location);
-            detailsButton = itemView.findViewById(R.id.btn_event_details);
+            titleText          = itemView.findViewById(R.id.tv_event_title);
+            organizerNameText  = itemView.findViewById(R.id.tv_organizer_name);
+            organizerIdText    = itemView.findViewById(R.id.tv_event_organizer);
+            locationText       = itemView.findViewById(R.id.tv_event_location);
+            detailsButton      = itemView.findViewById(R.id.btn_event_details);
         }
     }
 }

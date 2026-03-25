@@ -16,9 +16,11 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.syntaxappproject.AuthenticationService;
+import com.example.syntaxappproject.BulletPointHelper;
 import com.example.syntaxappproject.EventDetail;
 import com.example.syntaxappproject.EventDetailRepository;
 import com.example.syntaxappproject.EventJoinRepository;
@@ -28,45 +30,26 @@ import com.example.syntaxappproject.R;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.List;
+
 /**
  * Fragment that displays full details for a single event, including its poster,
  * QR code, metadata, and a context-sensitive action button.
  *
- * <p>If the current user is the event organizer, the action button becomes a
- * red "Delete Event" button that removes the event from Firestore and cleans up
- * associated media from Realtime Database and the image cache.</p>
+ * <p>If the current user is the event organizer, the action button becomes an
+ * orange "Manage Event" button that navigates to the event management screen.</p>
  *
  * <p>If the current user is an entrant, the action button allows joining or
  * leaving the event, subject to registration window and capacity constraints.</p>
- *
- * <p>Supports a {@code testingMode} flag (passed via arguments or set directly)
- * to bypass Firestore calls and NavController dependencies during instrumented tests.</p>
  */
 public class EventDetailFragment extends HomeBar {
 
-    /** Firestore document ID of the event being displayed. */
     private String eventId;
-
-    /** Service for retrieving the current authenticated user's UID. */
     private final AuthenticationService authService = new AuthenticationService();
-
-    /** Repository for join, leave, and membership check operations. */
     private final EventJoinRepository joinRepo = new EventJoinRepository();
-
-    /** When {@code true}, bypasses Firestore and NavController for instrumented tests. */
     public boolean testingMode = false;
-
-    /** UID of the currently authenticated user. */
     private String uid;
 
-    /**
-     * Inflates the event detail layout.
-     *
-     * @param inflater           the layout inflater
-     * @param container          the parent view group
-     * @param savedInstanceState previously saved state, or {@code null}
-     * @return the inflated root view
-     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
@@ -74,13 +57,6 @@ public class EventDetailFragment extends HomeBar {
         return inflater.inflate(R.layout.fragment_event_detail, container, false);
     }
 
-    /**
-     * Binds views, runs entrance animations, loads event data, and configures
-     * the action button based on whether the current user is the organizer or an entrant.
-     *
-     * @param view               the root view returned by {@link #onCreateView}
-     * @param savedInstanceState previously saved state, or {@code null}
-     */
     @SuppressLint("SetTextI18n")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -151,7 +127,23 @@ public class EventDetailFragment extends HomeBar {
                 regiPeriod.setText(event.getStartingRegistrationPeriod());
                 capacity.setText("Capacity: " + event.getCapacity());
                 wLCount.setText("Waitlist: " + event.getWaitlistCount());
-                lotteryCriteria.setText(event.getLotteryCriteria());
+
+                String criteria = event.getLotteryCriteria();
+                if (criteria != null && !criteria.isEmpty()) {
+                    List<String> criteriaList = BulletPointHelper.parseBulletPoints(criteria);
+                    if (!criteriaList.isEmpty()) {
+                        StringBuilder displayText = new StringBuilder();
+                        for (String point : criteriaList) {
+                            displayText.append("• ").append(point).append("\n");
+                        }
+                        lotteryCriteria.setText(displayText.toString().trim());
+                        lotteryCriteria.setVisibility(View.VISIBLE);
+                    } else {
+                        lotteryCriteria.setVisibility(View.GONE);
+                    }
+                } else {
+                    lotteryCriteria.setVisibility(View.GONE);
+                }
 
                 loadPoster(eventPoster);
                 loadQRCode(eventQRCode);
@@ -161,10 +153,7 @@ public class EventDetailFragment extends HomeBar {
     }
 
     /**
-     * Loads the event poster from {@link ImageCacheManager} if available,
-     * otherwise fetches and decodes it from Firebase Realtime Database.
-     *
-     * @param eventPoster the {@link ImageView} to display the poster in
+     * Loads the event poster from cache or decodes from Base64 on background thread.
      */
     private void loadPoster(ImageView eventPoster) {
         if (ImageCacheManager.has(eventId)) {
@@ -191,10 +180,7 @@ public class EventDetailFragment extends HomeBar {
     }
 
     /**
-     * Fetches and decodes the event QR code from Firebase Realtime Database
-     * and displays it in the given {@link ImageView}.
-     *
-     * @param eventQRCode the {@link ImageView} to display the QR code in
+     * Fetches and decodes the event QR code from Firebase Realtime Database.
      */
     private void loadQRCode(ImageView eventQRCode) {
         FirebaseDatabase.getInstance()
@@ -217,24 +203,16 @@ public class EventDetailFragment extends HomeBar {
     }
 
     /**
-     * Configures the action button based on the current user's role relative to the event.
-     *
-     * <p>If the user is the organizer, the button becomes a red "Delete Event" button.
-     * If the user is an entrant, the button reflects the registration window state:
-     * disabled with an informational label if outside the window, or an active
-     * Join/Leave toggle if within it.</p>
-     *
-     * @param joinButton the action {@link MaterialButton} to configure
-     * @param wLCount    the {@link TextView} displaying the current waitlist count
-     * @param event      the {@link EventDetail} for the event being displayed
+     * Configures the action button: orange "Manage Event" for organizers,
+     * or join/leave controls for entrants with registration window validation.
      */
     private void configureActionButton(MaterialButton joinButton, TextView wLCount, EventDetail event) {
         boolean isOrganizer = uid != null && uid.equals(event.getOrganizerUid());
 
         if (isOrganizer) {
-            joinButton.setText("Delete Event");
-            joinButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#E74C3C")));
-            joinButton.setOnClickListener(v -> deleteEvent());
+            joinButton.setText("Manage Event");
+            joinButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FF9800")));
+            joinButton.setOnClickListener(v -> navigateToManageEvent());
             return;
         }
 
@@ -258,14 +236,15 @@ public class EventDetailFragment extends HomeBar {
         joinButton.setOnClickListener(v -> handleJoinLeave(joinButton, wLCount));
     }
 
+    private void navigateToManageEvent() {
+        Bundle bundle = new Bundle();
+        bundle.putString("eventId", eventId);
+        Navigation.findNavController(requireView()).navigate(R.id.manageEventFragment, bundle);
+    }
+
     /**
-     * Handles the join or leave action when the entrant taps the action button.
-     *
-     * <p>Re-fetches the latest event data to check capacity before joining.
-     * Updates the button state and waitlist count on success.</p>
-     *
-     * @param joinButton the action button to update after the operation
-     * @param wLCount    the waitlist count {@link TextView} to update
+     * Handles join/leave actions for entrants. Re-fetches event data to check
+     * capacity limits before allowing a new join.
      */
     private void handleJoinLeave(MaterialButton joinButton, TextView wLCount) {
         if (uid == null) {
@@ -315,35 +294,11 @@ public class EventDetailFragment extends HomeBar {
     }
 
     /**
-     * Deletes the event from Firestore and removes its associated poster and QR code
-     * from Firebase Realtime Database and the local image cache.
-     *
-     * <p>Navigates back to the previous screen on success.</p>
-     */
-    private void deleteEvent() {
-        com.google.firebase.firestore.FirebaseFirestore.getInstance()
-                .collection("events")
-                .document(eventId)
-                .delete()
-                .addOnSuccessListener(a -> {
-                    ImageCacheManager.remove(eventId);
-                    FirebaseDatabase.getInstance().getReference("event_posters").child(eventId).removeValue();
-                    FirebaseDatabase.getInstance().getReference("event_qr_codes").child(eventId).removeValue();
-                    if (!isAdded()) return;
-                    Toast.makeText(getContext(), "Event deleted", Toast.LENGTH_SHORT).show();
-                    NavHostFragment.findNavController(this).popBackStack();
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(getContext(), "Failed to delete event", Toast.LENGTH_SHORT).show()
-                );
-    }
-
-    /**
      * Parses a date string into epoch milliseconds.
-     * Supports {@code "yyyy-MM-dd"} and {@code "MM/dd/yyyy"} formats.
+     * Supports "yyyy-MM-dd" and "MM/dd/yyyy" formats.
      *
      * @param dateStr the date string to parse
-     * @return epoch milliseconds, or {@code -1} if the string is null, empty, or unparseable
+     * @return epoch milliseconds, or -1 if unparseable
      */
     private long parseDateMillis(String dateStr) {
         if (dateStr == null || dateStr.isEmpty()) return -1;

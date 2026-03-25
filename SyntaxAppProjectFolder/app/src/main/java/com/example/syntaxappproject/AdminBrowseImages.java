@@ -1,62 +1,64 @@
 package com.example.syntaxappproject;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.navigation.fragment.NavHostFragment;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.ListenerRegistration;
-import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 /**
- * Fragment for admin to browse all uploaded images in the system.
- * Fetches poster images from Firestore event documents and displays
- * them in a RecyclerView. Listens for real-time updates so newly
- * uploaded posters appear without requiring a manual refresh.
- *
- * Images are stored as Base64 strings in the {@code poster} field of
- * each event document. Bitmaps are pre-cached via {@link ImageCacheManager}
- * for smooth scrolling performance.
+ * Fragment for administrators to browse all event posters stored in the cache.
+ * Displays images in a grid layout with entrance animations.
  */
 public class AdminBrowseImages extends Fragment {
 
     private ArrayList<ImageItem> imageList;
     private ArrayList<String> imageIds;
+    private ArrayList<ImageItem> filteredList;
+    private ArrayList<String> filteredIds;
     private ImageAdapter adapter;
     private RecyclerView recyclerView;
     private View loadingSpinner;
+    private View emptyText;
+    private View mainCard;
+    private View headerTitle;
+    private TextView imageCountBadge;
 
-    // Held so we can detach the listener when the fragment is destroyed
-    private ListenerRegistration firestoreListener;
+    private DatabaseReference postersRef;
+    private ValueEventListener postersListener;
 
     /**
-     * Empty public constructor required by the Fragment lifecycle.
+     * Default constructor required for fragment instantiation.
      */
-    public AdminBrowseImages() {
-    }
+    public AdminBrowseImages() {}
 
     /**
-     * Inflates the layout, initializes the RecyclerView, shows the loading
-     * spinner, and attaches a real-time Firestore snapshot listener that
-     * keeps the image list up to date automatically.
+     * Inflates the layout, initializes views, sets up animations,
+     * and loads cached event posters.
      *
-     * @param inflater           used to inflate the fragment layout
-     * @param container          parent view the fragment will attach to
-     * @param savedInstanceState previously saved state, or {@code null}
-     * @return the root view for this fragment
+     * @param inflater           the layout inflater used to inflate the fragment's view
+     * @param container          the parent view group that the fragment's UI attaches to
+     * @param savedInstanceState previously saved instance state, if any
+     * @return the inflated view for this fragment
      */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -64,113 +66,98 @@ public class AdminBrowseImages extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_admin_browse_images, container, false);
 
-        recyclerView = view.findViewById(R.id.recycler_images);
-        loadingSpinner = view.findViewById(R.id.loadingSpinner);
+        recyclerView    = view.findViewById(R.id.recycler_images);
+        loadingSpinner  = view.findViewById(R.id.loadingSpinner);
+        emptyText       = view.findViewById(R.id.emptyText);
+        mainCard        = view.findViewById(R.id.mainCard);
+        headerTitle     = view.findViewById(R.id.headerTitle);
+        imageCountBadge = view.findViewById(R.id.imageCountBadge);
 
-        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        Button doneButton = view.findViewById(R.id.doneButton);
+        doneButton.setOnClickListener(v -> {
+            NavHostFragment.findNavController(this)
+                    .navigate(R.id.adminFragment);
+        });
 
-        imageList = new ArrayList<>();
-        imageIds = new ArrayList<>();
-        adapter = new ImageAdapter(imageList, imageIds);
+        headerTitle.setTranslationY(-20f);
+        headerTitle.animate().alpha(1f).translationY(0f)
+                .setDuration(400).setStartDelay(100).start();
+
+        imageCountBadge.animate().alpha(1f)
+                .setDuration(300).setStartDelay(200).start();
+
+        mainCard.setTranslationY(30f);
+        mainCard.animate().alpha(1f).translationY(0f)
+                .setDuration(500).setStartDelay(250).start();
+
+        recyclerView.setLayoutManager(new GridLayoutManager(requireContext(), 2));
+
+        imageList    = new ArrayList<>();
+        imageIds     = new ArrayList<>();
+        filteredList = new ArrayList<>();
+        filteredIds  = new ArrayList<>();
+        adapter      = new ImageAdapter(filteredList, filteredIds);
         recyclerView.setAdapter(adapter);
 
-        if (loadingSpinner != null) {
-            loadingSpinner.setVisibility(View.VISIBLE);
-            recyclerView.setVisibility(View.GONE);
-        }
-
-        attachFirestoreListener();
+        loadingSpinner.setVisibility(View.GONE);
+        recyclerView.setVisibility(View.GONE);
+        emptyText.setVisibility(View.GONE);
+        loadFromCache();
 
         return view;
     }
 
     /**
-     * Attaches a real-time snapshot listener to the Firestore {@code events}
-     * collection. On each update the image list is rebuilt from scratch so
-     * deletions and edits are reflected immediately.
+     * Reads all bitmaps directly from ImageCacheManager and publishes
+     * them to the adapter instantly. No database call, no decoding.
      */
-    private void attachFirestoreListener() {
-        firestoreListener = FirebaseFirestore.getInstance()
-                .collection("events")
-                .addSnapshotListener((querySnapshots, error) -> {
-                    if (!isAdded()) return;
+    private void loadFromCache() {
+        imageList.clear();
+        imageIds.clear();
 
-                    if (error != null) {
-                        if (loadingSpinner != null) loadingSpinner.setVisibility(View.GONE);
-                        Toast.makeText(getContext(),
-                                "Failed to load images: " + error.getMessage(),
-                                Toast.LENGTH_SHORT).show();
-                        return;
-                    }
+        for (Map.Entry<String, Bitmap> entry : ImageCacheManager.getAll().entrySet()) {
+            String eventId = entry.getKey();
+            imageList.add(new ImageItem(eventId, eventId));
+            imageIds.add(eventId);
+        }
 
-                    if (querySnapshots == null) return;
+        filteredList.clear();
+        filteredIds.clear();
+        filteredList.addAll(imageList);
+        filteredIds.addAll(imageIds);
 
-                    imageList.clear();
-                    imageIds.clear();
+        adapter.notifyDataSetChanged();
+        loadingSpinner.setVisibility(View.GONE);
 
-                    for (DocumentSnapshot doc : querySnapshots) {
-                        String posterBase64 = doc.getString("poster");
-                        if (posterBase64 == null || posterBase64.isEmpty()) continue;
+        int count = imageList.size();
+        imageCountBadge.setText(count + (count == 1 ? " poster" : " posters"));
 
-                        String eventName = doc.getString("name");
-                        if (eventName == null || eventName.isEmpty()) {
-                            eventName = "Unknown Event";
-                        }
-
-                        preCacheImage(doc.getId(), posterBase64);
-                        imageList.add(new ImageItem(posterBase64, eventName));
-                        imageIds.add(doc.getId());
-                    }
-
-                    adapter.notifyDataSetChanged();
-
-                    if (loadingSpinner != null) {
-                        loadingSpinner.setVisibility(View.GONE);
-                        recyclerView.setVisibility(View.VISIBLE);
-                    }
-
-                    if (imageList.isEmpty()) {
-                        Toast.makeText(getContext(),
-                                "No images found",
-                                Toast.LENGTH_SHORT).show();
-                    }
-                });
+        updateEmptyState();
     }
 
     /**
-     * Pre-caches the Base64 string and decoded {@link Bitmap} in
-     * {@link ImageCacheManager} so the adapter can display images
-     * immediately without blocking the main thread.
-     *
-     * @param eventId    the event ID used as the cache key
-     * @param base64Data the Base64 encoded image string
+     * Updates the UI based on whether there are images to display.
+     * Shows the empty text if no images exist, otherwise shows the RecyclerView.
      */
-    private void preCacheImage(String eventId, String base64Data) {
-        ImageCacheManager.putBase64(eventId, base64Data);
-
-        new Thread(() -> {
-            try {
-                byte[] decoded = Base64.decode(base64Data, Base64.DEFAULT);
-                Bitmap bitmap = BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
-                if (bitmap != null) {
-                    ImageCacheManager.put(eventId, bitmap);
-                }
-            } catch (Exception ignored) {
-                // Adapter will decode on demand if caching fails
-            }
-        }).start();
+    private void updateEmptyState() {
+        if (filteredList.isEmpty()) {
+            recyclerView.setVisibility(View.GONE);
+            emptyText.setVisibility(View.VISIBLE);
+        } else {
+            recyclerView.setVisibility(View.VISIBLE);
+            emptyText.setVisibility(View.GONE);
+        }
     }
 
     /**
-     * Detaches the Firestore snapshot listener when the fragment is destroyed
-     * to prevent memory leaks and callbacks on a dead fragment.
+     * Cleans up Firebase database listeners when the fragment's view is destroyed.
      */
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (firestoreListener != null) {
-            firestoreListener.remove();
-            firestoreListener = null;
+        if (postersRef != null && postersListener != null) {
+            postersRef.removeEventListener(postersListener);
+            postersListener = null;
         }
     }
 }
