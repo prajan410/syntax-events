@@ -1,48 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:paddingTop="10dp"
-    android:paddingBottom="10dp"
-    android:gravity="center_vertical">
+    android:gravity="center_vertical"
+    android:paddingHorizontal="8dp"
+    android:paddingVertical="12dp">
 
     <TextView
         android:id="@+id/tv_profile_name"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="2"
-        android:text="Amy"
+        android:layout_weight="3"
+        android:text="Name"
+        android:textColor="#1A1A1A"
         android:textSize="13sp"
-        android:textColor="#111111" />
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/tv_profile_role"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1.2"
-        android:text="Entrant"
-        android:textSize="13sp"
-        android:textColor="#111111" />
+        android:layout_weight="2"
+        android:text="Role"
+        android:textColor="#555555"
+        android:textSize="13sp" />
 
     <TextView
         android:id="@+id/tv_profile_status"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1.2"
+        android:layout_weight="2"
         android:text="Active"
         android:textSize="13sp"
-        android:textColor="#111111" />
+        android:textStyle="bold" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btn_profile_details"
-        android:layout_width="82dp"
+        android:layout_width="0dp"
         android:layout_height="36dp"
-        android:text="Detail"
+        android:layout_weight="2"
+        android:text="Details"
         android:textAllCaps="false"
         android:textSize="12sp"
-        android:textStyle="normal"
         android:textColor="#000000"
         android:background="@drawable/rounded_black_button"
         android:backgroundTint="@null" />
+
 </LinearLayout>

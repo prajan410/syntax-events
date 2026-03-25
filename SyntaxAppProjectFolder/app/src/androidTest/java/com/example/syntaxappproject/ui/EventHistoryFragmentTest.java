@@ -2,9 +2,12 @@ package com.example.syntaxappproject.ui;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
 import android.os.Bundle;
+import android.view.View;
 
 import androidx.fragment.app.testing.FragmentScenario;
 import androidx.navigation.Navigation;
@@ -46,7 +49,6 @@ public class EventHistoryFragmentTest {
      */
     @Before
     public void setup() {
-
         scenario = FragmentScenario.launchInContainer(
                 EventHistoryFragment.class,
                 new Bundle(),
@@ -54,7 +56,6 @@ public class EventHistoryFragmentTest {
         );
 
         scenario.onFragment(fragment -> {
-
             fragment.disableFirestoreForTest = true;
 
             navController = new TestNavHostController(
@@ -76,6 +77,21 @@ public class EventHistoryFragmentTest {
                     0, "", "");
 
             fragment.setEventsForTest(Collections.singletonList(fakeEvent));
+            try {
+                java.lang.reflect.Field loadingSpinnerField =
+                        EventHistoryFragment.class.getDeclaredField("loadingSpinner");
+                loadingSpinnerField.setAccessible(true);
+                View loadingSpinner = (View) loadingSpinnerField.get(fragment);
+                loadingSpinner.setVisibility(View.GONE);
+
+                java.lang.reflect.Field recyclerViewField =
+                        EventHistoryFragment.class.getDeclaredField("recyclerView");
+                recyclerViewField.setAccessible(true);
+                RecyclerView recyclerView = (RecyclerView) recyclerViewField.get(fragment);
+                recyclerView.setVisibility(View.VISIBLE);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         });
     }
 
@@ -85,6 +101,8 @@ public class EventHistoryFragmentTest {
      */
     @Test
     public void clickingEvent_navigatesToEventDetail() {
+        onView(withId(R.id.eventHistoryList))
+                .check(matches(isDisplayed()));
 
         onView(withId(R.id.eventHistoryList))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));

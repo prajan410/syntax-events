@@ -20,6 +20,8 @@
             app:destination="@id/adminFragment" />
     </fragment>
 
+
+
     <fragment
         android:id="@+id/profileSetupFragment"
         android:name="com.example.syntaxappproject.ui.ProfileSetupFragment"
@@ -244,6 +246,9 @@
         <argument
             android:name="eventId"
             app:argType="string" />
+        <action
+            android:id="@+id/action_eventDetailFragment_to_manageEventFragment"
+            app:destination="@id/manageEventFragment" />
     </fragment>
 
     <fragment
@@ -354,6 +359,16 @@
         android:name="com.example.syntaxappproject.AdminProfileDetails"
         android:label="Profile Details"
         tools:layout="@layout/fragment_admin_profile_details" />
+
+    <fragment
+        android:id="@+id/manageEventFragment"
+        android:name="com.example.syntaxappproject.ui.ManageEventFragment"
+        android:label="Manage Event"
+        tools:layout="@layout/fragment_manage_event">
+        <argument
+            android:name="eventId"
+            app:argType="string" />
+    </fragment>
 
     <fragment
         android:id="@+id/adminBrowseEvents"
