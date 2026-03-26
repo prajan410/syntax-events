@@ -19,8 +19,10 @@ import java.util.ArrayList;
  */
 public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.EventViewHolder> {
 
-    private ArrayList<Event> eventList;
+    private ArrayList<EventDetail> eventList;
     private ArrayList<String> eventIds;
+
+    public AdminEventAdapter(ArrayList<EventDetail> eventList, ArrayList<String> eventIds) {
     /**
      * creates the adapter with the event data and their firestore ids
      *
@@ -47,6 +49,11 @@ public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.Ev
     }
 
     @Override
+    public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
+        EventDetail event = eventList.get(position);
+        holder.titleText.setText(event.getName());
+        holder.organizerText.setText(event.getOrganizerUid());
+        holder.locationText.setText(event.getLocation());
 /**
  * binds the event data to the view holder so it shows correctly
  *
@@ -59,11 +66,20 @@ public class AdminEventAdapter extends RecyclerView.Adapter<AdminEventAdapter.Ev
         holder.locationText.setText(event.location);
         holder.detailsButton.setOnClickListener(v -> {
             Bundle bundle = new Bundle();
-            bundle.putString("eventId", eventIds.get(position));
-            bundle.putString("title", event.title);
-            bundle.putString("description", event.description);
-            bundle.putString("organizer", event.organizer);
-            bundle.putString("location", event.location);
+            bundle.putString("eventId", event.getEventId());
+            bundle.putString("organizerUid", event.getOrganizerUid());
+            bundle.putString("name", event.getName());
+            bundle.putString("description", event.getDescription());
+            bundle.putString("location", event.getLocation());
+            bundle.putLong("capacity", event.getCapacity());
+            bundle.putBoolean("geoReq", event.isGeoReq());
+            bundle.putString("startingEventDate", event.getStartingEventDate());
+            bundle.putString("endingEventDate", event.getEndingEventDate());
+            bundle.putString("startingRegistrationPeriod", event.getStartingRegistrationPeriod());
+            bundle.putString("endingRegistrationPeriod", event.getEndingRegistrationPeriod());
+            bundle.putLong("waitlistCount", event.getWaitlistCount());
+            bundle.putString("lotteryCriteria", event.getLotteryCriteria());
+            bundle.putString("poster", event.getPoster());
             Navigation.findNavController(v).navigate(R.id.adminEventDetails, bundle);});
         }
     @Override

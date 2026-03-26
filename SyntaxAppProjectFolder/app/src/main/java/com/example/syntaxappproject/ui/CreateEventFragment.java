@@ -15,18 +15,48 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.example.syntaxappproject.EventViewModel;
 import com.example.syntaxappproject.R;
 import com.google.android.material.textfield.TextInputEditText;
-
+/**
+ * Fragment that presents the event creation form to an organizer.
+ * <p>
+ * Collects event name, description, location, capacity, event dates,
+ * and registration period dates. On successful validation, the input
+ * is stored in a shared {@link EventViewModel} and the user is
+ * navigated to the poster upload step.
+ * </p>
+ *
+ * <p>Extends {@link HomeBar} to inherit the bottom navigation hotbar.</p>
+ *
+ * <p>Outstanding issues: geo-requirement flag is not yet collected on
+ * this screen; lottery criteria input is also absent.</p>
+ */
 public class CreateEventFragment extends HomeBar {
 
     private TextInputEditText eventNameInput, descriptionInput, locationInput, capacityInput;
     private TextInputEditText eventStartDateInput, eventEndDateInput;
     private TextInputEditText regisStartDateInput, regisEndDateInput;
 
+    /**
+     * Inflates the create event layout.
+     *
+     * @param inflater  the layout inflater
+     * @param container the parent view group
+     * @param savedInstanceState previously saved state, or {@code null}
+     * @return the inflated view for this fragment
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_create_event, container, false);
     }
 
+
+    /**
+     * Called immediately after {@link #onCreateView}. Binds input fields,
+     * sets up date pickers, applies entrance animations, and attaches the
+     * continue button click handler.
+     *
+     * @param view               the view returned by {@link #onCreateView}
+     * @param savedInstanceState previously saved state, or {@code null}
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -86,6 +116,7 @@ public class CreateEventFragment extends HomeBar {
             String startingRegistrationPeriod = getText(regisStartDateInput);
             String endingRegistrationPeriod = getText(regisEndDateInput);
 
+            // --Error check inputs --
             if (name.isEmpty()) {
                 toast("Event name is required"); return;
             }
@@ -104,6 +135,7 @@ public class CreateEventFragment extends HomeBar {
                 toast("Capacity must be greater than 0"); return;
             }
 
+            // -- Save values into view model --
             EventViewModel viewModel = new ViewModelProvider(requireActivity()).get(EventViewModel.class);
             viewModel.setName(name);
             viewModel.setDescription(description);
@@ -118,6 +150,13 @@ public class CreateEventFragment extends HomeBar {
         });
     }
 
+
+    /**
+     * Displays a {@link android.app.DatePickerDialog} and writes the selected
+     * date into the given input field in {@code YYYY-MM-DD} format.
+     *
+     * @param target the {@link TextInputEditText} to populate with the selected date
+     */
     private void showDatePicker(TextInputEditText target) {
         android.app.DatePickerDialog picker = new android.app.DatePickerDialog(
                 requireContext(),
@@ -132,14 +171,34 @@ public class CreateEventFragment extends HomeBar {
         picker.show();
     }
 
+
+    /**
+     * Safely extracts and trims the text from a {@link TextInputEditText}.
+     *
+     * @param field the input field to read
+     * @return the trimmed string, or an empty string if the field is {@code null}
+     */
     private String getText(TextInputEditText field) {
         return field.getText() != null ? field.getText().toString().trim() : "";
     }
 
+
+    /**
+     * Displays a short {@link Toast} message.
+     *
+     * @param msg the message to display
+     */
     private void toast(String msg) {
         Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
     }
 
+
+    /**
+     * Checks whether the given string can be parsed as an integer.
+     *
+     * @param str the string to validate
+     * @return {@code true} if {@code str} is a valid integer, {@code false} otherwise
+     */
     private boolean isInteger(String str) {
         if (str == null || str.isBlank()) return false;
         try {
