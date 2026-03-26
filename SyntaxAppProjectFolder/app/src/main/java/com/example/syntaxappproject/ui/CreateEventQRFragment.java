@@ -30,11 +30,14 @@ public class CreateEventQRFragment extends HomeBar {
     private String eventId;
     private Bitmap qrBitmap;
 
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_create_event_qr_step, container, false);
     }
+
+
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -87,6 +90,19 @@ public class CreateEventQRFragment extends HomeBar {
         );
     }
 
+
+    /**
+     * Saves the generated QR code bitmap as a PNG file to the device.
+     * <p>
+     * On Android Q (API 29) and above, uses {@link MediaStore} to write
+     * to the shared {@code Pictures/SyntaxEvents} directory. On older
+     * versions, writes to the app's external files directory instead.
+     * </p>
+     * <p>
+     * Displays a toast on both success and failure. Does nothing if
+     * {@link #qrBitmap} has not yet been populated.
+     * </p>
+     */
     private void downloadQRCode() {
         if (qrBitmap == null) {
             Toast.makeText(getContext(), "QR code not ready yet", Toast.LENGTH_SHORT).show();
