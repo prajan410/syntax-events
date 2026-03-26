@@ -170,6 +170,10 @@ public class HomeFragment extends HomeBar {
             long now = System.currentTimeMillis();
 
             for (EventDetail event : events) {
+                if (event.isPrivateEvent()) {
+                    if (counter.incrementAndGet() == events.size()) flush(filtered);
+                    continue;
+                }
                 if (uid != null && uid.equals(event.getOrganizerUid())) {
                     if (counter.incrementAndGet() == events.size()) flush(filtered);
                     continue;

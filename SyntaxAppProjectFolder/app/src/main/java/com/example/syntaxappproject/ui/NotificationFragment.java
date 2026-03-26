@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.syntaxappproject.AuthenticationService;
+import com.example.syntaxappproject.EventJoinRepository;
 import com.example.syntaxappproject.Invitation;
 import com.example.syntaxappproject.InvitationRepository;
 import com.example.syntaxappproject.R;
@@ -91,16 +92,30 @@ public class NotificationFragment extends HomeBar {
                 return;
             }
 
-            invitationRepository.acceptInvitation(currentInvitation.getInvitationId(), success ->
-                    requireActivity().runOnUiThread(() -> {
-                        if (success) {
-                            Toast.makeText(getContext(), "Invitation accepted", Toast.LENGTH_SHORT).show();
-                            loadPendingInvitation(userId);
-                        } else {
-                            Toast.makeText(getContext(), "Failed to accept invitation", Toast.LENGTH_SHORT).show();
-                        }
-                    })
-            );
+            String eventId = currentInvitation.getEventId();
+            EventJoinRepository joinRepo = new EventJoinRepository();
+
+            joinRepo.joinEvent(eventId, userId, joinSuccess -> {
+                if (!isAdded()) return;
+
+                if (!joinSuccess) {
+                    requireActivity().runOnUiThread(() ->
+                            Toast.makeText(getContext(), "Failed to join waitlist", Toast.LENGTH_SHORT).show()
+                    );
+                    return;
+                }
+
+                invitationRepository.acceptInvitation(currentInvitation.getInvitationId(), success ->
+                        requireActivity().runOnUiThread(() -> {
+                            if (success) {
+                                Toast.makeText(getContext(), "Invitation accepted", Toast.LENGTH_SHORT).show();
+                                loadPendingInvitation(userId);
+                            } else {
+                                Toast.makeText(getContext(), "Joined waitlist but failed to update invitation", Toast.LENGTH_SHORT).show();
+                            }
+                        })
+                );
+            });
         });
 
         // Decline button logic
@@ -141,7 +156,7 @@ public class NotificationFragment extends HomeBar {
                     emptyText.setVisibility(View.GONE);
 
                     eventNameText.setText(invitation.getEventName());
-                    messageText.setText("Congratulations! You have been selected to participate.");
+                    messageText.setText("You have been invited to join the waiting list for this private event.");
                     statusText.setText("Status: " + invitation.getStatus());
                 })
         );

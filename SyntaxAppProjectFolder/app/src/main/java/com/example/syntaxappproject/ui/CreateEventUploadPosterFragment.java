@@ -150,6 +150,10 @@ public class CreateEventUploadPosterFragment extends Fragment {
         eventData.put("startingRegistrationPeriod",     viewModel.getStartingRegistrationPeriod().getValue());
         eventData.put("endingRegistrationPeriod",     viewModel.getEndingRegistrationPeriod().getValue());
         eventData.put("organizerUid", organizerUid);
+        eventData.put("privateEvent", Boolean.TRUE.equals(viewModel.getPrivateEvent().getValue()));
+        eventData.put("invitedUserIds", viewModel.getInvitedUserIds().getValue());
+        eventData.put("waitlistCount", 0);
+        eventData.put("geoReq", Boolean.TRUE.equals(viewModel.getGeoReq().getValue()));
 
         db.collection("events")
                 .add(eventData)
@@ -157,10 +161,12 @@ public class CreateEventUploadPosterFragment extends Fragment {
                     String eventId = documentReference.getId();
                     viewModel.setEventId(eventId);
 
+                    boolean isPrivate = Boolean.TRUE.equals(viewModel.getPrivateEvent().getValue());
+
                     if (selectedImageUri != null) {
-                        uploadPosterToRealtimeDatabase(eventId);
+                        uploadPosterToRealtimeDatabase(eventId, isPrivate);
                     } else {
-                        navigateToQRFragment(eventId);
+                        afterEventSaved(eventId, isPrivate);
                     }
                 })
                 .addOnFailureListener(e ->
@@ -179,7 +185,7 @@ public class CreateEventUploadPosterFragment extends Fragment {
      *
      * @param eventId the ID of the event whose poster is being uploaded
      */
-    private void uploadPosterToRealtimeDatabase(String eventId) {
+    private void uploadPosterToRealtimeDatabase(String eventId, boolean isPrivate) {
         ContentResolver resolver = requireContext().getContentResolver();
         try {
             InputStream imageStream = resolver.openInputStream(selectedImageUri);
@@ -205,13 +211,25 @@ public class CreateEventUploadPosterFragment extends Fragment {
             imageData.put("type", imageType);
 
             reference.child(eventId).setValue(imageData)
-                    .addOnSuccessListener(aVoid -> navigateToQRFragment(eventId))
+                    .addOnSuccessListener(aVoid -> afterEventSaved(eventId, isPrivate))
                     .addOnFailureListener(e -> {
                         Toast.makeText(getContext(), "Failed to upload poster", Toast.LENGTH_SHORT).show();
-                        navigateToQRFragment(eventId);
+                        afterEventSaved(eventId, isPrivate);
                     });
         } catch (Exception e) {
             Toast.makeText(getContext(), "Failed to process image", Toast.LENGTH_SHORT).show();
+            afterEventSaved(eventId, isPrivate);
+        }
+    }
+    private void afterEventSaved(String eventId, boolean isPrivate) {
+        if (isPrivate) {
+            Bundle bundle = new Bundle();
+            bundle.putString("eventId", eventId);
+            bundle.putString("eventName", viewModel.getName().getValue());
+
+            NavHostFragment.findNavController(this)
+                    .navigate(R.id.privateEventInviteFragment, bundle);
+        } else {
             navigateToQRFragment(eventId);
         }
     }

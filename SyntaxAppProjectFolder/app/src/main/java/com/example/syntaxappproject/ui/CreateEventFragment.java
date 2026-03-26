@@ -37,6 +37,7 @@ public class CreateEventFragment extends HomeBar {
     private TextInputEditText eventStartDateInput, eventEndDateInput;
     private TextInputEditText regisStartDateInput, regisEndDateInput;
     private SwitchMaterial geoSwitch;
+    private SwitchMaterial privateEventSwitch;
 
     /**
      * Inflates the create event layout.
@@ -64,6 +65,8 @@ public class CreateEventFragment extends HomeBar {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         try { setupHotbar(view); } catch (Exception ignored) {}
+
+        privateEventSwitch = view.findViewById(R.id.privateEventSwitch);
 
         eventNameInput = view.findViewById(R.id.eventNameInput);
         descriptionInput = view.findViewById(R.id.descriptionInput);
@@ -124,6 +127,7 @@ public class CreateEventFragment extends HomeBar {
             String startingRegistrationPeriod = getText(regisStartDateInput);
             String endingRegistrationPeriod = getText(regisEndDateInput);
 
+
             // --Error check inputs --
             if (name.isEmpty()) {
                 toast("Event name is required"); return;
@@ -156,6 +160,7 @@ public class CreateEventFragment extends HomeBar {
             viewModel.setEndingEventDate(endingEventDate);
             viewModel.setStartingRegistrationPeriod(startingRegistrationPeriod);
             viewModel.setEndingRegistrationPeriod(endingRegistrationPeriod);
+            viewModel.setPrivateEvent(privateEventSwitch.isChecked());
 
             navController.navigate(R.id.toUploadImageFragment);
         });

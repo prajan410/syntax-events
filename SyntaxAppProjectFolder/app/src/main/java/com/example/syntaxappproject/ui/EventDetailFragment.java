@@ -28,6 +28,8 @@ import com.example.syntaxappproject.R;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.List;
+
 /**
  * Fragment that displays full details for a single event, including its poster,
  * QR code, metadata, and a context-sensitive action button.
@@ -152,9 +154,14 @@ public class EventDetailFragment extends HomeBar {
                 capacity.setText("Capacity: " + event.getCapacity());
                 wLCount.setText("Waitlist: " + event.getWaitlistCount());
                 lotteryCriteria.setText(event.getLotteryCriteria());
-
                 loadPoster(eventPoster);
-                loadQRCode(eventQRCode);
+
+                if (event.isPrivateEvent()) {
+                    posterCard.setVisibility(View.GONE);
+                } else {
+                    loadQRCode(eventQRCode);
+                }
+
                 configureActionButton(joinButton, wLCount, event);
             });
         });
@@ -236,6 +243,18 @@ public class EventDetailFragment extends HomeBar {
             joinButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#E74C3C")));
             joinButton.setOnClickListener(v -> deleteEvent());
             return;
+        }
+
+        if (event.isPrivateEvent()) {
+            List<String> invited = event.getInvitedUserIds();
+            boolean invitedUser = invited != null && uid != null && invited.contains(uid);
+
+            if (!invitedUser) {
+                joinButton.setText("Private Event");
+                joinButton.setEnabled(false);
+                joinButton.setAlpha(0.5f);
+                return;
+            }
         }
 
         long now      = System.currentTimeMillis();

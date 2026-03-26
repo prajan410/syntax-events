@@ -6,6 +6,8 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import java.util.ArrayList;
+
 
 /**
  * The purpose of this class is so that the 3 different fragments (to create an event) can share the same information of the event.
@@ -34,7 +36,8 @@ public class EventViewModel extends ViewModel {
     private final MutableLiveData<Uri> imageUri = new MutableLiveData<>();
     private final MutableLiveData<String> qrCodeData = new MutableLiveData<>();
 
-
+    private final MutableLiveData<Boolean> privateEvent = new MutableLiveData<>(false);
+    private final MutableLiveData<ArrayList<String>> invitedUserIds = new MutableLiveData<>(new ArrayList<>());
     // Identity
 
     // Event ID
@@ -96,5 +99,12 @@ public class EventViewModel extends ViewModel {
     // QR Code Data
     public LiveData<String> getQrCodeData() { return qrCodeData; }
     public void setQrCodeData(String qr) { qrCodeData.setValue(qr); }
+    //Private event
+
+    public LiveData<Boolean> getPrivateEvent() { return privateEvent; }
+    public void setPrivateEvent(Boolean value) { privateEvent.setValue(value); }
+
+    public LiveData<ArrayList<String>> getInvitedUserIds() { return invitedUserIds; }
+    public void setInvitedUserIds(ArrayList<String> ids) { invitedUserIds.setValue(ids); }
 
 }
