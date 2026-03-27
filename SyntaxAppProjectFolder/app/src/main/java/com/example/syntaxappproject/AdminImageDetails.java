@@ -73,7 +73,7 @@ public class AdminImageDetails extends Fragment {
                                         organizerIdText.setText("Organizer ID: " + organizerUid);
                                     } else {
 
-                                        db.collection("deleted-profiles").document(organizerUid)// Check deleted-profiles collection for archived organizer accounts
+                                        db.collection("deleted-profiles").document(organizerUid)
                                                 .get()
                                                 .addOnSuccessListener(deletedDoc -> {
                                                     String organizerName = deletedDoc.exists() ?

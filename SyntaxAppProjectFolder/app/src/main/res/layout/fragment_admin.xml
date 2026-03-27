@@ -158,7 +158,7 @@
                     android:paddingTop="8dp"
                     android:paddingBottom="8dp">
 
-                    <!-- Browse Events -->
+
                     <LinearLayout
                         android:id="@+id/cardBrowseEvents"
                         android:layout_width="match_parent"
@@ -220,7 +220,6 @@
                         android:layout_marginStart="78dp"
                         android:background="#F3F3F3" />
 
-                    <!-- Browse Profiles -->
                     <LinearLayout
                         android:id="@+id/cardBrowseProfiles"
                         android:layout_width="match_parent"
@@ -282,7 +281,6 @@
                         android:layout_marginStart="78dp"
                         android:background="#F3F3F3" />
 
-                    <!-- Browse Images -->
                     <LinearLayout
                         android:id="@+id/cardBrowseImages"
                         android:layout_width="match_parent"
@@ -344,7 +342,67 @@
                         android:layout_marginStart="78dp"
                         android:background="#F3F3F3" />
 
-                    <!-- Notification Logs -->
+                    <LinearLayout
+                        android:id="@+id/cardBrowseComments"
+                        android:layout_width="match_parent"
+                        android:layout_height="72dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="?attr/selectableItemBackground">
+
+                        <androidx.appcompat.widget.AppCompatImageView
+                            android:layout_width="42dp"
+                            android:layout_height="42dp"
+                            android:background="@drawable/circle_bg"
+                            android:backgroundTint="#1A1A1A"
+                            android:padding="10dp"
+                            android:src="@android:drawable/ic_menu_edit"
+                            app:tint="#FFFFFF" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="16dp"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Browse Comments"
+                                android:textColor="#1A1A1A"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="Moderate user comments"
+                                android:textColor="#AAAAAA"
+                                android:textSize="12sp" />
+
+                        </LinearLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="›"
+                            android:textColor="#CCCCCC"
+                            android:textSize="26sp" />
+
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="78dp"
+                        android:background="#F3F3F3" />
+
                     <LinearLayout
                         android:id="@+id/cardNotificationLogs"
                         android:layout_width="match_parent"

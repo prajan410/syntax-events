@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.google.android.material.button.MaterialButton;
@@ -20,24 +21,67 @@ import java.util.Map;
 
 /**
  * Fragment that displays detailed user profile information for admin users.
- * Allows admins to view user details, toggle user roles (Admin/Organizer/Entrant),
- * and delete user profiles. Prevents removing the last role from a user.
+ *
+ * <p>This fragment allows administrators to:</p>
+ * <ul>
+ *   <li>View user details (name, email, device ID, phone number)</li>
+ *   <li>Toggle user roles (Admin, Organizer, Entrant)</li>
+ *   <li>Delete user profiles (with confirmation and archiving)</li>
+ *   <li>View active/inactive status</li>
+ * </ul>
+ *
+ * <p>Role management features:</p>
+ * <ul>
+ *   <li>Prevents removing the last role from a user (users must have at least one role)</li>
+ *   <li>Buttons dynamically change between "Add Role" and "Remove Role" based on current state</li>
+ *   <li>If an admin removes their own admin role, they are navigated away to prevent lockout</li>
+ * </ul>
+ *
+ * <p>When a profile is deleted, it is archived to the {@code deleted-profiles} collection
+ * with a timestamp before being removed from the active {@code profiles} collection.</p>
+ *
+ * @see ProfileRepository
+ * @see AuthenticationService
+ * @see AdminBrowseProfiles
  */
 public class AdminProfileDetails extends Fragment {
 
+    /** Button to toggle admin role. */
     private MaterialButton btnToggleAdmin;
+
+    /** Button to toggle organizer role. */
     private MaterialButton btnToggleOrganizer;
+
+    /** Button to toggle entrant role. */
     private MaterialButton btnToggleEntrant;
 
+    /** Current admin role status. */
     private boolean currentAdmin;
+
+    /** Current organizer role status. */
     private boolean currentOrganizer;
+
+    /** Current entrant role status. */
     private boolean currentEntrant;
 
+    /** Repository for profile database operations. */
     private final ProfileRepository profileRepo = new ProfileRepository();
+
+    /** Service for authentication and current user management. */
     private final AuthenticationService authService = new AuthenticationService();
 
+    /** Default constructor required for fragment instantiation. */
     public AdminProfileDetails() {}
 
+    /**
+     * Inflates the layout, initializes views, applies entrance animations,
+     * and sets up role toggle buttons and deletion functionality.
+     *
+     * @param inflater           the layout inflater used to inflate the fragment's view
+     * @param container          the parent view group that the fragment's UI attaches to
+     * @param savedInstanceState previously saved instance state, if any
+     * @return the inflated view for this fragment
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
@@ -80,8 +124,7 @@ public class AdminProfileDetails extends Fragment {
                 .setDuration(500).setStartDelay(420).start();
 
         doneButton.setOnClickListener(v -> {
-            NavHostFragment.findNavController(this)
-                    .navigate(R.id.adminBrowseProfiles);
+            Navigation.findNavController(requireView()).popBackStack();
         });
 
         Bundle args = getArguments();
@@ -128,7 +171,7 @@ public class AdminProfileDetails extends Fragment {
                 int remaining = (willHaveAdmin ? 1 : 0)
                         + (currentOrganizer ? 1 : 0)
                         + (currentEntrant ? 1 : 0);
-                if (remaining == 0) return;// Prevent removing the last role from a user
+                if (remaining == 0) return; // Prevent removing the last role from a user
 
                 profileRepo.getProfile(profileId, existing -> {
                     if (existing == null || !isAdded()) return;
@@ -151,7 +194,7 @@ public class AdminProfileDetails extends Fragment {
                                 refreshRoleButtons();
                                 if (isOwnProfile && !currentAdmin) {
                                     NavHostFragment.findNavController(this)
-                                            .navigate(R.id.homeFragment);// If admin removed their own admin role, navigate them away
+                                            .navigate(R.id.homeFragment);
                                 }
                             }
                         });
@@ -231,6 +274,7 @@ public class AdminProfileDetails extends Fragment {
                                 profileRepo.getProfile(profileId, existing -> {
                                     if (existing == null || !isAdded()) return;
 
+                                    // Archive the profile before deletion
                                     Map<String, Object> archived = new HashMap<>();
                                     archived.put("name", existing.getName());
                                     archived.put("email", existing.getEmail());
@@ -270,6 +314,12 @@ public class AdminProfileDetails extends Fragment {
         return view;
     }
 
+    /**
+     * Updates the role label TextView with the user's current roles.
+     * Formats as "Role: Admin Organizer Entrant" or "Role: None" if no roles.
+     *
+     * @param roleText the TextView to update with the role label
+     */
     private void refreshRoleLabel(TextView roleText) {
         StringBuilder sb = new StringBuilder("Role: ");
         if (currentAdmin) sb.append("Admin ");
@@ -280,6 +330,10 @@ public class AdminProfileDetails extends Fragment {
         roleText.setText(result);
     }
 
+    /**
+     * Refreshes the state of all role toggle buttons based on current role flags.
+     * Determines which roles are active and which is the last remaining role.
+     */
     private void refreshRoleButtons() {
         int activeRoles = (currentAdmin ? 1 : 0)
                 + (currentOrganizer ? 1 : 0)
@@ -292,11 +346,17 @@ public class AdminProfileDetails extends Fragment {
 
     /**
      * Configures a role toggle button based on current role state.
-     * If it's the user's last remaining role, disable the button and show "Remove Role" in disabled state.
+     *
+     * <p>Button states:</p>
+     * <ul>
+     *   <li>If it's the user's last remaining role: disabled "Remove Role" (gray)</li>
+     *   <li>If the user has this role but not last: enabled "Remove Role" (red)</li>
+     *   <li>If the user doesn't have this role: enabled "Add Role" (green)</li>
+     * </ul>
      *
      * @param button     the button to configure
      * @param hasRole    whether the user currently has this role
-     * @param isLastRole whether this is the user's only role
+     * @param isLastRole whether this is the user's only role (prevents removal)
      */
     private void applyRoleButton(MaterialButton button, boolean hasRole, boolean isLastRole) {
         if (isLastRole) {

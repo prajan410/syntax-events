@@ -60,7 +60,6 @@ public class QRCodeScannerFragment extends HomeBar {
         flashLabel.animate().alpha(1f)
                 .setDuration(300).setStartDelay(450).start();
 
-        // Flashlight button logic
         FloatingActionButton fab = view.findViewById(R.id.flashlight_button);
         fab.setOnClickListener(v -> {
             if(flashlightOn) {
@@ -106,7 +105,7 @@ public class QRCodeScannerFragment extends HomeBar {
         public void barcodeResult(BarcodeResult result) {
             String qrText = result.getText();
             if (qrText != null) {
-                barcodeView.pause(); // Stop scanning once we have a result
+                barcodeView.pause();
                 Bundle bundle = new Bundle();
                 bundle.putString("eventId", qrText);
                 Navigation.findNavController(requireView()).navigate(R.id.toEventDetailFragment, bundle);

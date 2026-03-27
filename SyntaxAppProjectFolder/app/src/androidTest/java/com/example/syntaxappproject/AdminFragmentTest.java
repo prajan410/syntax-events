@@ -3,6 +3,8 @@ package com.example.syntaxappproject;
 import androidx.fragment.app.testing.FragmentScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import com.example.syntaxappproject.ui.AdminFragment;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

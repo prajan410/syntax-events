@@ -1,15 +1,18 @@
 package com.example.syntaxappproject.ui;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -18,37 +21,58 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.syntaxappproject.AuthenticationService;
 import com.example.syntaxappproject.BulletPointHelper;
+import com.example.syntaxappproject.Comment;
+import com.example.syntaxappproject.CommentAdapter;
+import com.example.syntaxappproject.CommentRepository;
 import com.example.syntaxappproject.EventDetail;
 import com.example.syntaxappproject.EventDetailRepository;
 import com.example.syntaxappproject.EventJoinRepository;
 import com.example.syntaxappproject.ImageCacheManager;
 import com.example.syntaxappproject.ImageItem;
+import com.example.syntaxappproject.ProfileRepository;
 import com.example.syntaxappproject.R;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Fragment that displays full details for a single event, including its poster,
  * QR code, metadata, and a context-sensitive action button.
- *
- * <p>If the current user is the event organizer, the action button becomes an
- * orange "Manage Event" button that navigates to the event management screen.</p>
- *
- * <p>If the current user is an entrant, the action button allows joining or
- * leaving the event, subject to registration window and capacity constraints.</p>
  */
 public class EventDetailFragment extends HomeBar {
+
+    private static final int COMMENTS_PER_PAGE = 10;
 
     private String eventId;
     private final AuthenticationService authService = new AuthenticationService();
     private final EventJoinRepository joinRepo = new EventJoinRepository();
+    private CommentRepository commentRepository;
+    private CommentAdapter commentAdapter;
+    private RecyclerView commentsRecyclerView;
+    private TextView emptyCommentsText;
+    private EditText commentInput;
+    private MaterialButton postCommentButton;
+    private MaterialButton prevPageButton;
+    private MaterialButton nextPageButton;
+    private TextView pageIndicator;
+    private View paginationContainer;
+
+    private List<Comment> allComments = new ArrayList<>();
+    private int currentPage = 0;
+    private int totalPages = 0;
+
     public boolean testingMode = false;
     private String uid;
+    private boolean isOrganizer = false;
+    private boolean isAdmin = false;
+    private int profilesLoaded = 0;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -84,6 +108,15 @@ public class EventDetailFragment extends HomeBar {
         View nameCard             = view.findViewById(R.id.nameCard);
         View detailsCard          = view.findViewById(R.id.detailsCard);
         View actionCard           = view.findViewById(R.id.actionCard);
+        View commentsCard         = view.findViewById(R.id.commentsCard);
+        commentsRecyclerView      = view.findViewById(R.id.commentsRecyclerView);
+        emptyCommentsText         = view.findViewById(R.id.emptyCommentsText);
+        commentInput              = view.findViewById(R.id.commentInput);
+        postCommentButton         = view.findViewById(R.id.postCommentButton);
+        prevPageButton            = view.findViewById(R.id.prevPageButton);
+        nextPageButton            = view.findViewById(R.id.nextPageButton);
+        pageIndicator             = view.findViewById(R.id.pageIndicator);
+        paginationContainer       = view.findViewById(R.id.paginationContainer);
 
         headerTitle.setTranslationY(-20f);
         headerTitle.animate().alpha(1f).translationY(0f).setDuration(400).setStartDelay(100).start();
@@ -93,13 +126,51 @@ public class EventDetailFragment extends HomeBar {
         nameCard.animate().alpha(1f).translationY(0f).setDuration(500).setStartDelay(300).start();
         detailsCard.setTranslationY(30f);
         detailsCard.animate().alpha(1f).translationY(0f).setDuration(500).setStartDelay(380).start();
+        commentsCard.setTranslationY(30f);
+        commentsCard.animate().alpha(1f).translationY(0f).setDuration(500).setStartDelay(460).start();
         actionCard.setTranslationY(30f);
-        actionCard.animate().alpha(1f).translationY(0f).setDuration(500).setStartDelay(500).start();
+        actionCard.animate().alpha(1f).translationY(0f).setDuration(500).setStartDelay(540).start();
 
         doneButton.setOnClickListener(v -> NavHostFragment.findNavController(this).popBackStack());
 
         uid = authService.getCurrentUserId();
         if (testingMode && uid == null) uid = "test_user";
+
+        commentRepository = new CommentRepository();
+        commentsRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        commentAdapter = new CommentAdapter(uid, isOrganizer, isAdmin, this::deleteComment, this::reportComment);
+        commentsRecyclerView.setAdapter(commentAdapter);
+
+        prevPageButton.setOnClickListener(v -> {
+            if (currentPage > 0) {
+                currentPage--;
+                displayCurrentPage();
+            }
+        });
+
+        nextPageButton.setOnClickListener(v -> {
+            if (currentPage < totalPages - 1) {
+                currentPage++;
+                displayCurrentPage();
+            }
+        });
+
+        new ProfileRepository().getProfile(uid, profile -> {
+            if (profile != null) {
+                isAdmin = profile.isAdmin();
+            }
+            checkAndUpdateAdapter();
+        });
+
+        new EventDetailRepository().getEventDetail(eventId, event -> {
+            if (event != null && uid != null) {
+                isOrganizer = uid.equals(event.getOrganizerUid());
+            }
+            checkAndUpdateAdapter();
+        });
+
+        loadComments();
+        postCommentButton.setOnClickListener(v -> postComment());
 
         if (testingMode) {
             joinButton.setOnClickListener(v -> {
@@ -152,9 +223,147 @@ public class EventDetailFragment extends HomeBar {
         });
     }
 
-    /**
-     * Loads the event poster from cache or decodes from Base64 on background thread.
-     */
+    private void checkAndUpdateAdapter() {
+        profilesLoaded++;
+        if (profilesLoaded == 2) {
+            requireActivity().runOnUiThread(() -> {
+                commentAdapter.updateRoles(isOrganizer, isAdmin);
+                displayCurrentPage();
+            });
+        }
+    }
+
+    private void loadComments() {
+        Log.d("EventDetailFragment", "Loading comments for event: " + eventId);
+        commentRepository.getCommentsForEvent(eventId, comments -> {
+            Log.d("EventDetailFragment", "Comments received: " + (comments != null ? comments.size() : 0));
+            if (!isAdded()) return;
+            requireActivity().runOnUiThread(() -> {
+                allComments = comments != null ? comments : new ArrayList<>();
+
+                if (allComments.isEmpty()) {
+                    emptyCommentsText.setVisibility(View.VISIBLE);
+                    commentsRecyclerView.setVisibility(View.GONE);
+                    paginationContainer.setVisibility(View.GONE);
+                } else {
+                    emptyCommentsText.setVisibility(View.GONE);
+                    commentsRecyclerView.setVisibility(View.VISIBLE);
+
+                    totalPages = (int) Math.ceil((double) allComments.size() / COMMENTS_PER_PAGE);
+                    currentPage = 0;
+
+                    displayCurrentPage();
+                }
+            });
+        });
+    }
+
+    private void displayCurrentPage() {
+        int start = currentPage * COMMENTS_PER_PAGE;
+        int end = Math.min(start + COMMENTS_PER_PAGE, allComments.size());
+
+        List<Comment> pageComments = allComments.subList(start, end);
+        commentAdapter.setComments(pageComments);
+
+        if (totalPages > 1) {
+            paginationContainer.setVisibility(View.VISIBLE);
+            pageIndicator.setText("Page " + (currentPage + 1) + " of " + totalPages);
+
+            prevPageButton.setVisibility(currentPage > 0 ? View.VISIBLE : View.INVISIBLE);
+            nextPageButton.setVisibility(currentPage < totalPages - 1 ? View.VISIBLE : View.INVISIBLE);
+        } else {
+            paginationContainer.setVisibility(View.GONE);
+        }
+
+        commentsRecyclerView.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
+        commentsRecyclerView.requestLayout();
+    }
+
+    private void postComment() {
+        String commentText = commentInput.getText() != null ?
+                commentInput.getText().toString().trim() : "";
+
+        if (commentText.isEmpty()) {
+            Toast.makeText(requireContext(), "Please enter a comment", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (uid == null) {
+            Toast.makeText(requireContext(), "Please login to comment", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        new ProfileRepository().getProfile(uid, profile -> {
+            if (!isAdded()) return;
+            String userName = profile != null && profile.getName() != null ?
+                    profile.getName() : "Anonymous";
+            String deviceId = profile != null && profile.getDeviceId() != null ?
+                    profile.getDeviceId() : "";
+
+            Comment comment = new Comment(eventId, commentText, uid, userName, deviceId);
+
+            commentRepository.addComment(comment, success -> {
+                if (!isAdded()) return;
+                requireActivity().runOnUiThread(() -> {
+                    if (success) {
+                        commentInput.setText("");
+                        loadComments();
+                        Toast.makeText(requireContext(), "Comment posted!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(requireContext(), "Failed to post comment", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            });
+        });
+    }
+
+    private void deleteComment(Comment comment) {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Delete Comment")
+                .setMessage("Are you sure you want to delete this comment?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    commentRepository.deleteComment(comment.getCommentId(), success -> {
+                        if (!isAdded()) return;
+                        requireActivity().runOnUiThread(() -> {
+                            if (success) {
+                                loadComments();
+                                Toast.makeText(requireContext(), "Comment deleted", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(requireContext(), "Failed to delete comment", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    });
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void reportComment(Comment comment) {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Report Comment")
+                .setMessage("Are you sure you want to report this comment?")
+                .setPositiveButton("Report", (dialog, which) -> {
+                    commentRepository.reportComment(comment.getCommentId(), uid, success -> {
+                        if (!isAdded()) return;
+                        requireActivity().runOnUiThread(() -> {
+                            if (success) {
+                                Toast.makeText(requireContext(), "Comment reported. Thank you for helping keep our community safe.", Toast.LENGTH_LONG).show();
+                                if (comment.getReportedBy() == null) {
+                                    comment.setReportedBy(new ArrayList<>());
+                                }
+                                comment.getReportedBy().add(uid);
+                                comment.setReportCount(comment.getReportCount() + 1);
+                                commentAdapter.notifyDataSetChanged();
+                            } else {
+                                Toast.makeText(requireContext(), "Failed to report comment", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    });
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
     private void loadPoster(ImageView eventPoster) {
         if (ImageCacheManager.has(eventId)) {
             eventPoster.setImageBitmap(ImageCacheManager.get(eventId));
@@ -179,9 +388,6 @@ public class EventDetailFragment extends HomeBar {
         });
     }
 
-    /**
-     * Fetches and decodes the event QR code from Firebase Realtime Database.
-     */
     private void loadQRCode(ImageView eventQRCode) {
         FirebaseDatabase.getInstance()
                 .getReference("event_qr_codes")
@@ -202,14 +408,10 @@ public class EventDetailFragment extends HomeBar {
                 });
     }
 
-    /**
-     * Configures the action button: orange "Manage Event" for organizers,
-     * or join/leave controls for entrants with registration window validation.
-     */
     private void configureActionButton(MaterialButton joinButton, TextView wLCount, EventDetail event) {
-        boolean isOrganizer = uid != null && uid.equals(event.getOrganizerUid());
+        boolean isEventOrganizer = uid != null && uid.equals(event.getOrganizerUid());
 
-        if (isOrganizer) {
+        if (isEventOrganizer) {
             joinButton.setText("Manage Event");
             joinButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FF9800")));
             joinButton.setOnClickListener(v -> navigateToManageEvent());
@@ -242,10 +444,6 @@ public class EventDetailFragment extends HomeBar {
         Navigation.findNavController(requireView()).navigate(R.id.manageEventFragment, bundle);
     }
 
-    /**
-     * Handles join/leave actions for entrants. Re-fetches event data to check
-     * capacity limits before allowing a new join.
-     */
     private void handleJoinLeave(MaterialButton joinButton, TextView wLCount) {
         if (uid == null) {
             Toast.makeText(getContext(), "Please login first", Toast.LENGTH_SHORT).show();
@@ -293,13 +491,6 @@ public class EventDetailFragment extends HomeBar {
         });
     }
 
-    /**
-     * Parses a date string into epoch milliseconds.
-     * Supports "yyyy-MM-dd" and "MM/dd/yyyy" formats.
-     *
-     * @param dateStr the date string to parse
-     * @return epoch milliseconds, or -1 if unparseable
-     */
     private long parseDateMillis(String dateStr) {
         if (dateStr == null || dateStr.isEmpty()) return -1;
         try {

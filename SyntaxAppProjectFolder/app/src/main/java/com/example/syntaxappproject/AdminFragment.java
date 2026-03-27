@@ -1,4 +1,4 @@
-package com.example.syntaxappproject;
+package com.example.syntaxappproject.ui;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -10,12 +10,15 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.example.syntaxappproject.AuthenticationService;
+import com.example.syntaxappproject.ProfileRepository;
+import com.example.syntaxappproject.R;
 import com.google.android.material.chip.Chip;
 
 /**
  * Fragment that displays the admin dashboard.
  * Provides navigation to admin tools including event browsing, profile management,
- * image moderation, and notification logs.
+ * image moderation, comment moderation, and notification logs.
  * If the current user also has an entrant or organizer role, a "Back Home" button
  * is shown to return them to their regular view.
  */
@@ -52,6 +55,7 @@ public class AdminFragment extends Fragment {
         View btnEvents      = view.findViewById(R.id.cardBrowseEvents);
         View btnProfiles    = view.findViewById(R.id.cardBrowseProfiles);
         View btnImages      = view.findViewById(R.id.cardBrowseImages);
+        View btnComments    = view.findViewById(R.id.cardBrowseComments);
         View btnNotifs      = view.findViewById(R.id.cardNotificationLogs);
         View btnBack        = view.findViewById(R.id.backCard);
 
@@ -74,6 +78,8 @@ public class AdminFragment extends Fragment {
                 NavHostFragment.findNavController(this).navigate(R.id.adminBrowseProfiles));
         btnImages.setOnClickListener(v ->
                 NavHostFragment.findNavController(this).navigate(R.id.adminBrowseImages));
+        btnComments.setOnClickListener(v ->
+                NavHostFragment.findNavController(this).navigate(R.id.adminBrowseComments));
 
         AuthenticationService authService = new AuthenticationService();
         String uid = authService.getCurrentUserId();
