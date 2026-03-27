@@ -232,15 +232,19 @@
             android:id="@+id/toOrganizerEventsFragment"
             app:destination="@id/organizerEventsFragment" />
         <action
-            android:id="@+id/toEventSignupList"
-            app:destination="@id/eventSignupList" />
+            android:id="@+id/toEventSignupLisFragment"
+            app:destination="@id/eventSignupListFragment" />
+
+        <action
+            android:id="@+id/toMap"
+            app:destination="@id/mapFragment" />
     </fragment>
 
     <fragment
-        android:id="@+id/eventSignupList"
-        android:name="com.example.syntaxappproject.ui.EventSignupList"
+        android:id="@+id/eventSignupListFragment"
+        android:name="com.example.syntaxappproject.ui.EventSignupListFragment"
         android:label="Event Signups"
-        tools:layout="@layout/event_signup_list">
+        tools:layout="@layout/fragment_event_signup_list">
         <argument
             android:name="eventId"
             app:argType="string" />
@@ -349,5 +353,11 @@
         android:name="com.example.syntaxappproject.AdminImageDetails"
         android:label="Image Details"
         tools:layout="@layout/fragment_admin_image_details" />
+
+    <fragment
+        android:id="@+id/mapFragment"
+        android:name="com.example.syntaxappproject.ui.MapFragment"
+        android:label="Map"
+        tools:layout="@layout/fragment_map"/>
 
 </navigation>

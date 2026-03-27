@@ -7,7 +7,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -15,7 +14,7 @@ import com.example.syntaxappproject.R;
 
 import java.util.ArrayList;
 
-public class EventSignupList extends HomeBar {
+public class EventSignupListFragment extends HomeBar {
     private ArrayList<String> finalEntrants; // remove later
     private ArrayList<String> invitedEntrants; // remove later
     private ArrayList<String> waitingEntrants; // remove later

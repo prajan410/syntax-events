@@ -391,6 +391,18 @@
                 android:visibility="gone"
                 app:cornerRadius="16dp" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/mapButton"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginBottom="32dp"
+                android:backgroundTint="#2ECC71"
+                android:text="temp map button"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:cornerRadius="16dp" />
+
         </LinearLayout>
     </ScrollView>
 

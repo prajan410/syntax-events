@@ -151,6 +151,8 @@ public class EventDetailFragment extends HomeBar {
         View actionCard           = view.findViewById(R.id.actionCard);
         View btnViewSignups       = view.findViewById(R.id.btnViewSignups);
         View editImageText        = view.findViewById(R.id.editImageText);
+        MaterialButton mapButton  = view.findViewById(R.id.mapButton);
+
 
         headerTitle.setTranslationY(-20f);
         headerTitle.animate().alpha(1f).translationY(0f).setDuration(400).setStartDelay(100).start();
@@ -204,6 +206,12 @@ public class EventDetailFragment extends HomeBar {
                 configureActionButton(joinButton, wLCount, event);
             });
         });
+
+        if (mapButton != null) {
+            mapButton.setOnClickListener(v -> {
+                NavHostFragment.findNavController(this).navigate(R.id.toMap);
+            });
+        }
     }
 
     /**
