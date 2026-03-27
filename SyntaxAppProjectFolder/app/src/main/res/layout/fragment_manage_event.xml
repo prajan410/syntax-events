@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     android:background="#F5F5F5">
 
-    <!-- Header -->
     <TextView
         android:id="@+id/headerTitle"
         android:layout_width="0dp"
@@ -37,7 +36,6 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Poster Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/posterCard"
                 android:layout_width="match_parent"
@@ -125,7 +123,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Event Details Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/detailsCard"
                 android:layout_width="match_parent"
@@ -218,7 +215,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Capacity Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/capacityCard"
                 android:layout_width="match_parent"
@@ -269,7 +265,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Dates Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/datesCard"
                 android:layout_width="match_parent"
@@ -410,7 +405,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Geolocation Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/geolocationCard"
                 android:layout_width="match_parent"
@@ -436,7 +430,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Lottery Criteria Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/lotteryCriteriaCard"
                 android:layout_width="match_parent"
@@ -519,7 +512,6 @@
         </LinearLayout>
     </ScrollView>
 
-    <!-- Action Buttons Container -->
     <LinearLayout
         android:id="@+id/actionButtonsContainer"
         android:layout_width="match_parent"

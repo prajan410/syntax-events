@@ -99,7 +99,7 @@ public class HomeFragment extends HomeBar {
                 paint.setColor(Color.BLACK);
                 paint.setStrokeWidth(1f);
 
-                for (int i = 0; i < parent.getChildCount() - 1; i++) { // Draw line between items, not after the last one
+                for (int i = 0; i < parent.getChildCount() - 1; i++) {
                     View child = parent.getChildAt(i);
                     float y = child.getBottom() + 12f;
                     c.drawLine(child.getLeft(), y, child.getRight(), y, paint);

@@ -6,7 +6,6 @@
     android:orientation="vertical"
     android:background="#F2F2F7">
 
-    <!-- Fixed header (non-scrollable) -->
     <LinearLayout
         android:id="@+id/headerTitle"
         android:layout_width="match_parent"
@@ -37,7 +36,6 @@
 
     </LinearLayout>
 
-    <!-- Scrollable content (fills space above button) -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -51,7 +49,6 @@
             android:paddingHorizontal="20dp"
             android:paddingBottom="24dp">
 
-            <!-- Poster card (use new ic_default_poster.xml) -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/posterCard"
                 android:layout_width="match_parent"
@@ -109,7 +106,6 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Info card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -134,7 +130,6 @@
                         android:letterSpacing="0.15"
                         android:layout_marginBottom="12dp" />
 
-                    <!-- Dates -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -179,7 +174,6 @@
                         android:layout_height="1dp"
                         android:background="#F5F5F5" />
 
-                    <!-- Registration -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -224,7 +218,6 @@
                         android:layout_height="1dp"
                         android:background="#F5F5F5" />
 
-                    <!-- Location -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -269,7 +262,6 @@
                         android:layout_height="1dp"
                         android:background="#F5F5F5" />
 
-                    <!-- Capacity -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -313,7 +305,6 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Description card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -350,7 +341,6 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- QR card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -385,7 +375,6 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Danger zone -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -461,7 +450,6 @@
 
     </ScrollView>
 
-    <!-- Pinned Done button (always visible, no overlap) -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/doneButton"
         android:layout_width="match_parent"

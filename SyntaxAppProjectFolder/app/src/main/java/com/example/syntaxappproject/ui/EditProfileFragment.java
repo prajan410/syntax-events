@@ -47,7 +47,7 @@ public class EditProfileFragment extends HomeBar {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        try { setupHotbar(view); } catch (Exception ignored) {} // Safe hotbar setup for testing (no NavHostFragment in unit tests)
+        try { setupHotbar(view); } catch (Exception ignored) {} // Safe hotbar setup for testing
 
         editFirstName = view.findViewById(R.id.editFirstName);
         editLastName  = view.findViewById(R.id.editLastName);

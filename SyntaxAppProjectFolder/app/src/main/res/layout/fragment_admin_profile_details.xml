@@ -23,7 +23,6 @@
             android:paddingTop="24dp"
             android:paddingBottom="16dp">
 
-            <!-- Header -->
             <TextView
                 android:id="@+id/headerTitle"
                 android:layout_width="match_parent"
@@ -44,7 +43,6 @@
                 android:textColor="#AAAAAA"
                 android:textSize="13sp" />
 
-            <!-- Hero Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/heroCard"
                 android:layout_width="match_parent"
@@ -60,7 +58,6 @@
                     android:layout_height="wrap_content"
                     android:padding="24dp">
 
-                    <!-- Avatar Circle -->
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/avatarCircle"
                         android:layout_width="72dp"
@@ -82,7 +79,6 @@
                             android:textStyle="bold" />
                     </com.google.android.material.card.MaterialCardView>
 
-                    <!-- Status -->
                     <TextView
                         android:id="@+id/tv_detail_status"
                         android:layout_width="wrap_content"
@@ -94,7 +90,6 @@
                         app:layout_constraintBottom_toBottomOf="@id/avatarCircle"
                         app:layout_constraintEnd_toEndOf="parent" />
 
-                    <!-- User Name -->
                     <TextView
                         android:id="@+id/tv_detail_name"
                         android:layout_width="0dp"
@@ -109,7 +104,6 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintEnd_toStartOf="@id/btn_delete_user"/>
 
-                    <!-- Delete Button Next to Name -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_delete_user"
                         android:layout_width="wrap_content"
@@ -121,7 +115,6 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="@id/tv_detail_name"/>
 
-                    <!-- Email -->
                     <TextView
                         android:id="@+id/tv_detail_email"
                         android:layout_width="0dp"
@@ -137,7 +130,6 @@
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Account Details Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/detailsCard"
                 android:layout_width="match_parent"
@@ -192,7 +184,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Role Management Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/roleManagementCard"
                 android:layout_width="match_parent"
@@ -218,7 +209,6 @@
                         android:textStyle="bold"
                         android:layout_marginBottom="12dp"/>
 
-                    <!-- Admin Row -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -247,7 +237,6 @@
                             app:cornerRadius="12dp"/>
                     </LinearLayout>
 
-                    <!-- Organizer Row -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -276,7 +265,6 @@
                             app:cornerRadius="12dp"/>
                     </LinearLayout>
 
-                    <!-- Entrant Row -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -309,7 +297,6 @@
         </LinearLayout>
     </ScrollView>
 
-    <!-- Done Button -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_done"
         android:layout_width="0dp"

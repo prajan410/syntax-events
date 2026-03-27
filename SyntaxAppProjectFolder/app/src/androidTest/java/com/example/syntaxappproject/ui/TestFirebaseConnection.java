@@ -36,7 +36,6 @@ public class TestFirebaseConnection {
         Bitmap originalBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.bell);
         assertNotNull("Could not load bell.png from resources", originalBitmap);
 
-        // Convert Bitmap to Base64 String
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         originalBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
         byte[] byteArray = byteArrayOutputStream.toByteArray();
@@ -44,7 +43,7 @@ public class TestFirebaseConnection {
 
         String testEventId = "test_bell_event_" + System.currentTimeMillis();
         
-        // Match the structure expected by ImageItem.fetchByEventId (child "image")
+
         Map<String, Object> data = new HashMap<>();
         data.put("image", encodedImage);
 
@@ -62,7 +61,6 @@ public class TestFirebaseConnection {
                             assertNotNull("Retrieved image string is null", retrievedEncodedImage);
                             assertEquals("Sent and retrieved base64 strings are not the same", encodedImage, retrievedEncodedImage);
 
-                            // Verify it can be decoded back to a bitmap
                             byte[] decodedByteArray = Base64.decode(retrievedEncodedImage, Base64.DEFAULT);
                             Bitmap decodedBitmap = BitmapFactory.decodeByteArray(decodedByteArray, 0, decodedByteArray.length);
                             assertNotNull("Could not decode retrieved string back to Bitmap", decodedBitmap);
@@ -70,7 +68,6 @@ public class TestFirebaseConnection {
                             assertEquals("Original and decoded widths do not match", originalBitmap.getWidth(), decodedBitmap.getWidth());
                             assertEquals("Original and decoded heights do not match", originalBitmap.getHeight(), decodedBitmap.getHeight());
 
-                            // Clean up
                             ref.removeValue();
                             latch.countDown();
                         }

@@ -25,16 +25,12 @@ import com.example.syntaxappproject.R;
  **/
 public class NotificationFragment extends HomeBar {
 
-    // Auth gives us the current Firebase user id
     private final AuthenticationService authService = new AuthenticationService();
 
-    // Repository handles Firestore read/update logic
     private final InvitationRepository invitationRepository = new InvitationRepository();
 
-    // Keep the currently displayed invitation in memory
     private Invitation currentInvitation = null;
 
-    // UI references
     private TextView currentUserText;
     private TextView eventNameText;
     private TextView messageText;
@@ -56,10 +52,7 @@ public class NotificationFragment extends HomeBar {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Keep the hotbar working exactly like the other entrant screens
         setupHotbar(view);
-
-        // Find all views
         currentUserText = view.findViewById(R.id.currentUserText);
         eventNameText = view.findViewById(R.id.invitationEventName);
         messageText = view.findViewById(R.id.invitationMessage);
@@ -71,8 +64,6 @@ public class NotificationFragment extends HomeBar {
 
         String userId = authService.getCurrentUserId();
 
-        // Show the current signed-in user id so your teammate can easily
-        // create a matching invitation document in Firebase for demo purposes
         if (userId == null) {
             currentUserText.setText("Current user id: no signed-in user");
             showEmptyState("No signed-in user found.");
@@ -81,10 +72,8 @@ public class NotificationFragment extends HomeBar {
             currentUserText.setText("Current user id: " + userId);
         }
 
-        // Load one pending invitation for this user
         loadPendingInvitation(userId);
 
-        // Accept button logic
         acceptButton.setOnClickListener(v -> {
             if (currentInvitation == null) {
                 Toast.makeText(getContext(), "No invitation to accept", Toast.LENGTH_SHORT).show();
@@ -103,7 +92,6 @@ public class NotificationFragment extends HomeBar {
             );
         });
 
-        // Decline button logic
         declineButton.setOnClickListener(v -> {
             if (currentInvitation == null) {
                 Toast.makeText(getContext(), "No invitation to decline", Toast.LENGTH_SHORT).show();
@@ -136,7 +124,6 @@ public class NotificationFragment extends HomeBar {
                         return;
                     }
 
-                    // Show the invitation details
                     invitationCard.setVisibility(View.VISIBLE);
                     emptyText.setVisibility(View.GONE);
 

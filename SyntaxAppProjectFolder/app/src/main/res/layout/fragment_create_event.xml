@@ -361,7 +361,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Lottery Criteria Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/lotteryCriteriaCard"
                 android:layout_width="match_parent"

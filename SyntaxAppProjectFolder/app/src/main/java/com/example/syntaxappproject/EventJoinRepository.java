@@ -25,8 +25,6 @@ import java.util.Map;
  * and no error distinction between network failures and missing documents.</p>
  */
 public class EventJoinRepository {
-
-    // Firestore instance used for all database operations
     private FirebaseFirestore db = null;
 
     /**
@@ -40,7 +38,6 @@ public class EventJoinRepository {
      * Protected no-arg constructor for unit testing — skips Firebase initialization.
      */
     protected EventJoinRepository(boolean testMode) {
-        // intentionally empty for unit test subclassing
     }
 
     /**
@@ -53,7 +50,7 @@ public class EventJoinRepository {
      */
     public void hasJoined(String eventId, String userId, JoinCheckCallback callback) {
         if (eventId == null || userId == null) {
-            callback.onResult(false);  // Or handle error appropriately
+            callback.onResult(false);
             return;
         }
         db.collection("events")
@@ -78,7 +75,6 @@ public class EventJoinRepository {
      */
     public void joinEvent(String eventId, String userId, JoinCallback callback) {
         db.runTransaction(transaction -> {
-                    // Check if already joined
                     DocumentReference docRef = db.collection("events")
                             .document(eventId)
                             .collection("waitlist-entrants")
@@ -89,8 +85,6 @@ public class EventJoinRepository {
                     if (snapshot.exists()) {
                         throw new RuntimeException("Already joined");
                     }
-
-                    // Add user and increment count atomically
                     Map<String, Object> data = new HashMap<>();
                     data.put("joinedAt", Timestamp.now());
                     transaction.set(docRef, data);
@@ -124,15 +118,11 @@ public class EventJoinRepository {
                                 .document(eventId)
                                 .collection("waitlist-entrants")
                                 .document(userId);
-
-                        // Get document in transaction context
                         DocumentSnapshot snapshot = transaction.get(docRef);
 
                         if (!snapshot.exists()) {
                             throw new RuntimeException("Not joined");
                         }
-
-                        // Delete and decrement atomically
                         transaction.delete(docRef);
                         DocumentReference eventRef = db.collection("events").document(eventId);
                         transaction.update(eventRef, "waitlistCount", FieldValue.increment(-1));

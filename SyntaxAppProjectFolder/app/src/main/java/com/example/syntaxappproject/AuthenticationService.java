@@ -36,7 +36,7 @@ public class AuthenticationService {
      */
     public void signInAnonymously(AuthCallback callback) {
         if (auth.getCurrentUser() != null) {
-            callback.onComplete(true); // report success if user is already logged in
+            callback.onComplete(true);
             return;
         }
         auth.signInAnonymously()

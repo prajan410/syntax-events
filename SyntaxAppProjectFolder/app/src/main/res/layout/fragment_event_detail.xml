@@ -37,7 +37,6 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Poster and QR Code Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/posterCard"
                 android:layout_width="match_parent"
@@ -94,7 +93,6 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Name and Join Button Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/nameCard"
                 android:layout_width="match_parent"
@@ -136,7 +134,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Main Details Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/detailsCard"
                 android:layout_width="match_parent"
@@ -153,7 +150,6 @@
                     android:orientation="vertical"
                     android:padding="20dp">
 
-                    <!-- Description Section -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -180,7 +176,6 @@
                         android:layout_marginBottom="20dp"
                         android:background="#F0F0F0" />
 
-                    <!-- Event Information Section -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -191,7 +186,6 @@
                         android:textSize="13sp"
                         android:textStyle="bold" />
 
-                    <!-- Row 1: Date and Location -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -248,7 +242,6 @@
 
                     </LinearLayout>
 
-                    <!-- Row 2: Registration Period and Capacity -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -305,7 +298,6 @@
 
                     </LinearLayout>
 
-                    <!-- Row 3: Waitlist Count -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -351,7 +343,6 @@
                         android:layout_marginBottom="20dp"
                         android:background="#F0F0F0" />
 
-                    <!-- Lottery Criteria Section -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -375,7 +366,127 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Action Button Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/commentsCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:alpha="0"
+                app:cardBackgroundColor="#FFFFFF"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:letterSpacing="0.1"
+                        android:text="COMMENTS"
+                        android:textColor="#2ECC71"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/commentsRecyclerView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:nestedScrollingEnabled="false"
+                        android:visibility="gone" />
+
+                    <LinearLayout
+                        android:id="@+id/paginationContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        android:visibility="gone">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/prevPageButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="40dp"
+                            android:layout_marginEnd="16dp"
+                            android:backgroundTint="#2ECC71"
+                            android:text="← Previous"
+                            android:textColor="@android:color/white"
+                            android:textSize="14sp"
+                            android:visibility="gone"
+                            app:cornerRadius="8dp" />
+
+                        <TextView
+                            android:id="@+id/pageIndicator"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Page 1 of 1"
+                            android:textColor="#666666"
+                            android:textSize="14sp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/nextPageButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="40dp"
+                            android:layout_marginStart="16dp"
+                            android:backgroundTint="#2ECC71"
+                            android:text="Next →"
+                            android:textColor="@android:color/white"
+                            android:textSize="14sp"
+                            android:visibility="gone"
+                            app:cornerRadius="8dp" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/emptyCommentsText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:gravity="center"
+                        android:text="No comments yet. Be the first to comment!"
+                        android:textColor="#888888"
+                        android:textSize="14sp"
+                        android:visibility="gone" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingTop="8dp">
+
+                        <EditText
+                            android:id="@+id/commentInput"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="8dp"
+                            android:background="#F5F5F5"
+                            android:hint="Write a comment..."
+                            android:maxLines="3"
+                            android:padding="12dp"
+                            android:textSize="14sp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/postCommentButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:backgroundTint="#2ECC71"
+                            android:text="Post"
+                            android:textColor="@android:color/white"
+                            android:textSize="14sp"
+                            app:cornerRadius="16dp" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/actionCard"
                 android:layout_width="match_parent"
@@ -408,7 +519,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- View Signups Button (Organizer Only) -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnViewSignups"
                 android:layout_width="match_parent"
