@@ -11,8 +11,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Repository class responsible for organizer-side lottery actions
+ * Repository class responsible for organizer side lottery actions
  * in Firebase Firestore for the SyntaxEvents application.
+ * Lottery repository helper
  * <p>
  * Handles sampling entrants from the wait list, sending winner notifications,
  * sending not chosen notifications, and drawing replacement entrants.
