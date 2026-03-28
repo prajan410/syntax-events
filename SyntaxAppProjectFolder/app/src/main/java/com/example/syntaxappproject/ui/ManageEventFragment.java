@@ -26,6 +26,7 @@ import com.example.syntaxappproject.EventViewModel;
 import com.example.syntaxappproject.ImageCacheManager;
 import com.example.syntaxappproject.R;
 import com.example.syntaxappproject.BulletPointHelper;
+import com.example.syntaxappproject.EventLotteryRepository;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
@@ -57,10 +58,13 @@ public class ManageEventFragment extends HomeBar {
     private TextInputEditText eventStartDateInput, eventEndDateInput;
     private TextInputEditText regisStartDateInput, regisEndDateInput;
     private TextInputEditText lotteryCriteriaInput;
+    private TextInputEditText sampleSizeInput;
     private SwitchMaterial geoSwitch;
     private ImageView posterPreview;
     private View uploadHint;
     private MaterialButton actionButton;
+    private MaterialButton runLotteryButton;
+    private MaterialButton drawReplacementButton;
 
     /** Firestore document ID of the event being edited. */
     private String eventId;
@@ -75,6 +79,7 @@ public class ManageEventFragment extends HomeBar {
     public boolean disableFirestoreForTest = false;
 
     private final AuthenticationService authService = new AuthenticationService();
+    private final EventLotteryRepository eventLotteryRepository = new EventLotteryRepository();
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     @Override
@@ -133,6 +138,9 @@ public class ManageEventFragment extends HomeBar {
         uploadHint = view.findViewById(R.id.uploadHint);
         actionButton = view.findViewById(R.id.actionButton);
         lotteryCriteriaInput = view.findViewById(R.id.lotteryCriteriaInput);
+        sampleSizeInput = view.findViewById(R.id.sampleSizeInput);
+        runLotteryButton = view.findViewById(R.id.runLotteryButton);
+        drawReplacementButton = view.findViewById(R.id.drawReplacementButton);
     }
 
     /**
@@ -148,6 +156,7 @@ public class ManageEventFragment extends HomeBar {
         View datesCard = view.findViewById(R.id.datesCard);
         View geolocationCard = view.findViewById(R.id.geolocationCard);
         View lotteryCriteriaCard = view.findViewById(R.id.lotteryCriteriaCard);
+        View lotteryActionCard = view.findViewById(R.id.lotteryActionCard); // ✅ ADDED
         View actionButtonsContainer = view.findViewById(R.id.actionButtonsContainer);
 
         headerTitle.setTranslationY(-20f);
@@ -171,8 +180,11 @@ public class ManageEventFragment extends HomeBar {
         lotteryCriteriaCard.setTranslationY(30f);
         lotteryCriteriaCard.animate().alpha(1f).translationY(0f).setDuration(500).setStartDelay(520).start();
 
+        lotteryActionCard.setTranslationY(30f); // ✅ ADDED
+        lotteryActionCard.animate().alpha(1f).translationY(0f).setDuration(500).setStartDelay(580).start(); // ✅ ADDED
+
         actionButtonsContainer.setTranslationY(30f);
-        actionButtonsContainer.animate().alpha(1f).translationY(0f).setDuration(500).setStartDelay(580).start();
+        actionButtonsContainer.animate().alpha(1f).translationY(0f).setDuration(500).setStartDelay(640).start();
     }
 
     /**
@@ -228,6 +240,8 @@ public class ManageEventFragment extends HomeBar {
         });
 
         view.findViewById(R.id.deleteButton).setOnClickListener(v -> showDeleteDialog());
+        runLotteryButton.setOnClickListener(v -> runLottery());
+        drawReplacementButton.setOnClickListener(v -> drawReplacementEntrant());
     }
 
     /**
@@ -415,6 +429,63 @@ public class ManageEventFragment extends HomeBar {
                 .addOnFailureListener(e -> {
                     Toast.makeText(requireContext(), "Failed to update event", Toast.LENGTH_SHORT).show();
                 });
+    }
+
+    /**
+     * Runs the event lottery using the sample size entered by the organizer.
+     */
+    private void runLottery() {
+        String sampleSizeText = getText(sampleSizeInput);
+        String eventName = getText(eventNameInput);
+
+        if (eventId == null || eventId.isEmpty()) {
+            Toast.makeText(requireContext(), "Event not found", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (eventName.isEmpty()) {
+            Toast.makeText(requireContext(), "Event name is required before running the lottery", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!isInteger(sampleSizeText) || Integer.parseInt(sampleSizeText) < 1) {
+            Toast.makeText(requireContext(), "Enter a valid sample size", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        int sampleSize = Integer.parseInt(sampleSizeText);
+
+        eventLotteryRepository.runLottery(eventId, eventName, sampleSize, (success, message) ->
+                requireActivity().runOnUiThread(() -> {
+                    Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+                    if (success) {
+                        sampleSizeInput.setText("");
+                    }
+                })
+        );
+    }
+
+    /**
+     * Draws one replacement entrant from the wait list for the current event.
+     */
+    private void drawReplacementEntrant() {
+        String eventName = getText(eventNameInput);
+
+        if (eventId == null || eventId.isEmpty()) {
+            Toast.makeText(requireContext(), "Event not found", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (eventName.isEmpty()) {
+            Toast.makeText(requireContext(), "Event name is required before drawing a replacement", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        eventLotteryRepository.drawReplacement(eventId, eventName, (success, message) ->
+                requireActivity().runOnUiThread(() ->
+                        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+                )
+        );
     }
 
     /**

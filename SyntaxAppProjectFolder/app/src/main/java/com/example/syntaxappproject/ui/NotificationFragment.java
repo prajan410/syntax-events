@@ -72,7 +72,7 @@ public class NotificationFragment extends HomeBar {
             currentUserText.setText("Current user id: " + userId);
         }
 
-        loadPendingInvitation(userId);
+        loadLatestNotification(userId);
 
         acceptButton.setOnClickListener(v -> {
             if (currentInvitation == null) {
@@ -84,7 +84,7 @@ public class NotificationFragment extends HomeBar {
                     requireActivity().runOnUiThread(() -> {
                         if (success) {
                             Toast.makeText(getContext(), "Invitation accepted", Toast.LENGTH_SHORT).show();
-                            loadPendingInvitation(userId);
+                            loadLatestNotification(userId);
                         } else {
                             Toast.makeText(getContext(), "Failed to accept invitation", Toast.LENGTH_SHORT).show();
                         }
@@ -98,11 +98,14 @@ public class NotificationFragment extends HomeBar {
                 return;
             }
 
-            invitationRepository.declineInvitation(currentInvitation.getInvitationId(), success ->
-                    requireActivity().runOnUiThread(() -> {
+            invitationRepository.declineInvitation(
+                    currentInvitation.getInvitationId(),
+                    currentInvitation.getEventId(),
+                    userId,
+                    success -> requireActivity().runOnUiThread(() -> {
                         if (success) {
                             Toast.makeText(getContext(), "Invitation declined", Toast.LENGTH_SHORT).show();
-                            loadPendingInvitation(userId);
+                            loadLatestNotification(userId);
                         } else {
                             Toast.makeText(getContext(), "Failed to decline invitation", Toast.LENGTH_SHORT).show();
                         }
@@ -112,15 +115,15 @@ public class NotificationFragment extends HomeBar {
     }
 
     /**
-     * Loads one pending invitation for the current user.
+     * Loads one latest relevant invitation for the current user.
      **/
-    private void loadPendingInvitation(String userId) {
-        invitationRepository.getPendingInvitationForUser(userId, invitation ->
+    private void loadLatestNotification(String userId) {
+        invitationRepository.getLatestRelevantInvitationForUser(userId, invitation ->
                 requireActivity().runOnUiThread(() -> {
                     currentInvitation = invitation;
 
                     if (invitation == null) {
-                        showEmptyState("No pending invitations right now.");
+                        showEmptyState("No notifications right now.");
                         return;
                     }
 
@@ -128,8 +131,20 @@ public class NotificationFragment extends HomeBar {
                     emptyText.setVisibility(View.GONE);
 
                     eventNameText.setText(invitation.getEventName());
-                    messageText.setText("Congratulations! You have been selected to participate.");
-                    statusText.setText("Status: " + invitation.getStatus());
+
+                    if ("pending".equals(invitation.getStatus())) {
+                        messageText.setText("Congratulations! You have been selected to participate.");
+                        statusText.setText("Status: pending");
+                        acceptButton.setVisibility(View.VISIBLE);
+                        declineButton.setVisibility(View.VISIBLE);
+                    } else if ("not_chosen".equals(invitation.getStatus())) {
+                        messageText.setText("You were not chosen this time. If another selected entrant declines, you may still get another chance from the waiting list.");
+                        statusText.setText("Status: not chosen");
+                        acceptButton.setVisibility(View.GONE);
+                        declineButton.setVisibility(View.GONE);
+                    } else {
+                        showEmptyState("No notifications right now.");
+                    }
                 })
         );
     }
