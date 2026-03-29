@@ -20,6 +20,10 @@ public class Profile {
     private boolean isOrganizer;
     private boolean isAdmin;
 
+
+
+    private boolean notificationsOptedOut;
+
     /**
      * Required no-argument constructor for Firestore deserialization.
      */
@@ -163,4 +167,23 @@ public class Profile {
      * @param deviceId the device ID to assign
      */
     public void setDeviceId(String deviceId) { this.deviceId = deviceId; }
+
+    /**
+     * Checks if user has notifications on
+     *
+     * @return notificationSettings, true or false
+     */
+    public boolean isNotificationsOptedOut() {
+        return notificationsOptedOut;
+    }
+    /**
+     * Sets notification setting
+     *
+     * @param notificationsOptedOut to what it should be, true or false
+     */
+    public void setNotificationsOptedOut(boolean notificationsOptedOut) {
+        this.notificationsOptedOut = notificationsOptedOut;
+    }
+
+
 }

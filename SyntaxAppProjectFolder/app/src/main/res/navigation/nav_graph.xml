@@ -237,6 +237,17 @@
         <action
             android:id="@+id/toManageEventFragment"
             app:destination="@id/manageEventFragment" />
+        <action
+            android:id="@+id/toNotifyEntrantsFragment"
+            app:destination="@+id/notifyEntrantsFragment" />
+
+    </fragment>
+    <fragment
+        android:id="@+id/notifyEntrantsFragment"
+        android:name="com.example.syntaxappproject.ui.NotifyEntrantsFragment"
+        android:label="Notify Entrants"
+        tools:layout="@layout/fragment_notify_entrants">
+
     </fragment>
 
     <fragment

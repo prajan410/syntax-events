@@ -53,14 +53,7 @@ public class NotificationFragment extends HomeBar {
         super.onViewCreated(view, savedInstanceState);
 
         setupHotbar(view);
-        currentUserText = view.findViewById(R.id.currentUserText);
-        eventNameText = view.findViewById(R.id.invitationEventName);
-        messageText = view.findViewById(R.id.invitationMessage);
-        statusText = view.findViewById(R.id.invitationStatusText);
-        emptyText = view.findViewById(R.id.emptyNotificationText);
-        invitationCard = view.findViewById(R.id.invitationCard);
-        acceptButton = view.findViewById(R.id.acceptInvitationButton);
-        declineButton = view.findViewById(R.id.declineInvitationButton);
+
 
         String userId = authService.getCurrentUserId();
 
