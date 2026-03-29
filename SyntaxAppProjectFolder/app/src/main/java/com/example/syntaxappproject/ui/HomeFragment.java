@@ -8,6 +8,7 @@ import android.graphics.Paint;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,8 @@ import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -23,10 +26,12 @@ import com.example.syntaxappproject.AuthenticationService;
 import com.example.syntaxappproject.EntrantHomeRepository;
 import com.example.syntaxappproject.EventAdapter;
 import com.example.syntaxappproject.EventDetail;
+import com.example.syntaxappproject.EventFilterViewModel;
 import com.example.syntaxappproject.EventJoinRepository;
 import com.example.syntaxappproject.ProfileRepository;
 import com.example.syntaxappproject.R;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,12 +55,25 @@ public class HomeFragment extends HomeBar {
     private final EventJoinRepository joinRepo = new EventJoinRepository();
     private final ProfileRepository profileRepo = new ProfileRepository();
     private List<EventDetail> allEvents = new ArrayList<>();
+    private List<EventDetail> displayEvents = new ArrayList<>();
+
+    private TextInputLayout searchLayout;
+    private String startDateFilter = null;
+    private String endDateFilter = null;
+    private long capacityFilter = -1;
+    private String searchQuery = "";
+    private EventFilterViewModel filterViewModel;
 
     public HomeFragment() {}
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_home, container, false);
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+        setEventsList();
     }
 
     @Override
@@ -68,9 +86,24 @@ public class HomeFragment extends HomeBar {
         TextInputEditText searchBar = view.findViewById(R.id.searchInput);
         searchBar.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { filterEvents(s.toString()); }
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { searchFilter(s.toString()); }
             @Override public void afterTextChanged(Editable s) {}
         });
+
+        searchLayout = view.findViewById(R.id.searchLayout);
+
+        filterViewModel = new ViewModelProvider(requireActivity()).get(EventFilterViewModel.class);
+
+        searchLayout.setEndIconOnClickListener(v -> {
+            FilterDialogFragment filter = new FilterDialogFragment();
+            filter.show(getParentFragmentManager(), "FilterDialog");
+        });
+
+        Observer<Object> observer = o -> applyAllFilters();
+
+        filterViewModel.getStartDate().observe(getViewLifecycleOwner(), observer);
+        filterViewModel.getEndDate().observe(getViewLifecycleOwner(), observer);
+        filterViewModel.getCapacity().observe(getViewLifecycleOwner(), observer);
 
         recyclerView = view.findViewById(R.id.eventList);
         Button eventsButton     = view.findViewById(R.id.eventsButton);
@@ -166,16 +199,12 @@ public class HomeFragment extends HomeBar {
     /**
      * Filters the displayed event list by name using case-insensitive substring match.
      */
-    private void filterEvents(String query) {
-        if (query.isEmpty()) { adapter.updateList(allEvents); return; }
-        String lower = query.toLowerCase();
-        List<EventDetail> results = new ArrayList<>();
-        for (EventDetail event : allEvents) {
-            if (event.getName() != null && event.getName().toLowerCase().contains(lower)) {
-                results.add(event);
-            }
+    private void searchFilter(String query) {
+        if (query.isEmpty()) { searchQuery = ""; }
+        else {
+            searchQuery = query.toLowerCase();
         }
-        adapter.updateList(results);
+        applyAllFilters();
     }
 
     /**
@@ -242,7 +271,7 @@ public class HomeFragment extends HomeBar {
         if (!isAdded()) return;
         requireActivity().runOnUiThread(() -> {
             allEvents = new ArrayList<>(filtered);
-            adapter.updateList(filtered);
+            applyAllFilters();
             rootView.findViewById(R.id.loadingSpinner).setVisibility(View.GONE);
             if (filtered.isEmpty()) {
                 recyclerView.setVisibility(View.GONE);
@@ -252,6 +281,57 @@ public class HomeFragment extends HomeBar {
                 emptyText.setVisibility(View.GONE);
             }
         });
+    }
+
+    /**
+     * Apply all the filters include keyword search, time filter, capacity filter
+     * and display the result events.
+     */
+    private void applyAllFilters() {
+
+        startDateFilter = filterViewModel.getStartValue();
+        endDateFilter = filterViewModel.getEndValue();
+        capacityFilter = filterViewModel.getCapacityValue();
+
+
+        List<EventDetail> result = new ArrayList<>();
+
+        for (EventDetail event : allEvents) {
+
+            long eventStartDate = parseDateMillis(event.getStartingEventDate());
+            long eventEndDate = parseDateMillis(event.getEndingEventDate());
+
+            if (!searchQuery.isEmpty()){
+                if (event.getName() == null || !event.getName().toLowerCase().contains(searchQuery)) {
+                    continue;
+                }
+            }
+
+            if (startDateFilter != null && !startDateFilter.isEmpty()) {
+                long start = parseDateMillis(startDateFilter);
+                if (eventStartDate == -1 || eventStartDate < start) continue;
+            }
+
+            if (endDateFilter != null && !endDateFilter.isEmpty()) {
+                long end = parseDateMillis(endDateFilter);
+                if (eventEndDate == -1 || eventEndDate > end) continue;
+            }
+
+            if (capacityFilter != -1) {
+                if (event.getCapacity() < capacityFilter) continue;
+            }
+
+            result.add(event);
+        }
+
+        if (filterViewModel.hasFilter()) {
+            searchLayout.setEndIconTintList(ColorStateList.valueOf(Color.GREEN));
+        } else {
+            searchLayout.setEndIconTintList(ColorStateList.valueOf(Color.GRAY));
+        }
+
+        displayEvents = result;
+        adapter.updateList(result);
     }
 
     /**
