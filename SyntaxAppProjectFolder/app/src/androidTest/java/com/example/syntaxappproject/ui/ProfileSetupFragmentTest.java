@@ -125,6 +125,12 @@ public class ProfileSetupFragmentTest {
 
         onView(withId(R.id.confirmButton)).perform(click());
 
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         verify(mockNav).navigate(R.id.action_profile_to_home);
     }
 
@@ -152,6 +158,21 @@ public class ProfileSetupFragmentTest {
 
         onView(withId(R.id.firstNameInput)).perform(replaceText(""), closeSoftKeyboard());
         onView(withId(R.id.emailInput)).perform(replaceText(""), closeSoftKeyboard());
+
+        onView(withId(R.id.confirmButton)).perform(click());
+
+        onView(withId(R.id.confirmButton)).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Verifies that the role buttons toggle correctly when clicked.
+     */
+    @Test
+    public void roleButtons_toggleCorrectly() {
+        launchFragment();
+
+        onView(withId(R.id.entrantButton)).perform(click());
+        onView(withId(R.id.organizerButton)).perform(click());
 
         onView(withId(R.id.confirmButton)).perform(click());
 

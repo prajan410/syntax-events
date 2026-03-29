@@ -2,6 +2,10 @@ package com.example.syntaxappproject.ui;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.Base64;
 import android.view.LayoutInflater;
@@ -30,34 +34,25 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Fragment displaying events owned by the currently authenticated organizer.
  *
- * <p>Shows the organizer's event list in a RecyclerView with a FAB to create
- * new events. Dynamically shows/hides the "Events" tab based on user's entrant role.
- * Shows an admin FAB if the current user has admin privileges.
- * Extends {@link HomeBar} for bottom navigation.</p>
+ * <p>Shows the organizer's event list in a {@link RecyclerView} with black line
+ * dividers and spacing between items. Includes a FAB to create new events.
+ * Dynamically shows or hides the "All Events" tab based on whether the user
+ * also has the entrant role. Shows an admin FAB if the current user has admin
+ * privileges. Extends {@link HomeBar} for bottom navigation.</p>
  */
 public class OrganizerEventsFragment extends HomeBar {
 
-    /** Adapter binding organizer events to RecyclerView. */
     private EventAdapter adapter;
-
-    /** Repository for fetching organizer-owned events from Firestore. */
+    private RecyclerView recyclerView;
+    private View emptyText;
     private final OrganizerEventsRepository repo = new OrganizerEventsRepository();
-
-    /** Service for current user authentication state. */
     private final AuthenticationService authService = new AuthenticationService();
 
-    /**
-     * Inflates organizer events layout.
-     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_organizer_events, container, false);
     }
 
-    /**
-     * Initializes views, animations, navigation, RecyclerView, and loads organizer events.
-     * Also shows an admin FAB if the current user has admin privileges.
-     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -95,21 +90,45 @@ public class OrganizerEventsFragment extends HomeBar {
                 NavHostFragment.findNavController(this).navigate(R.id.createEventFragment)
         );
 
-        view.findViewById(R.id.newEventButton).setOnClickListener(v ->
-                NavHostFragment.findNavController(this).navigate(R.id.createEventFragment)
-        );
-
-        RecyclerView recyclerView = view.findViewById(R.id.organizerEventList);
+        recyclerView = view.findViewById(R.id.organizerEventList);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new EventAdapter(new ArrayList<>(), this::openEventDetail);
         recyclerView.setAdapter(adapter);
+        emptyText = view.findViewById(R.id.emptyText);
+
+        recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
+            @Override
+            public void getItemOffsets(@NonNull Rect outRect, @NonNull View v,
+                                       @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+                outRect.top    = 12;
+                outRect.bottom = 12;
+            }
+
+            @Override
+            public void onDraw(@NonNull Canvas c, @NonNull RecyclerView parent,
+                               @NonNull RecyclerView.State state) {
+                Paint paint = new Paint();
+                paint.setColor(Color.BLACK);
+                paint.setStrokeWidth(1f);
+
+                for (int i = 0; i < parent.getChildCount() - 1; i++) {
+                    View child = parent.getChildAt(i);
+                    float y = child.getBottom() + 12f;
+                    c.drawLine(child.getLeft(), y, child.getRight(), y, paint);
+                }
+            }
+        });
 
         String uid = authService.getCurrentUserId();
 
         repo.getOrganizerEvents(uid, events -> {
             if (!isAdded()) return;
             if (events == null || events.isEmpty()) {
-                requireActivity().runOnUiThread(() -> adapter.updateList(new ArrayList<>()));
+                requireActivity().runOnUiThread(() -> {
+                    adapter.updateList(new ArrayList<>());
+                    recyclerView.setVisibility(View.GONE);
+                    emptyText.setVisibility(View.VISIBLE);
+                });
                 return;
             }
 
@@ -122,7 +141,11 @@ public class OrganizerEventsFragment extends HomeBar {
             }
 
             if (allCached) {
-                requireActivity().runOnUiThread(() -> adapter.updateList(events));
+                requireActivity().runOnUiThread(() -> {
+                    adapter.updateList(events);
+                    recyclerView.setVisibility(View.VISIBLE);
+                    emptyText.setVisibility(View.GONE);
+                });
                 return;
             }
 
@@ -133,7 +156,11 @@ public class OrganizerEventsFragment extends HomeBar {
                 String eventId = event.getEventId();
                 if (ImageCacheManager.has(eventId)) {
                     if (loaded.incrementAndGet() == total)
-                        requireActivity().runOnUiThread(() -> adapter.updateList(events));
+                        requireActivity().runOnUiThread(() -> {
+                            adapter.updateList(events);
+                            recyclerView.setVisibility(View.VISIBLE);
+                            emptyText.setVisibility(View.GONE);
+                        });
                     continue;
                 }
                 ImageItem.fetchByEventId(eventId, new ImageItem.ImageCallback() {
@@ -148,13 +175,22 @@ public class OrganizerEventsFragment extends HomeBar {
                                 }
                             } catch (Exception ignored) {}
                             if (loaded.incrementAndGet() == total)
-                                requireActivity().runOnUiThread(() -> adapter.updateList(events));
+                                requireActivity().runOnUiThread(() -> {
+                                    adapter.updateList(events);
+                                    recyclerView.setVisibility(View.VISIBLE);
+                                    emptyText.setVisibility(View.GONE);
+                                });
                         }).start();
                     }
+
                     @Override
                     public void onError(Exception e) {
                         if (loaded.incrementAndGet() == total)
-                            requireActivity().runOnUiThread(() -> adapter.updateList(events));
+                            requireActivity().runOnUiThread(() -> {
+                                adapter.updateList(events);
+                                recyclerView.setVisibility(View.VISIBLE);
+                                emptyText.setVisibility(View.GONE);
+                            });
                     }
                 });
             }
@@ -182,9 +218,7 @@ public class OrganizerEventsFragment extends HomeBar {
     }
 
     /**
-     * Test helper: Manually sets events list, bypassing Firestore.
-     *
-     * @param events mock events to display
+     * Test helper: Manually sets the events list, bypassing Firestore.
      */
     void setEventsForTest(List<EventDetail> events) {
         if (adapter != null) {
@@ -193,9 +227,7 @@ public class OrganizerEventsFragment extends HomeBar {
     }
 
     /**
-     * Navigates to event detail screen with event ID as argument.
-     *
-     * @param event the event that was tapped
+     * Navigates to the event detail screen for the given event.
      */
     private void openEventDetail(EventDetail event) {
         Bundle bundle = new Bundle();

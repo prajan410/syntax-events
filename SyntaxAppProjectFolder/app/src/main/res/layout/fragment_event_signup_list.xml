@@ -13,7 +13,6 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Final Entrants -->
         <TextView
             android:id="@+id/finalEntrantsTitle"
             android:layout_width="match_parent"
@@ -36,7 +35,6 @@
             tools:listitem="@android:layout/simple_list_item_1"
             tools:itemCount="3" />
 
-        <!-- Invited Entrants -->
         <TextView
             android:id="@+id/invitedEntrantsTitle"
             android:layout_width="match_parent"
@@ -60,7 +58,6 @@
             tools:listitem="@android:layout/simple_list_item_1"
             tools:itemCount="3" />
 
-        <!-- Entrants on Waiting List -->
         <TextView
             android:id="@+id/waitingListTitle"
             android:layout_width="match_parent"
@@ -84,7 +81,6 @@
             tools:listitem="@android:layout/simple_list_item_1"
             tools:itemCount="3" />
 
-        <!-- Cancelled Entrants -->
         <TextView
             android:id="@+id/cancelledEntrantsTitle"
             android:layout_width="match_parent"

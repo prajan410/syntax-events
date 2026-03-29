@@ -2,6 +2,9 @@ package com.example.syntaxappproject.ui;
 
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.Rect;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -29,11 +32,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Fragment that serves as the home screen for entrants and organizers.
+ * Entrants see a filterable list of open events they have not yet joined.
+ * Organizers are redirected to their own events screen. Admin users also
+ * receive a floating action button to access the admin panel.
+ */
 public class HomeFragment extends HomeBar {
 
     private EventAdapter adapter;
     private RecyclerView recyclerView;
     private View rootView;
+    private View emptyText;
 
     private final AuthenticationService authService = new AuthenticationService();
     private final EntrantHomeRepository entrantHomeRepo = new EntrantHomeRepository();
@@ -48,16 +58,12 @@ public class HomeFragment extends HomeBar {
         return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
-    /**
-     * Initializes views, animations, role-based button visibility, event list,
-     * search bar, and admin FAB. The admin FAB is only shown if the current
-     * user has admin privileges.
-     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         setupHotbar(view);
         this.rootView = view;
+        emptyText = view.findViewById(R.id.emptyText);
 
         TextInputEditText searchBar = view.findViewById(R.id.searchInput);
         searchBar.addTextChangedListener(new TextWatcher() {
@@ -67,16 +73,39 @@ public class HomeFragment extends HomeBar {
         });
 
         recyclerView = view.findViewById(R.id.eventList);
-        Button eventsButton = view.findViewById(R.id.eventsButton);
+        Button eventsButton     = view.findViewById(R.id.eventsButton);
         Button createEventButton = view.findViewById(R.id.createEventButton);
-        View fabAdmin  = view.findViewById(R.id.fabAdmin);
-        View titleText = view.findViewById(R.id.textView);
-        View roleButtonRow = view.findViewById(R.id.roleButtonRow);
-        View mainCard = view.findViewById(R.id.mainCard);
+        View fabAdmin            = view.findViewById(R.id.fabAdmin);
+        View titleText           = view.findViewById(R.id.textView);
+        View roleButtonRow       = view.findViewById(R.id.roleButtonRow);
+        View mainCard            = view.findViewById(R.id.mainCard);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new EventAdapter(new ArrayList<>(), this::openEventDetail);
         recyclerView.setAdapter(adapter);
+
+        recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
+            @Override
+            public void getItemOffsets(@NonNull Rect outRect, @NonNull View v,
+                                       @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+                outRect.top    = 12;
+                outRect.bottom = 12;
+            }
+
+            @Override
+            public void onDraw(@NonNull Canvas c, @NonNull RecyclerView parent,
+                               @NonNull RecyclerView.State state) {
+                Paint paint = new Paint();
+                paint.setColor(Color.BLACK);
+                paint.setStrokeWidth(1f);
+
+                for (int i = 0; i < parent.getChildCount() - 1; i++) {
+                    View child = parent.getChildAt(i);
+                    float y = child.getBottom() + 12f;
+                    c.drawLine(child.getLeft(), y, child.getRight(), y, paint);
+                }
+            }
+        });
 
         titleText.setTranslationY(-20f);
         titleText.animate().alpha(1f).translationY(0f).setDuration(400).setStartDelay(100).start();
@@ -89,7 +118,7 @@ public class HomeFragment extends HomeBar {
         profileRepo.getProfile(uid, profile -> {
             if (profile == null || !isAdded()) return;
 
-            boolean isEntrant  = profile.isEntrant();
+            boolean isEntrant   = profile.isEntrant();
             boolean isOrganizer = profile.isOrganizer();
 
             requireActivity().runOnUiThread(() -> {
@@ -134,6 +163,9 @@ public class HomeFragment extends HomeBar {
         });
     }
 
+    /**
+     * Filters the displayed event list by name using case-insensitive substring match.
+     */
     private void filterEvents(String query) {
         if (query.isEmpty()) { adapter.updateList(allEvents); return; }
         String lower = query.toLowerCase();
@@ -146,6 +178,13 @@ public class HomeFragment extends HomeBar {
         adapter.updateList(results);
     }
 
+    /**
+     * Loads joinable events for entrants, filtering out:
+     * - Events the user has already joined
+     * - Events outside registration window
+     * - Events created by the current user
+     * - Events with full waitlist
+     */
     private void setEventsList() {
         String uid = authService.getCurrentUserId();
 
@@ -158,7 +197,8 @@ public class HomeFragment extends HomeBar {
             if (events == null || events.isEmpty()) {
                 requireActivity().runOnUiThread(() -> {
                     rootView.findViewById(R.id.loadingSpinner).setVisibility(View.GONE);
-                    recyclerView.setVisibility(View.VISIBLE);
+                    recyclerView.setVisibility(View.GONE);
+                    emptyText.setVisibility(View.VISIBLE);
                     allEvents.clear();
                     adapter.updateList(new ArrayList<>());
                 });
@@ -174,7 +214,6 @@ public class HomeFragment extends HomeBar {
                     if (counter.incrementAndGet() == events.size()) flush(filtered);
                     continue;
                 }
-
                 long regStart = parseDateMillis(event.getStartingRegistrationPeriod());
                 long regEnd   = parseDateMillis(event.getEndingRegistrationPeriod());
                 if (regStart == -1 || regEnd == -1 || now < regStart || now > regEnd) {
@@ -195,20 +234,29 @@ public class HomeFragment extends HomeBar {
         });
     }
 
+    /**
+     * Updates the adapter with filtered events and restores RecyclerView visibility.
+     * Called after all async join-checks complete.
+     */
     private void flush(List<EventDetail> filtered) {
         if (!isAdded()) return;
         requireActivity().runOnUiThread(() -> {
             allEvents = new ArrayList<>(filtered);
             adapter.updateList(filtered);
             rootView.findViewById(R.id.loadingSpinner).setVisibility(View.GONE);
-            recyclerView.setVisibility(View.VISIBLE);
+            if (filtered.isEmpty()) {
+                recyclerView.setVisibility(View.GONE);
+                emptyText.setVisibility(View.VISIBLE);
+            } else {
+                recyclerView.setVisibility(View.VISIBLE);
+                emptyText.setVisibility(View.GONE);
+            }
         });
     }
 
     /**
      * Parses a date string into epoch milliseconds.
-     * Expects format "yyyy-MM-dd" or "MM/dd/yyyy" — adjust to match your stored format.
-     * Returns -1 if unparseable.
+     * Supports "yyyy-MM-dd" and "MM/dd/yyyy" formats.
      */
     private long parseDateMillis(String dateStr) {
         if (dateStr == null || dateStr.isEmpty()) return -1;
@@ -225,6 +273,9 @@ public class HomeFragment extends HomeBar {
         return -1;
     }
 
+    /**
+     * Navigates to the event detail screen for the given event.
+     */
     private void openEventDetail(EventDetail event) {
         Bundle bundle = new Bundle();
         bundle.putString("eventId", event.getEventId());

@@ -51,7 +51,7 @@ public class ImageItem {
         ref.get().addOnSuccessListener(dataSnapshot -> {
             if (dataSnapshot.exists()) {
                 String base64Image = dataSnapshot.child("image").getValue(String.class);
-                ImageItem item = new ImageItem(base64Image, null);  // Im not sure what uploadedBy is supposed to do
+                ImageItem item = new ImageItem(base64Image, null);
                 callback.onImageLoaded(item);
             } else {
                 callback.onImageLoaded(null);

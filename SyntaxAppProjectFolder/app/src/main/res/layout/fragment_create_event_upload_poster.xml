@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     android:background="#F5F5F5">
 
-    <!-- Header -->
     <TextView
         android:id="@+id/headerTitle"
         android:layout_width="0dp"
@@ -22,7 +21,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Step indicator -->
     <TextView
         android:id="@+id/stepIndicator"
         android:layout_width="wrap_content"
@@ -52,7 +50,6 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Poster upload card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/posterCard"
                 android:layout_width="match_parent"
@@ -79,7 +76,6 @@
                         android:textSize="13sp"
                         android:textStyle="bold" />
 
-                    <!-- Clickable image preview area -->
                     <com.google.android.material.card.MaterialCardView
                         android:layout_width="match_parent"
                         android:layout_height="260dp"
@@ -101,8 +97,6 @@
                                 android:layout_height="match_parent"
                                 android:scaleType="centerCrop"
                                 android:src="@drawable/add_image" />
-
-                            <!-- Overlay hint shown before image is selected -->
                             <LinearLayout
                                 android:id="@+id/uploadHint"
                                 android:layout_width="match_parent"
@@ -141,7 +135,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Action card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/actionCard"
                 android:layout_width="match_parent"

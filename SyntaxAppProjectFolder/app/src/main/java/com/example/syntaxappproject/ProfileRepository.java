@@ -39,7 +39,6 @@ public class ProfileRepository {
         db.collection("profiles")
                 .document(uid)
                 .set(profile)
-                // Register callback for completion (success/failure)
                 .addOnCompleteListener(task ->
                         callback.onComplete(task.isSuccessful()));
     }
