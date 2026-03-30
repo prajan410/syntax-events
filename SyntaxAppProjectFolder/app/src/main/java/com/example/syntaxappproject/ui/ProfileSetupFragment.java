@@ -150,6 +150,7 @@ public class ProfileSetupFragment extends Fragment {
                     isOrganizer,
                     false,
                     true,
+                    true,
                     uid
             );
 

@@ -124,7 +124,9 @@ public class EditProfileFragment extends HomeBar {
             boolean isEntrant   = existing != null && existing.isEntrant();
             boolean isOrganizer = existing != null && existing.isOrganizer();
             boolean isAdmin     = existing != null && existing.isAdmin();
-            boolean notifs      = existing != null && existing.isNotificationsEnabled();
+
+            boolean organizerNotifs = existing != null && existing.isOrganizerNotificationEnabled();
+            boolean adminNotifs = existing != null && existing.isAdminNotificationEnabled();
 
             Profile updated = new Profile(
                     firstName + (lastName.isEmpty() ? "" : " " + lastName),
@@ -133,7 +135,8 @@ public class EditProfileFragment extends HomeBar {
                     isEntrant,
                     isOrganizer,
                     isAdmin,
-                    notifs,
+                    organizerNotifs,
+                    adminNotifs,
                     uid
             );
             profileRepo.updateProfile(uid, updated, success -> {
