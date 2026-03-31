@@ -1,5 +1,5 @@
 [versions]
-agp = "8.13.2"
+agp = "8.13.1"
 cardview = "1.0.0"
 junit = "4.13.2"
 androidxTestJunit = "1.2.1"
@@ -16,6 +16,7 @@ kotlin = "2.3.10"
 coreKtx = "1.17.0"
 firebaseAuth = "24.0.1"
 firebaseFirestore = "26.1.0"
+firebaseDatabase = "22.0.1"
 mockito = "5.11.0"
 
 recyclerview = "1.4.0"
@@ -23,7 +24,8 @@ cardviewV7 = "28.0.0"
 navigation = "2.8.7"
 espressoContrib = "3.7.0"
 uiautomator = "2.3.0"
-firebaseDatabase = "22.0.1"
+firebaseStorage = "22.0.1"
+firebaseCrashlyticsBuildtools = "3.0.6"
 
 [libraries]
 cardview = { module = "androidx.cardview:cardview", version.ref = "cardview" }
@@ -41,6 +43,7 @@ constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayo
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestore" }
+firebase-database = { group = "com.google.firebase", name = "firebase-database", version.ref = "firebaseDatabase" }
 mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
 mockito-android = { group = "org.mockito", name = "mockito-android", version.ref = "mockito" }
 
@@ -51,7 +54,8 @@ navigation-fragment = { group = "androidx.navigation", name = "navigation-fragme
 navigation-ui = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigation" }
 androidx-espresso-contrib = { group = "androidx.test.espresso", name = "espresso-contrib", version.ref = "espressoContrib" }
 androidx-uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
-firebase-database = { group = "com.google.firebase", name = "firebase-database", version.ref = "firebaseDatabase" }
+firebase-storage = { group = "com.google.firebase", name = "firebase-storage", version.ref = "firebaseStorage" }
+firebase-crashlytics-buildtools = { group = "com.google.firebase", name = "firebase-crashlytics-buildtools", version.ref = "firebaseCrashlyticsBuildtools" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

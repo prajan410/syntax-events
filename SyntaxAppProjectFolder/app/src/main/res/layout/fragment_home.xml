@@ -7,7 +7,6 @@
     android:background="#F5F5F5"
     tools:context=".HomeFragment">
 
-    <!-- Header -->
     <TextView
         android:id="@+id/textView"
         android:layout_width="0dp"
@@ -24,7 +23,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Role buttons row -->
     <LinearLayout
         android:id="@+id/roleButtonRow"
         android:layout_width="0dp"
@@ -56,14 +54,13 @@
             android:layout_marginStart="6dp"
             android:layout_weight="1"
             android:backgroundTint="#2ECC71"
-            android:text="Create Event"
+            android:text="My Events"
             android:textColor="@android:color/white"
             android:visibility="gone"
             app:cornerRadius="12dp" />
 
     </LinearLayout>
 
-    <!-- Main card -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/mainCard"
         android:layout_width="0dp"
@@ -86,7 +83,6 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Search row -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/searchLayout"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -110,7 +106,25 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Event list -->
+            <ProgressBar
+                android:id="@+id/loadingSpinner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="40dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/emptyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="40dp"
+                android:gravity="center"
+                android:text="No events currently available"
+                android:textColor="#888888"
+                android:textSize="16sp"
+                android:visibility="gone" />
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/eventList"
                 android:layout_width="match_parent"
@@ -121,6 +135,20 @@
 
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAdmin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="100dp"
+        android:alpha="0"
+        android:src="@android:drawable/ic_menu_manage"
+        android:visibility="gone"
+        app:backgroundTint="#1A1A1A"
+        app:fabSize="mini"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <include
         android:id="@+id/homebarFragment"

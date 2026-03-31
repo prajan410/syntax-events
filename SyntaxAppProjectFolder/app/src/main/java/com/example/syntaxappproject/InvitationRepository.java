@@ -25,10 +25,9 @@ public class InvitationRepository {
     }
 
     /**
-     * Protected no-arg constructor for unit testing.
+     * Protected constructor for unit testing.
      **/
     protected InvitationRepository(boolean testMode) {
-        // intentionally empty for test subclassing
     }
 
     /**

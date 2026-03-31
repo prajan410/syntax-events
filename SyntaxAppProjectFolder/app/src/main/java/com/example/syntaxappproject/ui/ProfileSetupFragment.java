@@ -20,34 +20,18 @@ import com.google.android.material.textfield.TextInputEditText;
 
 /**
  * Fragment for initial user profile setup during onboarding.
- *
- * <p>Allows users to select roles (Entrant/Organizer), enter personal info,
- * and create their Firestore profile. Handles both new profile creation and
- * updates to existing profiles.</p>
+ * Allows the user to select roles (Entrant, Organizer, or both), enter personal
+ * information, and create or update their profile in Firestore.
  */
 public class ProfileSetupFragment extends Fragment {
 
-    /** Tracks user's entrant role selection. */
-    private boolean isEntrant   = true;
-
-    /** Tracks user's organizer role selection. */
+    private boolean isEntrant = true;
     private boolean isOrganizer = false;
-
-    /** Entrant role selection button. */
     private MaterialButton entrantButton;
-
-    /** Organizer role selection button. */
     private MaterialButton organizerButton;
+    private ProfileRepository profileRepo;
+    private AuthenticationService authService;
 
-    /** Lazy-initialized profile repository. */
-    ProfileRepository profileRepo;
-
-    /** Lazy-initialized auth service. */
-    AuthenticationService authService;
-
-    /**
-     * Inflates profile setup layout.
-     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
@@ -55,14 +39,10 @@ public class ProfileSetupFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_profile_setup, container, false);
     }
 
-    /**
-     * Initializes views, animations, role toggles, and confirm button handler.
-     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Cache UI element references
         entrantButton   = view.findViewById(R.id.entrantButton);
         organizerButton = view.findViewById(R.id.organizerButton);
 
@@ -113,16 +93,18 @@ public class ProfileSetupFragment extends Fragment {
             updateRoleButtons();
         });
 
-        view.findViewById(R.id.confirmButton).setOnClickListener(v -> confirmProfile(firstName, lastName, email, phone));
+        view.findViewById(R.id.confirmButton).setOnClickListener(
+                v -> confirmProfile(firstName, lastName, email, phone));
     }
 
     /**
-     * Validates form and triggers profile save workflow.
+     * Validates user input and initiates the profile save workflow.
+     * Checks for at least one role, non-empty name/email, and valid email format.
      */
     private void confirmProfile(TextInputEditText firstName, TextInputEditText lastName,
                                 TextInputEditText email, TextInputEditText phone) {
 
-        if (!isEntrant && !isOrganizer) { // Role validation (at least one required)
+        if (!isEntrant && !isOrganizer) {
             Toast.makeText(requireContext(), "Please select at least one role", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -132,8 +114,18 @@ public class ProfileSetupFragment extends Fragment {
         String emailVal     = email.getText()     != null ? email.getText().toString().trim()     : "";
         String phoneVal     = phone.getText()     != null ? phone.getText().toString().trim()     : "";
 
-        if (firstNameVal.isEmpty() || emailVal.isEmpty()) {
-            Toast.makeText(requireContext(), "Name and Email are required", Toast.LENGTH_SHORT).show();
+        if (firstNameVal.isEmpty()) {
+            Toast.makeText(requireContext(), "First name is required", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (emailVal.isEmpty()) {
+            Toast.makeText(requireContext(), "Email is required", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(emailVal).matches()) {
+            Toast.makeText(requireContext(), "Please enter a valid email address", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -147,50 +139,62 @@ public class ProfileSetupFragment extends Fragment {
                 return;
             }
 
-            String uid = authService.getCurrentUserId();
+            String uid      = authService.getCurrentUserId();
             String fullName = firstNameVal + (lastNameVal.isEmpty() ? "" : " " + lastNameVal);
-
-            String role;
-            if (isOrganizer) {
-                role = "Organizer";
-            } else if (isEntrant) {
-                role = "Entrant";
-            } else {
-                role = "None";
-            }
 
             Profile profile = new Profile(
                     fullName,
                     emailVal,
                     phoneVal.isEmpty() ? null : phoneVal,
-                    role,
                     isEntrant,
                     isOrganizer,
-                    true,  // Default: notifications enabled
+                    false,
+                    true,
+                    true,
                     uid
             );
 
             profileRepo.getProfile(uid, existing -> {
                 if (existing != null) {
-                    profileRepo.updateProfile(uid, profile, saved -> handleSaveResult(saved, R.id.userFragment));
+                    profileRepo.updateProfile(uid, profile,
+                            saved -> handleSaveResult(saved, R.id.userFragment));
                 } else {
-                    profileRepo.createProfile(uid, profile, saved -> {
-                        if (saved) {
-                            requireActivity()
-                                    .getSharedPreferences("UserPrefs", 0)
-                                    .edit()
-                                    .putBoolean("isLoggedIn", true)
-                                    .apply();
-                        }
-                        handleSaveResult(saved, R.id.action_profile_to_home);
-                    });
+                    com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                            .collection("profiles")
+                            .whereEqualTo("email", emailVal)
+                            .get()
+                            .addOnSuccessListener(query -> {
+                                if (!query.isEmpty()) {
+                                    requireActivity().runOnUiThread(() ->
+                                            Toast.makeText(requireContext(),
+                                                    "An account with this email already exists",
+                                                    Toast.LENGTH_SHORT).show());
+                                } else {
+                                    profileRepo.createProfile(uid, profile, saved -> {
+                                        if (saved) {
+                                            requireActivity()
+                                                    .getSharedPreferences("UserPrefs", 0)
+                                                    .edit()
+                                                    .putBoolean("isLoggedIn", true)
+                                                    .apply();
+                                        }
+                                        handleSaveResult(saved, R.id.action_profile_to_home);
+                                    });
+                                }
+                            })
+                            .addOnFailureListener(e ->
+                                    requireActivity().runOnUiThread(() ->
+                                            Toast.makeText(requireContext(),
+                                                    "Could not verify email, please try again",
+                                                    Toast.LENGTH_SHORT).show()));
                 }
             });
         });
     }
 
     /**
-     * Handles save completion: shows feedback and navigates.
+     * Handles the result of a profile save operation.
+     * Navigates to the specified destination on success, shows error toast on failure.
      */
     private void handleSaveResult(boolean saved, int navAction) {
         if (!isAdded()) return;
@@ -205,7 +209,8 @@ public class ProfileSetupFragment extends Fragment {
     }
 
     /**
-     * Updates role button visual states based on current selections.
+     * Updates the visual state of the role selection buttons.
+     * Green background when selected, light gray when deselected.
      */
     private void updateRoleButtons() {
         entrantButton.setBackgroundTintList(
