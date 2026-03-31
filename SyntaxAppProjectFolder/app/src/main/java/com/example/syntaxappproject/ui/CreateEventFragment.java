@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.example.syntaxappproject.BulletPointHelper;
 import com.example.syntaxappproject.EventViewModel;
 import com.example.syntaxappproject.R;
 import com.google.android.material.switchmaterial.SwitchMaterial;
@@ -36,6 +37,7 @@ public class CreateEventFragment extends HomeBar {
     private TextInputEditText eventNameInput, descriptionInput, locationInput, capacityInput;
     private TextInputEditText eventStartDateInput, eventEndDateInput;
     private TextInputEditText regisStartDateInput, regisEndDateInput;
+    private TextInputEditText lotteryCriteriaInput;
     private SwitchMaterial geoSwitch;
     private SwitchMaterial privateEventSwitch;
 
@@ -77,6 +79,9 @@ public class CreateEventFragment extends HomeBar {
         regisStartDateInput = view.findViewById(R.id.regisStartDateInput);
         regisEndDateInput = view.findViewById(R.id.regisEndDateInput);
         geoSwitch = view.findViewById(R.id.geolocationSwitch);
+        lotteryCriteriaInput = view.findViewById(R.id.lotteryCriteriaInput);
+
+        BulletPointHelper.setupBulletPointField(lotteryCriteriaInput);
 
         // Date pickers
         eventStartDateInput.setOnClickListener(v -> showDatePicker(eventStartDateInput));
@@ -91,6 +96,7 @@ public class CreateEventFragment extends HomeBar {
         View datesCard = view.findViewById(R.id.datesCard);
         View actionCard = view.findViewById(R.id.actionCard);
         View geolocationCard = view.findViewById(R.id.GeolocationCard);
+        View lotteryCriteriaCard = view.findViewById(R.id.lotteryCriteriaCard);
         View stepIndicator = view.findViewById(R.id.stepIndicator);
 
         headerTitle.setTranslationY(-20f);
@@ -108,12 +114,16 @@ public class CreateEventFragment extends HomeBar {
         datesCard.setTranslationY(30f);
         datesCard.animate().alpha(1f).translationY(0f).setDuration(500).setStartDelay(380).start();
 
-        actionCard.setTranslationY(30f);
-        actionCard.animate().alpha(1f).translationY(0f).setDuration(500).setStartDelay(450).start();
-
         geolocationCard.setTranslationY(30f);
         geolocationCard.animate().alpha(1f).translationY(0f)
                 .setDuration(500).setStartDelay(350).start();
+
+        lotteryCriteriaCard.setTranslationY(30f);
+        lotteryCriteriaCard.animate().alpha(1f).translationY(0f)
+                .setDuration(500).setStartDelay(430).start();
+
+        actionCard.setTranslationY(30f);
+        actionCard.animate().alpha(1f).translationY(0f).setDuration(500).setStartDelay(500).start();
 
         NavController navController = NavHostFragment.findNavController(this);
 
@@ -126,7 +136,7 @@ public class CreateEventFragment extends HomeBar {
             String endingEventDate = getText(eventEndDateInput);
             String startingRegistrationPeriod = getText(regisStartDateInput);
             String endingRegistrationPeriod = getText(regisEndDateInput);
-
+            String lotteryCriteria = BulletPointHelper.getPlainText(getText(lotteryCriteriaInput));
 
             // --Error check inputs --
             if (name.isEmpty()) {
@@ -160,6 +170,7 @@ public class CreateEventFragment extends HomeBar {
             viewModel.setEndingEventDate(endingEventDate);
             viewModel.setStartingRegistrationPeriod(startingRegistrationPeriod);
             viewModel.setEndingRegistrationPeriod(endingRegistrationPeriod);
+            viewModel.setLotteryCriteria(lotteryCriteria);
             viewModel.setPrivateEvent(privateEventSwitch.isChecked());
 
             navController.navigate(R.id.toUploadImageFragment);

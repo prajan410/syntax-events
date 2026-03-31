@@ -16,30 +16,23 @@ import java.util.List;
  * </p>
  */
 public class EventDetail {
-    // ─── Identity ─────────────────────────────────────────────────────────────
     private String eventId;
     private String organizerUid;
 
-    // ─── Event Info ───────────────────────────────────────────────────────────
-    private String name;            // title
+    private String name;
     private String description;
     private String location;
     private long capacity;
     private boolean geoReq;
 
-    // ─── Event Dates ──────────────────────────────────────────────────────────
     private String startingEventDate;
     private String endingEventDate;
 
-    // ─── Registration Period ──────────────────────────────────────────────────
     private String startingRegistrationPeriod;
     private String endingRegistrationPeriod;
 
-    // ─── Lottery ──────────────────────────────────────────────────────────────
     private long waitlistCount;
     private String lotteryCriteria;
-
-    // ─── Media ────────────────────────────────────────────────────────────────
     private String poster;
 
     // ─── Private Event ────────────────────────────────────────────────────────────────
@@ -87,7 +80,6 @@ public class EventDetail {
     }
 
 
-    // Event ID
     /**
      * Returns the event id.
      *
@@ -101,9 +93,6 @@ public class EventDetail {
      */
     public void setEventId(String eventId) { this.eventId = eventId; }
 
-
-    // ─── Event Info ───
-    // Name
     /**
      * Returns the name of the event.
      *
@@ -129,7 +118,6 @@ public class EventDetail {
      */
     public void setOrganizerUid(String organizerUid) { this.organizerUid = organizerUid; }
 
-    // Description
     /**
      * Returns the description of the event.
      *
@@ -143,7 +131,6 @@ public class EventDetail {
      */
     public void setDescription(String description) { this.description = description; }
 
-    // Location
     /**
      * Returns the location of the event.
      *
@@ -157,7 +144,6 @@ public class EventDetail {
      */
     public void setLocation(String location) { this.location = location; }
 
-    // Capacity
     /**
      * Returns the capacity of the event.
      *
@@ -171,7 +157,6 @@ public class EventDetail {
      */
     public void setCapacity(long capacity) { this.capacity = capacity; }
 
-    // Geolocation Requirement
     /**
      * Returns whether the event require geolocation
      *
@@ -186,9 +171,6 @@ public class EventDetail {
     public void setGeoReq(boolean geoReq) { this.geoReq = geoReq; }
 
 
-    // ─── Event Dates ───
-
-    // Starting Event Date
     /**
      * Returns the state date of the event.
      *
@@ -202,7 +184,6 @@ public class EventDetail {
      */
     public void setStartingEventDate(String startingEventDate) { this.startingEventDate = startingEventDate; }
 
-    // Ending Event Date
     /**
      * Returns the end date of the event.
      *
@@ -216,10 +197,6 @@ public class EventDetail {
      */
     public void setEndingEventDate(String endingEventDate) { this.endingEventDate = endingEventDate; }
 
-
-    // ─── Registration Period ───
-
-    // Starting Registration Period
     /**
      * Returns the start date of the registration.
      *
@@ -233,7 +210,6 @@ public class EventDetail {
      */
     public void setStartingRegistrationPeriod(String startingRegistrationPeriod) { this.startingRegistrationPeriod = startingRegistrationPeriod; }
 
-    // Ending Registration Period
     /**
      * Returns the end date of the registration.
      *
@@ -247,10 +223,6 @@ public class EventDetail {
      */
     public void setEndingRegistrationPeriod(String endingRegistrationPeriod) { this.endingRegistrationPeriod = endingRegistrationPeriod; }
 
-
-    // ─── Lottery ───
-
-    // Waitlist Count
     /**
      * Returns the count of people in the event wait list
      *
@@ -264,7 +236,6 @@ public class EventDetail {
      */
     public void setWaitlistCount(long waitlistCount) { this.waitlistCount = waitlistCount; }
 
-    // Lottery Criteria
     /**
      * Returns the criteria of lottery
      *
@@ -278,10 +249,6 @@ public class EventDetail {
      */
     public void setLotteryCriteria(String lotteryCriteria) { this.lotteryCriteria = lotteryCriteria; }
 
-
-    // ─── Media ───
-
-    // Poster
     /**
      * Returns the poster uri of the event
      *

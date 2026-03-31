@@ -141,15 +141,16 @@ public class CreateEventUploadPosterFragment extends Fragment {
         String organizerUid = authService.getCurrentUserId();
 
         Map<String, Object> eventData = new HashMap<>();
-        eventData.put("name",         viewModel.getName().getValue());
-        eventData.put("description",  viewModel.getDescription().getValue());
-        eventData.put("location",     viewModel.getLocation().getValue());
-        eventData.put("capacity",     viewModel.getCapacity().getValue());
-        eventData.put("startingEventDate",     viewModel.getStartingEventDate().getValue());
-        eventData.put("endingEventDate",     viewModel.getEndingEventDate().getValue());
-        eventData.put("startingRegistrationPeriod",     viewModel.getStartingRegistrationPeriod().getValue());
-        eventData.put("endingRegistrationPeriod",     viewModel.getEndingRegistrationPeriod().getValue());
+        eventData.put("name", viewModel.getName().getValue());
+        eventData.put("description", viewModel.getDescription().getValue());
+        eventData.put("location", viewModel.getLocation().getValue());
+        eventData.put("capacity", viewModel.getCapacity().getValue());
+        eventData.put("startingEventDate", viewModel.getStartingEventDate().getValue());
+        eventData.put("endingEventDate", viewModel.getEndingEventDate().getValue());
+        eventData.put("startingRegistrationPeriod", viewModel.getStartingRegistrationPeriod().getValue());
+        eventData.put("endingRegistrationPeriod", viewModel.getEndingRegistrationPeriod().getValue());
         eventData.put("organizerUid", organizerUid);
+        eventData.put("lotteryCriteria", viewModel.getLotteryCriteria().getValue());
         eventData.put("privateEvent", Boolean.TRUE.equals(viewModel.getPrivateEvent().getValue()));
         eventData.put("invitedUserIds", viewModel.getInvitedUserIds().getValue());
         eventData.put("waitlistCount", 0);
@@ -178,7 +179,7 @@ public class CreateEventUploadPosterFragment extends Fragment {
      * Uploads the selected poster image to Firebase Realtime Database.
      * <p>
      * Reads the image from {@link #selectedImageUri}, compresses it as PNG or JPEG,
-     * Base64‑encodes it, and stores it under {@code event_posters/{eventId}}.
+     * Base64-encodes it, and stores it under {@code event_posters/{eventId}}.
      * The bitmap is also cached in {@link ImageCacheManager}. On success or failure,
      * the fragment navigates to the QR code step.
      * </p>
@@ -186,41 +187,62 @@ public class CreateEventUploadPosterFragment extends Fragment {
      * @param eventId the ID of the event whose poster is being uploaded
      */
     private void uploadPosterToRealtimeDatabase(String eventId, boolean isPrivate) {
-        ContentResolver resolver = requireContext().getContentResolver();
-        try {
-            InputStream imageStream = resolver.openInputStream(selectedImageUri);
-            Bitmap imageBitmap = BitmapFactory.decodeStream(imageStream);
-            String imageType = resolver.getType(selectedImageUri);
+        new Thread(() -> {
+            try {
+                ContentResolver resolver = requireContext().getContentResolver();
+                InputStream imageStream = resolver.openInputStream(selectedImageUri);
+                Bitmap imageBitmap = BitmapFactory.decodeStream(imageStream);
 
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            if (imageType != null && imageType.equals("image/png")) {
-                imageBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-            } else {
-                imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+                int maxDim = 512;
+                int width = imageBitmap.getWidth();
+                int height = imageBitmap.getHeight();
+                if (width > maxDim || height > maxDim) {
+                    float scale = Math.min((float) maxDim / width, (float) maxDim / height);
+                    imageBitmap = Bitmap.createScaledBitmap(
+                            imageBitmap,
+                            Math.round(width * scale),
+                            Math.round(height * scale),
+                            true
+                    );
+                }
+
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                imageBitmap.compress(Bitmap.CompressFormat.JPEG, 60, baos);
+                String base64Image = android.util.Base64.encodeToString(
+                        baos.toByteArray(), android.util.Base64.DEFAULT);
+
+                ImageCacheManager.put(eventId, imageBitmap);
+
+                FirebaseDatabase database = FirebaseDatabase.getInstance();
+                DatabaseReference reference = database.getReference("event_posters");
+
+                HashMap<String, String> imageData = new HashMap<>();
+                imageData.put("image", base64Image);
+                imageData.put("type", "image/jpeg");
+
+                reference.child(eventId).setValue(imageData)
+                        .addOnSuccessListener(aVoid -> {
+                            if (!isAdded()) return;
+                            requireActivity().runOnUiThread(() -> afterEventSaved(eventId, isPrivate));
+                        })
+                        .addOnFailureListener(e -> {
+                            if (!isAdded()) return;
+                            requireActivity().runOnUiThread(() -> {
+                                Toast.makeText(getContext(), "Failed to upload poster", Toast.LENGTH_SHORT).show();
+                                afterEventSaved(eventId, isPrivate);
+                            });
+                        });
+
+            } catch (Exception e) {
+                if (!isAdded()) return;
+                requireActivity().runOnUiThread(() -> {
+                    Toast.makeText(getContext(), "Failed to process image", Toast.LENGTH_SHORT).show();
+                    afterEventSaved(eventId, isPrivate);
+                });
             }
-
-            byte[] byteArray = byteArrayOutputStream.toByteArray();
-            String base64Image = android.util.Base64.encodeToString(byteArray, android.util.Base64.DEFAULT);
-            ImageCacheManager.put(eventId, imageBitmap);
-
-            FirebaseDatabase database = FirebaseDatabase.getInstance();
-            DatabaseReference reference = database.getReference("event_posters");
-
-            HashMap<String, String> imageData = new HashMap<>();
-            imageData.put("image", base64Image);
-            imageData.put("type", imageType);
-
-            reference.child(eventId).setValue(imageData)
-                    .addOnSuccessListener(aVoid -> afterEventSaved(eventId, isPrivate))
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(getContext(), "Failed to upload poster", Toast.LENGTH_SHORT).show();
-                        afterEventSaved(eventId, isPrivate);
-                    });
-        } catch (Exception e) {
-            Toast.makeText(getContext(), "Failed to process image", Toast.LENGTH_SHORT).show();
-            afterEventSaved(eventId, isPrivate);
-        }
+        }).start();
     }
+
     private void afterEventSaved(String eventId, boolean isPrivate) {
         if (isPrivate) {
             Bundle bundle = new Bundle();

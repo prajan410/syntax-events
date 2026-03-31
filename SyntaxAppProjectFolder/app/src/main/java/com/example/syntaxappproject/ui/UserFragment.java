@@ -129,7 +129,6 @@ public class UserFragment extends HomeBar {
         if (profile == null || !isAdded()) return;
 
         requireActivity().runOnUiThread(() -> {
-            // Provide fallbacks for missing profile fields
             String name  = profile.getName()  != null ? profile.getName()  : "No name set";
             String email = profile.getEmail() != null ? profile.getEmail() : "No email set";
             String phone = profile.getPhone() != null ? profile.getPhone() : "No phone set";

@@ -1,91 +1,316 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="24dp">
+    android:background="#F5F5F5">
 
-    <TextView
-        android:id="@+id/tv_profile_details_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Profile Details"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="16dp" />
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        android:overScrollMode="never"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/btn_done"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btn_remove_profile"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Remove Profile"
-        android:textAllCaps="false"
-        android:textSize="12sp"
-        android:textStyle="normal"
-        android:textColor="#FF3B30"
-        android:background="@drawable/rounded_red_outline_button"
-        android:backgroundTint="@null"
-        android:layout_marginBottom="12dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="20dp"
+            android:paddingTop="24dp"
+            android:paddingBottom="16dp">
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/btn_remove_organizer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Remove Organizer"
-        android:textAllCaps="false"
-        android:textSize="12sp"
-        android:textStyle="normal"
-        android:textColor="#FF3B30"
-        android:background="@drawable/rounded_red_outline_button"
-        android:backgroundTint="@null"
-        android:layout_marginBottom="24dp" />
+            <TextView
+                android:id="@+id/headerTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:alpha="0"
+                android:fontFamily="serif"
+                android:text="Profile Details"
+                android:textColor="#1A1A1A"
+                android:textSize="52sp"
+                android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/tv_detail_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Name: "
-        android:textSize="18sp"
-        android:layout_marginBottom="8dp" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="24dp"
+                android:text="Manage this user's roles and account"
+                android:textColor="#AAAAAA"
+                android:textSize="13sp" />
 
-    <TextView
-        android:id="@+id/tv_detail_email"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Email: "
-        android:textSize="18sp"
-        android:layout_marginBottom="8dp" />
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/heroCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:alpha="0"
+                app:cardBackgroundColor="#1A1A1A"
+                app:cardCornerRadius="28dp"
+                app:cardElevation="8dp">
 
-    <TextView
-        android:id="@+id/tv_detail_role"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Role: "
-        android:textSize="18sp"
-        android:layout_marginBottom="8dp" />
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="24dp">
 
-    <TextView
-        android:id="@+id/tv_detail_status"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Status: Active"
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/avatarCircle"
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
+                        app:cardBackgroundColor="#2ECC71"
+                        app:cardCornerRadius="36dp"
+                        app:cardElevation="0dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent">
+
+                        <TextView
+                            android:id="@+id/tv_avatar_initial"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:text="?"
+                            android:textColor="#FFFFFF"
+                            android:textSize="28sp"
+                            android:textStyle="bold" />
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <TextView
+                        android:id="@+id/tv_detail_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="● Active"
+                        android:textColor="#A5D6A7"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        app:layout_constraintBottom_toBottomOf="@id/avatarCircle"
+                        app:layout_constraintEnd_toEndOf="parent" />
+
+                    <TextView
+                        android:id="@+id/tv_detail_name"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="Loading..."
+                        android:textColor="#FFFFFF"
+                        android:textSize="24sp"
+                        android:textStyle="bold"
+                        android:fontFamily="serif"
+                        app:layout_constraintTop_toBottomOf="@id/avatarCircle"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/btn_delete_user"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_delete_user"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:text="Delete"
+                        android:textAllCaps="false"
+                        android:textColor="#FFFFFF"
+                        android:backgroundTint="#E53935"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="@id/tv_detail_name"/>
+
+                    <TextView
+                        android:id="@+id/tv_detail_email"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Loading..."
+                        android:textColor="#88FFFFFF"
+                        android:textSize="13sp"
+                        app:layout_constraintTop_toBottomOf="@id/tv_detail_name"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/detailsCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:alpha="0"
+                app:cardBackgroundColor="#FFFFFF"
+                app:cardCornerRadius="28dp"
+                app:cardElevation="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ACCOUNT INFO"
+                        android:textColor="#BBBBBB"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="12dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/tv_detail_phone"
+                        android:text="—"
+                        android:textSize="14sp"
+                        android:textColor="#1A1A1A"
+                        android:layout_marginBottom="8dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/tv_detail_role"
+                        android:text="—"
+                        android:textSize="14sp"
+                        android:textColor="#1A1A1A"
+                        android:layout_marginBottom="8dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/tv_detail_device_id"
+                        android:text="—"
+                        android:textSize="12sp"
+                        android:textColor="#BBBBBB"/>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/roleManagementCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:alpha="0"
+                app:cardBackgroundColor="#FFFFFF"
+                app:cardCornerRadius="28dp"
+                app:cardElevation="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ROLE MANAGEMENT"
+                        android:textColor="#BBBBBB"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="12dp"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="8dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="Admin"
+                            android:textColor="#1A1A1A"
+                            android:textSize="14sp"/>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_toggle_admin"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:text="Remove"
+                            android:textAllCaps="false"
+                            android:textColor="#1A1A1A"
+                            android:backgroundTint="@android:color/transparent"
+                            app:strokeColor="#CCCCCC"
+                            app:strokeWidth="1dp"
+                            app:cornerRadius="12dp"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="8dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="Organizer"
+                            android:textColor="#1A1A1A"
+                            android:textSize="14sp"/>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_toggle_organizer"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:text="Remove"
+                            android:textAllCaps="false"
+                            android:textColor="#1A1A1A"
+                            android:backgroundTint="@android:color/transparent"
+                            app:strokeColor="#CCCCCC"
+                            app:strokeWidth="1dp"
+                            app:cornerRadius="12dp"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="Entrant"
+                            android:textColor="#1A1A1A"
+                            android:textSize="14sp"/>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_toggle_entrant"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:text="Remove"
+                            android:textAllCaps="false"
+                            android:textColor="#1A1A1A"
+                            android:backgroundTint="@android:color/transparent"
+                            app:strokeColor="#CCCCCC"
+                            app:strokeWidth="1dp"
+                            app:cornerRadius="12dp"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_done"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginBottom="24dp"
+        android:text="Done"
+        android:textColor="#FFFFFF"
         android:textSize="15sp"
-        android:textColor="#111111"
-        android:layout_marginBottom="8dp" />
+        android:textStyle="bold"
+        android:backgroundTint="#1A1A1A"
+        app:cornerRadius="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-    <TextView
-        android:id="@+id/tv_detail_device_id"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Device ID: "
-        android:textSize="18sp"
-        android:layout_marginBottom="8dp" />
-
-    <TextView
-        android:id="@+id/tv_detail_phone"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Phone: "
-        android:textSize="18sp" />
-
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

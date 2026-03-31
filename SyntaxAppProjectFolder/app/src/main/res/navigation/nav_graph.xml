@@ -234,6 +234,20 @@
         <action
             android:id="@+id/toEventSignupList"
             app:destination="@id/eventSignupList" />
+        <action
+            android:id="@+id/toManageEventFragment"
+            app:destination="@id/manageEventFragment" />
+        <action
+            android:id="@+id/toNotifyEntrantsFragment"
+            app:destination="@+id/notifyEntrantsFragment" />
+
+    </fragment>
+    <fragment
+        android:id="@+id/notifyEntrantsFragment"
+        android:name="com.example.syntaxappproject.ui.NotifyEntrantsFragment"
+        android:label="Notify Entrants"
+        tools:layout="@layout/fragment_notify_entrants">
+
     </fragment>
 
     <fragment
@@ -302,35 +316,6 @@
             android:name="eventId"
             app:argType="string" />
         <action
-            android:id="@+id/toHomeFragment"
-            app:destination="@id/homeFragment" />
-        <action
-            android:id="@+id/toUserFragment"
-            app:destination="@id/userFragment" />
-        <action
-            android:id="@+id/toQrCodeScannerFragment"
-            app:destination="@id/QRCodeScannerFragment" />
-        <action
-            android:id="@+id/toNotificationFragment"
-            app:destination="@id/notificationFragment" />
-        <action
-            android:id="@+id/toOrganizerEventsFragment"
-            app:destination="@id/organizerEventsFragment" />
-        <action
-            android:id="@+id/action_createEventQRFragment_to_homeFragment"
-            app:destination="@id/homeFragment"
-            app:popUpTo="@id/homeFragment"
-            app:popUpToInclusive="false" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/CreateEventQRFragment"
-        android:name="com.example.syntaxappproject.ui.CreateEventQRFragment"
-        android:label="QR Step">
-        <argument
-            android:name="eventId"
-            app:argType="string" />
-        <action
             android:id="@+id/action_createEventQRFragment_to_homeFragment"
             app:destination="@id/homeFragment"
             app:popUpTo="@id/homeFragment"
@@ -339,9 +324,40 @@
 
     <fragment
         android:id="@+id/adminFragment"
-        android:name="com.example.syntaxappproject.AdminFragment"
+        android:name="com.example.syntaxappproject.ui.AdminFragment"
         android:label="Admin"
-        tools:layout="@layout/fragment_admin" />
+        tools:layout="@layout/fragment_admin">
+        <action
+            android:id="@+id/action_adminFragment_to_adminBrowseComments"
+            app:destination="@id/adminBrowseComments" />
+        <action
+            android:id="@+id/action_adminFragment_to_adminBrowseEvents"
+            app:destination="@id/adminBrowseEvents" />
+        <action
+            android:id="@+id/action_adminFragment_to_adminBrowseProfiles"
+            app:destination="@id/adminBrowseProfiles" />
+        <action
+            android:id="@+id/action_adminFragment_to_adminBrowseImages"
+            app:destination="@id/adminBrowseImages" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/adminBrowseComments"
+        android:name="com.example.syntaxappproject.ui.AdminBrowseCommentsFragment"
+        android:label="Manage Comments"
+        tools:layout="@layout/fragment_admin_browse_comments">
+        <action
+            android:id="@+id/action_adminBrowseComments_to_adminEventDetails"
+            app:destination="@id/adminEventDetails" />
+        <action
+            android:id="@+id/action_adminBrowseComments_to_adminProfileDetails"
+            app:destination="@id/adminProfileDetails" />
+        <action
+            android:id="@+id/action_adminBrowseComments_to_adminFragment"
+            app:destination="@id/adminFragment"
+            app:popUpTo="@id/adminFragment"
+            app:popUpToInclusive="false" />
+    </fragment>
 
     <fragment
         android:id="@+id/adminBrowseProfiles"
@@ -356,10 +372,26 @@
         tools:layout="@layout/fragment_admin_profile_details" />
 
     <fragment
+        android:id="@+id/manageEventFragment"
+        android:name="com.example.syntaxappproject.ui.ManageEventFragment"
+        android:label="Manage Event"
+        tools:layout="@layout/fragment_manage_event">
+        <argument
+            android:name="eventId"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
         android:id="@+id/adminBrowseEvents"
         android:name="com.example.syntaxappproject.AdminBrowseEvents"
         android:label="Admin Browse Events"
         tools:layout="@layout/fragment_admin_browse_events" />
+
+    <fragment
+        android:id="@+id/adminCommentDetails"
+        android:name="com.example.syntaxappproject.ui.AdminCommentDetailsFragment"
+        android:label="Comment Details"
+        tools:layout="@layout/fragment_admin_comment_details" />
 
     <fragment
         android:id="@+id/adminEventDetails"

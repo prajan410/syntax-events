@@ -114,6 +114,17 @@
                 android:layout_marginTop="40dp"
                 android:visibility="gone" />
 
+            <TextView
+                android:id="@+id/emptyText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="40dp"
+                android:gravity="center"
+                android:text="No events currently available"
+                android:textColor="#888888"
+                android:textSize="16sp"
+                android:visibility="gone" />
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/eventList"
                 android:layout_width="match_parent"

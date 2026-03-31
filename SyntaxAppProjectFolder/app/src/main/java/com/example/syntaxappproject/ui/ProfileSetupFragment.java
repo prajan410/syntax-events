@@ -20,41 +20,18 @@ import com.google.android.material.textfield.TextInputEditText;
 
 /**
  * Fragment for initial user profile setup during onboarding.
- * <p>
  * Allows the user to select roles (Entrant, Organizer, or both), enter personal
- * information, and create or update their profile in Firestore. On successful save,
- * the fragment navigates to either the home screen or the user profile fragment,
- * depending on whether this is a new profile or an update.
- * </p>
+ * information, and create or update their profile in Firestore.
  */
 public class ProfileSetupFragment extends Fragment {
 
-    /** Whether the user has selected the entrant role. */
     private boolean isEntrant = true;
-
-    /** Whether the user has selected the organizer role. */
     private boolean isOrganizer = false;
-
-    /** Button to select or deselect the entrant role. */
     private MaterialButton entrantButton;
-
-    /** Button to select or deselect the organizer role. */
     private MaterialButton organizerButton;
-
-    /** Repository for profile creation, update, and retrieval. */
     private ProfileRepository profileRepo;
-
-    /** Service for user authentication during setup. */
     private AuthenticationService authService;
 
-    /**
-     * Inflates the profile setup layout.
-     *
-     * @param inflater  the layout inflater
-     * @param container the parent view group
-     * @param savedInstanceState previously saved state, or {@code null}
-     * @return the inflated view for this fragment
-     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
@@ -62,13 +39,6 @@ public class ProfileSetupFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_profile_setup, container, false);
     }
 
-    /**
-     * Binds views, runs entrance animations, sets up role toggles,
-     * and configures the confirm button handler.
-     *
-     * @param view               the root view returned by {@link #onCreateView}
-     * @param savedInstanceState previously saved state, or {@code null}
-     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -129,14 +99,7 @@ public class ProfileSetupFragment extends Fragment {
 
     /**
      * Validates user input and initiates the profile save workflow.
-     *
-     * <p>Requires at least one role (entrant or organizer) and non‑empty name and email.
-     * If the profile already exists, it is updated; otherwise a new profile is created.</p>
-     *
-     * @param firstName the first name input field
-     * @param lastName  the last name input field
-     * @param email     the email input field
-     * @param phone     the phone number input field
+     * Checks for at least one role, non-empty name/email, and valid email format.
      */
     private void confirmProfile(TextInputEditText firstName, TextInputEditText lastName,
                                 TextInputEditText email, TextInputEditText phone) {
@@ -151,8 +114,18 @@ public class ProfileSetupFragment extends Fragment {
         String emailVal     = email.getText()     != null ? email.getText().toString().trim()     : "";
         String phoneVal     = phone.getText()     != null ? phone.getText().toString().trim()     : "";
 
-        if (firstNameVal.isEmpty() || emailVal.isEmpty()) {
-            Toast.makeText(requireContext(), "Name and Email are required", Toast.LENGTH_SHORT).show();
+        if (firstNameVal.isEmpty()) {
+            Toast.makeText(requireContext(), "First name is required", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (emailVal.isEmpty()) {
+            Toast.makeText(requireContext(), "Email is required", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(emailVal).matches()) {
+            Toast.makeText(requireContext(), "Please enter a valid email address", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -166,7 +139,7 @@ public class ProfileSetupFragment extends Fragment {
                 return;
             }
 
-            String uid = authService.getCurrentUserId();
+            String uid      = authService.getCurrentUserId();
             String fullName = firstNameVal + (lastNameVal.isEmpty() ? "" : " " + lastNameVal);
 
             Profile profile = new Profile(
@@ -177,23 +150,43 @@ public class ProfileSetupFragment extends Fragment {
                     isOrganizer,
                     false,
                     true,
+                    true,
                     uid
             );
 
             profileRepo.getProfile(uid, existing -> {
                 if (existing != null) {
-                    profileRepo.updateProfile(uid, profile, saved -> handleSaveResult(saved, R.id.userFragment));
+                    profileRepo.updateProfile(uid, profile,
+                            saved -> handleSaveResult(saved, R.id.userFragment));
                 } else {
-                    profileRepo.createProfile(uid, profile, saved -> {
-                        if (saved) {
-                            requireActivity()
-                                    .getSharedPreferences("UserPrefs", 0)
-                                    .edit()
-                                    .putBoolean("isLoggedIn", true)
-                                    .apply();
-                        }
-                        handleSaveResult(saved, R.id.action_profile_to_home);
-                    });
+                    com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                            .collection("profiles")
+                            .whereEqualTo("email", emailVal)
+                            .get()
+                            .addOnSuccessListener(query -> {
+                                if (!query.isEmpty()) {
+                                    requireActivity().runOnUiThread(() ->
+                                            Toast.makeText(requireContext(),
+                                                    "An account with this email already exists",
+                                                    Toast.LENGTH_SHORT).show());
+                                } else {
+                                    profileRepo.createProfile(uid, profile, saved -> {
+                                        if (saved) {
+                                            requireActivity()
+                                                    .getSharedPreferences("UserPrefs", 0)
+                                                    .edit()
+                                                    .putBoolean("isLoggedIn", true)
+                                                    .apply();
+                                        }
+                                        handleSaveResult(saved, R.id.action_profile_to_home);
+                                    });
+                                }
+                            })
+                            .addOnFailureListener(e ->
+                                    requireActivity().runOnUiThread(() ->
+                                            Toast.makeText(requireContext(),
+                                                    "Could not verify email, please try again",
+                                                    Toast.LENGTH_SHORT).show()));
                 }
             });
         });
@@ -201,12 +194,7 @@ public class ProfileSetupFragment extends Fragment {
 
     /**
      * Handles the result of a profile save operation.
-     *
-     * <p>On success, navigates to the destination specified by {@code navAction} and
-     * shows a confirmation toast. On failure, shows an error toast without navigation.</p>
-     *
-     * @param saved     whether the save operation was successful
-     * @param navAction the navigation action ID to use on success
+     * Navigates to the specified destination on success, shows error toast on failure.
      */
     private void handleSaveResult(boolean saved, int navAction) {
         if (!isAdded()) return;
@@ -221,8 +209,8 @@ public class ProfileSetupFragment extends Fragment {
     }
 
     /**
-     * Updates the visual state of the role selection buttons according to
-     * the current role flags ({@link #isEntrant} and {@link #isOrganizer}).
+     * Updates the visual state of the role selection buttons.
+     * Green background when selected, light gray when deselected.
      */
     private void updateRoleButtons() {
         entrantButton.setBackgroundTintList(

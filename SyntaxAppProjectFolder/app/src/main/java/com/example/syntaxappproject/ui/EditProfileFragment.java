@@ -26,71 +26,29 @@ import com.google.android.material.textfield.TextInputEditText;
  * which clears local preferences, signs the user out, and navigates to
  * the splash screen.</p>
  *
- * <p>Navigation is performed via {@link Navigation#findNavController(View)}
- * using the root view, which allows the NavController to be mocked in
- * instrumented tests via {@link Navigation#setViewNavController(View,
- * androidx.navigation.NavController)}.</p>
- *
  * <p>Extends {@link HomeBar} to inherit bottom navigation bar functionality.</p>
  */
 public class EditProfileFragment extends HomeBar {
 
-    /**
-     * Repository for reading and writing {@link Profile} data to Firestore.
-     * Package-private to allow injection in instrumented tests.
-     */
     private final ProfileRepository profileRepo = new ProfileRepository();
-
-    /**
-     * Service for retrieving and managing the current user's authentication state.
-     * Package-private to allow injection in instrumented tests.
-     */
     private final AuthenticationService authService = new AuthenticationService();
 
-    /** Input field for the user's first name. */
     private TextInputEditText editFirstName;
-
-    /** Input field for the user's last name. */
     private TextInputEditText editLastName;
-
-    /** Input field for the user's email address. */
     private TextInputEditText editEmail;
-
-    /** Input field for the user's phone number. */
     private TextInputEditText editPhone;
 
-    /**
-     * Inflates the edit profile layout.
-     *
-     * @param inflater           the layout inflater used to inflate the view
-     * @param container          the parent view group the fragment UI attaches to
-     * @param savedInstanceState previously saved instance state, if any
-     * @return the inflated root view for this fragment
-     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_user_edit, container, false);
     }
 
-    /**
-     * Initializes views, entrance animations, and button click listeners.
-     * Also loads the current user's profile data into the form fields.
-     *
-     * <p>The bottom navigation hotbar setup is wrapped in a try-catch so that
-     * tests running the fragment in isolation (without a NavHostFragment) do not
-     * crash on hotbar initialization.</p>
-     *
-     * @param view               the root view returned by {@link #onCreateView}
-     * @param savedInstanceState previously saved instance state, if any
-     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Safe hotbar setup for testing (no NavHostFragment in unit tests)
-        try { setupHotbar(view); } catch (Exception ignored) {}
+        try { setupHotbar(view); } catch (Exception ignored) {} // Safe hotbar setup for testing
 
-        // Cache view references for form fields
         editFirstName = view.findViewById(R.id.editFirstName);
         editLastName  = view.findViewById(R.id.editLastName);
         editEmail     = view.findViewById(R.id.editEmail);
@@ -120,27 +78,23 @@ public class EditProfileFragment extends HomeBar {
     }
 
     /**
-     * Loads the authenticated user's profile from Firestore and populates
-     * the editable fields with their current name, email, and phone number.
-     *
-     * <p>If no authenticated user is found, displays a toast and navigates up.</p>
-     * <p>The full name stored in Firestore is split on the first space into
-     * first and last name fields.</p>
+     * Loads the authenticated user's profile from Firestore and populates the form fields.
+     * Splits the full name on the first space to separate first and last name.
      */
     private void loadProfileToEdit() {
         String uid = authService.getCurrentUserId();
-        if (uid == null) { // No active session - redirect to login
+        if (uid == null) {
             Toast.makeText(requireContext(), "Please log in first", Toast.LENGTH_SHORT).show();
             Navigation.findNavController(requireView()).navigateUp();
             return;
         }
 
-        profileRepo.getProfile(uid, profile -> { // callback runs on background thread
-            if (profile != null && isAdded()) { // Only update UI if fragment is still attached to activity
-                requireActivity().runOnUiThread(() -> { // Switch to UI thread for view updates
+        profileRepo.getProfile(uid, profile -> {
+            if (profile != null && isAdded()) {
+                requireActivity().runOnUiThread(() -> {
                     String[] names = profile.getName() != null
                             ? profile.getName().split(" ", 2)
-                            : new String[]{"", ""}; // Split full name on first space (handles "First Last" or just "First")
+                            : new String[]{"", ""};
                     editFirstName.setText(names.length > 0 ? names[0] : "");
                     editLastName.setText(names.length > 1 ? names[1] : "");
                     editEmail.setText(profile.getEmail());
@@ -151,14 +105,8 @@ public class EditProfileFragment extends HomeBar {
     }
 
     /**
-     * Validates the input fields and saves the updated profile to Firestore.
-     *
-     * <p>First name and email are required fields. If either is empty, a toast
-     * is shown and the save is aborted. On a successful save, navigates back to
-     * the previous screen. On failure, shows an error toast.</p>
-     *
-     * <p>The existing profile is fetched first to preserve role and notification
-     * settings that are not editable on this screen.</p>
+     * Validates inputs and saves the updated profile to Firestore.
+     * Fetches existing profile first to preserve role and notification settings.
      */
     private void saveEdit() {
         String firstName = editFirstName.getText() != null ? editFirstName.getText().toString().trim() : "";
@@ -176,7 +124,9 @@ public class EditProfileFragment extends HomeBar {
             boolean isEntrant   = existing != null && existing.isEntrant();
             boolean isOrganizer = existing != null && existing.isOrganizer();
             boolean isAdmin     = existing != null && existing.isAdmin();
-            boolean notifs      = existing != null && existing.isNotificationsEnabled();
+
+            boolean organizerNotifs = existing != null && existing.isOrganizerNotificationEnabled();
+            boolean adminNotifs = existing != null && existing.isAdminNotificationEnabled();
 
             Profile updated = new Profile(
                     firstName + (lastName.isEmpty() ? "" : " " + lastName),
@@ -185,7 +135,8 @@ public class EditProfileFragment extends HomeBar {
                     isEntrant,
                     isOrganizer,
                     isAdmin,
-                    notifs,
+                    organizerNotifs,
+                    adminNotifs,
                     uid
             );
             profileRepo.updateProfile(uid, updated, success -> {
@@ -202,14 +153,6 @@ public class EditProfileFragment extends HomeBar {
         });
     }
 
-
-    /**
-     * Displays a confirmation {@link AlertDialog} warning the user that
-     * deleting their account is permanent and cannot be undone.
-     *
-     * <p>Confirming the dialog triggers {@link #deleteProfile()}.
-     * Cancelling dismisses the dialog with no action.</p>
-     */
     private void showDeleteDialog() {
         new AlertDialog.Builder(requireContext())
                 .setTitle("Delete Account")
@@ -220,27 +163,60 @@ public class EditProfileFragment extends HomeBar {
     }
 
     /**
-     * Permanently deletes the user's profile from Firestore, clears all
-     * locally stored shared preferences, signs the user out via
-     * {@link AuthenticationService#signOut()}, and navigates to the splash screen.
-     *
-     * <p>On failure, displays an error toast and leaves the user on the current screen.</p>
+     * Permanently deletes the user's profile, archives it to deleted-profiles collection,
+     * clears local preferences, signs out, and navigates to splash screen.
      */
     private void deleteProfile() {
         String uid = authService.getCurrentUserId();
-        profileRepo.deleteProfile(uid, success -> {
-            if (!isAdded()) return; // Safety check - fragment might be destroyed during async operation
-            requireActivity().runOnUiThread(() -> {
-                if (success) {
-                    // Clear all local user preferences
-                    requireActivity().getSharedPreferences("UserPrefs", 0).edit().clear().apply();
-                    authService.signOut();
-                    Navigation.findNavController(requireView()).navigate(R.id.splashFragment);
-                    Toast.makeText(requireContext(), "Account deleted", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(requireContext(), "Delete failed", Toast.LENGTH_SHORT).show();
-                }
-            });
+
+        profileRepo.getProfile(uid, profile -> {
+            if (!isAdded()) return;
+
+            java.util.Map<String, Object> archived = new java.util.HashMap<>();
+            if (profile != null) {
+                archived.put("name",                  profile.getName());
+                archived.put("email",                 profile.getEmail());
+                archived.put("phone",                 profile.getPhone());
+                archived.put("isEntrant",             profile.isEntrant());
+                archived.put("isOrganizer",           profile.isOrganizer());
+                archived.put("isAdmin",               profile.isAdmin());
+                archived.put("notificationsEnabled",  profile.isNotificationsEnabled());
+                archived.put("deviceId",              profile.getDeviceId());
+            }
+            archived.put("uid",       uid);
+            archived.put("deletedAt", com.google.firebase.Timestamp.now());
+
+            com.google.firebase.firestore.FirebaseFirestore db =
+                    com.google.firebase.firestore.FirebaseFirestore.getInstance();
+
+            db.collection("deleted-profiles")
+                    .add(archived)
+                    .addOnSuccessListener(unused ->
+                            profileRepo.deleteProfile(uid, success -> {
+                                if (!isAdded()) return;
+                                requireActivity().runOnUiThread(() -> {
+                                    if (success) {
+                                        requireActivity().getSharedPreferences("UserPrefs", 0)
+                                                .edit().clear().apply();
+                                        authService.signOut();
+                                        Navigation.findNavController(requireView())
+                                                .navigate(R.id.splashFragment);
+                                        Toast.makeText(requireContext(),
+                                                "Account deleted", Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        Toast.makeText(requireContext(),
+                                                "Delete failed", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            })
+                    )
+                    .addOnFailureListener(e -> {
+                        if (!isAdded()) return;
+                        requireActivity().runOnUiThread(() ->
+                                Toast.makeText(requireContext(),
+                                        "Failed to archive profile", Toast.LENGTH_SHORT).show()
+                        );
+                    });
         });
     }
 }

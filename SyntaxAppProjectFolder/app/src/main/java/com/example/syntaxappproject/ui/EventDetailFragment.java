@@ -1,74 +1,80 @@
 package com.example.syntaxappproject.ui;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.syntaxappproject.AuthenticationService;
+import com.example.syntaxappproject.BulletPointHelper;
+import com.example.syntaxappproject.Comment;
+import com.example.syntaxappproject.CommentAdapter;
+import com.example.syntaxappproject.CommentRepository;
 import com.example.syntaxappproject.EventDetail;
 import com.example.syntaxappproject.EventDetailRepository;
 import com.example.syntaxappproject.EventJoinRepository;
 import com.example.syntaxappproject.ImageCacheManager;
 import com.example.syntaxappproject.ImageItem;
+import com.example.syntaxappproject.ProfileRepository;
 import com.example.syntaxappproject.R;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Fragment that displays full details for a single event, including its poster,
  * QR code, metadata, and a context-sensitive action button.
- *
- * <p>If the current user is the event organizer, the action button becomes a
- * red "Delete Event" button that removes the event from Firestore and cleans up
- * associated media from Realtime Database and the image cache.</p>
- *
- * <p>If the current user is an entrant, the action button allows joining or
- * leaving the event, subject to registration window and capacity constraints.</p>
- *
- * <p>Supports a {@code testingMode} flag (passed via arguments or set directly)
- * to bypass Firestore calls and NavController dependencies during instrumented tests.</p>
  */
 public class EventDetailFragment extends HomeBar {
 
-    /** Firestore document ID of the event being displayed. */
+    private static final int COMMENTS_PER_PAGE = 10;
+
     private String eventId;
-
-    /** Service for retrieving the current authenticated user's UID. */
     private final AuthenticationService authService = new AuthenticationService();
-
-    /** Repository for join, leave, and membership check operations. */
     private final EventJoinRepository joinRepo = new EventJoinRepository();
+    private CommentRepository commentRepository;
+    private CommentAdapter commentAdapter;
+    private RecyclerView commentsRecyclerView;
+    private TextView emptyCommentsText;
+    private EditText commentInput;
+    private MaterialButton postCommentButton;
+    private MaterialButton prevPageButton;
+    private MaterialButton notifyButton;
+    private MaterialButton nextPageButton;
+    private TextView pageIndicator;
+    private View paginationContainer;
 
-    /** When {@code true}, bypasses Firestore and NavController for instrumented tests. */
+    private List<Comment> allComments = new ArrayList<>();
+    private int currentPage = 0;
+    private int totalPages = 0;
+
     public boolean testingMode = false;
-
-    /** UID of the currently authenticated user. */
     private String uid;
+    private boolean isOrganizer = false;
+    private boolean isAdmin = false;
+    private int profilesLoaded = 0;
 
-    /**
-     * Inflates the event detail layout.
-     *
-     * @param inflater           the layout inflater
-     * @param container          the parent view group
-     * @param savedInstanceState previously saved state, or {@code null}
-     * @return the inflated root view
-     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
@@ -76,13 +82,6 @@ public class EventDetailFragment extends HomeBar {
         return inflater.inflate(R.layout.fragment_event_detail, container, false);
     }
 
-    /**
-     * Binds views, runs entrance animations, loads event data, and configures
-     * the action button based on whether the current user is the organizer or an entrant.
-     *
-     * @param view               the root view returned by {@link #onCreateView}
-     * @param savedInstanceState previously saved state, or {@code null}
-     */
     @SuppressLint("SetTextI18n")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -110,6 +109,17 @@ public class EventDetailFragment extends HomeBar {
         View nameCard             = view.findViewById(R.id.nameCard);
         View detailsCard          = view.findViewById(R.id.detailsCard);
         View actionCard           = view.findViewById(R.id.actionCard);
+        View commentsCard         = view.findViewById(R.id.commentsCard);
+        View notifyCard           = view.findViewById(R.id.notifyCard);
+        commentsRecyclerView      = view.findViewById(R.id.commentsRecyclerView);
+        emptyCommentsText         = view.findViewById(R.id.emptyCommentsText);
+        commentInput              = view.findViewById(R.id.commentInput);
+        postCommentButton         = view.findViewById(R.id.postCommentButton);
+        prevPageButton            = view.findViewById(R.id.prevPageButton);
+        nextPageButton            = view.findViewById(R.id.nextPageButton);
+        pageIndicator             = view.findViewById(R.id.pageIndicator);
+        paginationContainer       = view.findViewById(R.id.paginationContainer);
+        notifyButton              = view.findViewById(R.id.notifyEntrantsButton);
 
         headerTitle.setTranslationY(-20f);
         headerTitle.animate().alpha(1f).translationY(0f).setDuration(400).setStartDelay(100).start();
@@ -119,13 +129,52 @@ public class EventDetailFragment extends HomeBar {
         nameCard.animate().alpha(1f).translationY(0f).setDuration(500).setStartDelay(300).start();
         detailsCard.setTranslationY(30f);
         detailsCard.animate().alpha(1f).translationY(0f).setDuration(500).setStartDelay(380).start();
+        commentsCard.setTranslationY(30f);
+        commentsCard.animate().alpha(1f).translationY(0f).setDuration(500).setStartDelay(460).start();
         actionCard.setTranslationY(30f);
-        actionCard.animate().alpha(1f).translationY(0f).setDuration(500).setStartDelay(500).start();
-
+        actionCard.animate().alpha(1f).translationY(0f).setDuration(500).setStartDelay(540).start();
+        notifyCard.setTranslationY(30f);
+        notifyCard.animate().alpha(1f).translationY(0f).setDuration(500).setStartDelay(540).start();
         doneButton.setOnClickListener(v -> NavHostFragment.findNavController(this).popBackStack());
 
         uid = authService.getCurrentUserId();
         if (testingMode && uid == null) uid = "test_user";
+
+        commentRepository = new CommentRepository();
+        commentsRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        commentAdapter = new CommentAdapter(uid, isOrganizer, isAdmin, this::deleteComment, this::reportComment);
+        commentsRecyclerView.setAdapter(commentAdapter);
+
+        prevPageButton.setOnClickListener(v -> {
+            if (currentPage > 0) {
+                currentPage--;
+                displayCurrentPage();
+            }
+        });
+
+        nextPageButton.setOnClickListener(v -> {
+            if (currentPage < totalPages - 1) {
+                currentPage++;
+                displayCurrentPage();
+            }
+        });
+
+        new ProfileRepository().getProfile(uid, profile -> {
+            if (profile != null) {
+                isAdmin = profile.isAdmin();
+            }
+            checkAndUpdateAdapter();
+        });
+
+        new EventDetailRepository().getEventDetail(eventId, event -> {
+            if (event != null && uid != null) {
+                isOrganizer = uid.equals(event.getOrganizerUid());
+            }
+            checkAndUpdateAdapter();
+        });
+
+        loadComments();
+        postCommentButton.setOnClickListener(v -> postComment());
 
         if (testingMode) {
             joinButton.setOnClickListener(v -> {
@@ -153,26 +202,172 @@ public class EventDetailFragment extends HomeBar {
                 regiPeriod.setText(event.getStartingRegistrationPeriod());
                 capacity.setText("Capacity: " + event.getCapacity());
                 wLCount.setText("Waitlist: " + event.getWaitlistCount());
-                lotteryCriteria.setText(event.getLotteryCriteria());
-                loadPoster(eventPoster);
 
-                if (event.isPrivateEvent()) {
-                    posterCard.setVisibility(View.GONE);
+                String criteria = event.getLotteryCriteria();
+                if (criteria != null && !criteria.isEmpty()) {
+                    List<String> criteriaList = BulletPointHelper.parseBulletPoints(criteria);
+                    if (!criteriaList.isEmpty()) {
+                        StringBuilder displayText = new StringBuilder();
+                        for (String point : criteriaList) {
+                            displayText.append("• ").append(point).append("\n");
+                        }
+                        lotteryCriteria.setText(displayText.toString().trim());
+                        lotteryCriteria.setVisibility(View.VISIBLE);
+                    } else {
+                        lotteryCriteria.setVisibility(View.GONE);
+                    }
                 } else {
-                    loadQRCode(eventQRCode);
+                    lotteryCriteria.setVisibility(View.GONE);
                 }
 
-                configureActionButton(joinButton, wLCount, event);
+                loadPoster(eventPoster);
+                loadQRCode(eventQRCode);
+                configureActionButton(joinButton, wLCount, event, notifyCard,notifyButton);
             });
         });
     }
 
-    /**
-     * Loads the event poster from {@link ImageCacheManager} if available,
-     * otherwise fetches and decodes it from Firebase Realtime Database.
-     *
-     * @param eventPoster the {@link ImageView} to display the poster in
-     */
+    private void checkAndUpdateAdapter() {
+        profilesLoaded++;
+        if (profilesLoaded == 2) {
+            requireActivity().runOnUiThread(() -> {
+                commentAdapter.updateRoles(isOrganizer, isAdmin);
+                displayCurrentPage();
+            });
+        }
+    }
+
+    private void loadComments() {
+        Log.d("EventDetailFragment", "Loading comments for event: " + eventId);
+        commentRepository.getCommentsForEvent(eventId, comments -> {
+            Log.d("EventDetailFragment", "Comments received: " + (comments != null ? comments.size() : 0));
+            if (!isAdded()) return;
+            requireActivity().runOnUiThread(() -> {
+                allComments = comments != null ? comments : new ArrayList<>();
+
+                if (allComments.isEmpty()) {
+                    emptyCommentsText.setVisibility(View.VISIBLE);
+                    commentsRecyclerView.setVisibility(View.GONE);
+                    paginationContainer.setVisibility(View.GONE);
+                } else {
+                    emptyCommentsText.setVisibility(View.GONE);
+                    commentsRecyclerView.setVisibility(View.VISIBLE);
+
+                    totalPages = (int) Math.ceil((double) allComments.size() / COMMENTS_PER_PAGE);
+                    currentPage = 0;
+
+                    displayCurrentPage();
+                }
+            });
+        });
+    }
+
+    private void displayCurrentPage() {
+        int start = currentPage * COMMENTS_PER_PAGE;
+        int end = Math.min(start + COMMENTS_PER_PAGE, allComments.size());
+
+        List<Comment> pageComments = allComments.subList(start, end);
+        commentAdapter.setComments(pageComments);
+
+        if (totalPages > 1) {
+            paginationContainer.setVisibility(View.VISIBLE);
+            pageIndicator.setText("Page " + (currentPage + 1) + " of " + totalPages);
+
+            prevPageButton.setVisibility(currentPage > 0 ? View.VISIBLE : View.INVISIBLE);
+            nextPageButton.setVisibility(currentPage < totalPages - 1 ? View.VISIBLE : View.INVISIBLE);
+        } else {
+            paginationContainer.setVisibility(View.GONE);
+        }
+
+        commentsRecyclerView.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
+        commentsRecyclerView.requestLayout();
+    }
+
+    private void postComment() {
+        String commentText = commentInput.getText() != null ?
+                commentInput.getText().toString().trim() : "";
+
+        if (commentText.isEmpty()) {
+            Toast.makeText(requireContext(), "Please enter a comment", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (uid == null) {
+            Toast.makeText(requireContext(), "Please login to comment", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        new ProfileRepository().getProfile(uid, profile -> {
+            if (!isAdded()) return;
+            String userName = profile != null && profile.getName() != null ?
+                    profile.getName() : "Anonymous";
+            String deviceId = profile != null && profile.getDeviceId() != null ?
+                    profile.getDeviceId() : "";
+
+            Comment comment = new Comment(eventId, commentText, uid, userName, deviceId);
+
+            commentRepository.addComment(comment, success -> {
+                if (!isAdded()) return;
+                requireActivity().runOnUiThread(() -> {
+                    if (success) {
+                        commentInput.setText("");
+                        loadComments();
+                        Toast.makeText(requireContext(), "Comment posted!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(requireContext(), "Failed to post comment", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            });
+        });
+    }
+
+    private void deleteComment(Comment comment) {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Delete Comment")
+                .setMessage("Are you sure you want to delete this comment?")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    commentRepository.deleteComment(comment.getCommentId(), success -> {
+                        if (!isAdded()) return;
+                        requireActivity().runOnUiThread(() -> {
+                            if (success) {
+                                loadComments();
+                                Toast.makeText(requireContext(), "Comment deleted", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(requireContext(), "Failed to delete comment", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    });
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void reportComment(Comment comment) {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Report Comment")
+                .setMessage("Are you sure you want to report this comment?")
+                .setPositiveButton("Report", (dialog, which) -> {
+                    commentRepository.reportComment(comment.getCommentId(), uid, success -> {
+                        if (!isAdded()) return;
+                        requireActivity().runOnUiThread(() -> {
+                            if (success) {
+                                Toast.makeText(requireContext(), "Comment reported. Thank you for helping keep our community safe.", Toast.LENGTH_LONG).show();
+                                if (comment.getReportedBy() == null) {
+                                    comment.setReportedBy(new ArrayList<>());
+                                }
+                                comment.getReportedBy().add(uid);
+                                comment.setReportCount(comment.getReportCount() + 1);
+                                commentAdapter.notifyDataSetChanged();
+                            } else {
+                                Toast.makeText(requireContext(), "Failed to report comment", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    });
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
     private void loadPoster(ImageView eventPoster) {
         if (ImageCacheManager.has(eventId)) {
             eventPoster.setImageBitmap(ImageCacheManager.get(eventId));
@@ -197,12 +392,6 @@ public class EventDetailFragment extends HomeBar {
         });
     }
 
-    /**
-     * Fetches and decodes the event QR code from Firebase Realtime Database
-     * and displays it in the given {@link ImageView}.
-     *
-     * @param eventQRCode the {@link ImageView} to display the QR code in
-     */
     private void loadQRCode(ImageView eventQRCode) {
         FirebaseDatabase.getInstance()
                 .getReference("event_qr_codes")
@@ -223,39 +412,20 @@ public class EventDetailFragment extends HomeBar {
                 });
     }
 
-    /**
-     * Configures the action button based on the current user's role relative to the event.
-     *
-     * <p>If the user is the organizer, the button becomes a red "Delete Event" button.
-     * If the user is an entrant, the button reflects the registration window state:
-     * disabled with an informational label if outside the window, or an active
-     * Join/Leave toggle if within it.</p>
-     *
-     * @param joinButton the action {@link MaterialButton} to configure
-     * @param wLCount    the {@link TextView} displaying the current waitlist count
-     * @param event      the {@link EventDetail} for the event being displayed
-     */
-    private void configureActionButton(MaterialButton joinButton, TextView wLCount, EventDetail event) {
-        boolean isOrganizer = uid != null && uid.equals(event.getOrganizerUid());
+    private void configureActionButton(MaterialButton joinButton, TextView wLCount, EventDetail event, View notifyCard, MaterialButton notifyButton) {
+        boolean isEventOrganizer = uid != null && uid.equals(event.getOrganizerUid());
 
-        if (isOrganizer) {
-            joinButton.setText("Delete Event");
-            joinButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#E74C3C")));
-            joinButton.setOnClickListener(v -> deleteEvent());
+        if (isEventOrganizer) {
+            joinButton.setText("Manage Event");
+            joinButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FF9800")));
+            joinButton.setOnClickListener(v -> navigateToManageEvent());
+            notifyCard.setVisibility(View.VISIBLE);
+            notifyButton.setOnClickListener(v -> {
+                navigateToNotifyEntrants();
+            });
             return;
         }
 
-        if (event.isPrivateEvent()) {
-            List<String> invited = event.getInvitedUserIds();
-            boolean invitedUser = invited != null && uid != null && invited.contains(uid);
-
-            if (!invitedUser) {
-                joinButton.setText("Private Event");
-                joinButton.setEnabled(false);
-                joinButton.setAlpha(0.5f);
-                return;
-            }
-        }
 
         long now      = System.currentTimeMillis();
         long regStart = parseDateMillis(event.getStartingRegistrationPeriod());
@@ -277,15 +447,17 @@ public class EventDetailFragment extends HomeBar {
         joinButton.setOnClickListener(v -> handleJoinLeave(joinButton, wLCount));
     }
 
-    /**
-     * Handles the join or leave action when the entrant taps the action button.
-     *
-     * <p>Re-fetches the latest event data to check capacity before joining.
-     * Updates the button state and waitlist count on success.</p>
-     *
-     * @param joinButton the action button to update after the operation
-     * @param wLCount    the waitlist count {@link TextView} to update
-     */
+    private void navigateToManageEvent() {
+        Bundle bundle = new Bundle();
+        bundle.putString("eventId", eventId);
+        Navigation.findNavController(requireView()).navigate(R.id.manageEventFragment, bundle);
+    }
+    private void navigateToNotifyEntrants(){
+        Bundle bundle = new Bundle();
+        bundle.putString("eventId", eventId);
+        Navigation.findNavController(requireView()).navigate(R.id.notifyEntrantsFragment, bundle);
+    }
+
     private void handleJoinLeave(MaterialButton joinButton, TextView wLCount) {
         if (uid == null) {
             Toast.makeText(getContext(), "Please login first", Toast.LENGTH_SHORT).show();
@@ -333,37 +505,6 @@ public class EventDetailFragment extends HomeBar {
         });
     }
 
-    /**
-     * Deletes the event from Firestore and removes its associated poster and QR code
-     * from Firebase Realtime Database and the local image cache.
-     *
-     * <p>Navigates back to the previous screen on success.</p>
-     */
-    private void deleteEvent() {
-        com.google.firebase.firestore.FirebaseFirestore.getInstance()
-                .collection("events")
-                .document(eventId)
-                .delete()
-                .addOnSuccessListener(a -> {
-                    ImageCacheManager.remove(eventId);
-                    FirebaseDatabase.getInstance().getReference("event_posters").child(eventId).removeValue();
-                    FirebaseDatabase.getInstance().getReference("event_qr_codes").child(eventId).removeValue();
-                    if (!isAdded()) return;
-                    Toast.makeText(getContext(), "Event deleted", Toast.LENGTH_SHORT).show();
-                    NavHostFragment.findNavController(this).popBackStack();
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(getContext(), "Failed to delete event", Toast.LENGTH_SHORT).show()
-                );
-    }
-
-    /**
-     * Parses a date string into epoch milliseconds.
-     * Supports {@code "yyyy-MM-dd"} and {@code "MM/dd/yyyy"} formats.
-     *
-     * @param dateStr the date string to parse
-     * @return epoch milliseconds, or {@code -1} if the string is null, empty, or unparseable
-     */
     private long parseDateMillis(String dateStr) {
         if (dateStr == null || dateStr.isEmpty()) return -1;
         try {

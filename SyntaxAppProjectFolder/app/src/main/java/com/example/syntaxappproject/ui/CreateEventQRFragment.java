@@ -62,7 +62,6 @@ public class CreateEventQRFragment extends HomeBar {
         View qrCard          = view.findViewById(R.id.qrCard);
         View actionsCard     = view.findViewById(R.id.actionsCard);
 
-        // --- Entrance Animations ---
         headerTitle.setTranslationY(-20f);
         headerTitle.animate().alpha(1f).translationY(0f)
                 .setDuration(400).setStartDelay(100).start();
@@ -75,7 +74,6 @@ public class CreateEventQRFragment extends HomeBar {
         actionsCard.animate().alpha(1f).translationY(0f)
                 .setDuration(500).setStartDelay(380).start();
 
-        // --- Generate QR off main thread ---
         if (eventId != null) {
             if (successText != null) successText.setText(eventId + " successfully created!");
 

@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     android:background="#F5F5F5">
 
-    <!-- Header -->
     <TextView
         android:id="@+id/headerTitle"
         android:layout_width="0dp"
@@ -52,7 +51,6 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Role card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/roleCard"
                 android:layout_width="match_parent"
@@ -116,7 +114,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Name card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/nameCard"
                 android:layout_width="match_parent"
@@ -185,7 +182,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Contact card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/contactCard"
                 android:layout_width="match_parent"
@@ -258,7 +254,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Confirm card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/confirmCard"
                 android:layout_width="match_parent"
