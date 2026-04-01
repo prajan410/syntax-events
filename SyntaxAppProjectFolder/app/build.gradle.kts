@@ -38,6 +38,12 @@ android {
         }
         exclude(group = "com.google.protobuf", module = "protobuf-lite")
     }
+
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
 }
 
 dependencies {
@@ -45,6 +51,7 @@ dependencies {
     implementation(libs.firebase.database)
     implementation(libs.firebase.storage)
     implementation(libs.firebase.crashlytics.buildtools)
+    implementation(libs.androidx.junit)
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 
     implementation(platform("com.google.firebase:firebase-bom:34.9.0"))
@@ -71,6 +78,7 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation("org.mockito:mockito-core:5.11.0")
     testImplementation("org.mockito:mockito-inline:5.2.0")
+    testImplementation(libs.robolectric)
 
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test:runner:1.6.1")
@@ -93,4 +101,5 @@ dependencies {
     debugImplementation("androidx.fragment:fragment-testing:1.7.0")
 
     implementation("org.osmdroid:osmdroid-android:6.1.20")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
 }

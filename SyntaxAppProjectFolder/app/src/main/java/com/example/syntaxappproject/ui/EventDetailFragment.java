@@ -1,11 +1,14 @@
 package com.example.syntaxappproject.ui;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
@@ -17,8 +20,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -36,6 +42,8 @@ import com.example.syntaxappproject.ImageCacheManager;
 import com.example.syntaxappproject.ImageItem;
 import com.example.syntaxappproject.ProfileRepository;
 import com.example.syntaxappproject.R;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -62,6 +70,7 @@ public class EventDetailFragment extends HomeBar {
     private MaterialButton prevPageButton;
     private MaterialButton notifyButton;
     private MaterialButton nextPageButton;
+    private MaterialButton viewEntrantsButton;
     private TextView pageIndicator;
     private View paginationContainer;
 
@@ -74,6 +83,35 @@ public class EventDetailFragment extends HomeBar {
     private boolean isOrganizer = false;
     private boolean isAdmin = false;
     private int profilesLoaded = 0;
+
+    private FusedLocationProviderClient fusedLocationClient;
+    private ActivityResultLauncher<String[]> locationPermissionLauncher;
+    private MaterialButton joinButtonToUpdate;
+    private TextView wLCountToUpdate;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
+        locationPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestMultiplePermissions(),
+                result -> {
+                    Boolean fineLocationAllowed = result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
+                    Boolean coarseLocationAllowed = result.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false);
+                    if (fineLocationAllowed || coarseLocationAllowed) {
+                        attemptJoinWithLocation();
+                    } else {
+                        new EventDetailRepository().getEventDetail(eventId, event -> {
+                            if (event != null && event.isGeoReq()) {
+                                Toast.makeText(getContext(), "Location permission is required to join this event", Toast.LENGTH_SHORT).show();
+                            } else {
+                                performJoin(null, null);
+                            }
+                        });
+                    }
+                }
+        );
+    }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -97,7 +135,7 @@ public class EventDetailFragment extends HomeBar {
         TextView eventName        = view.findViewById(R.id.eventName);
         TextView description      = view.findViewById(R.id.eventDescription);
         TextView date             = view.findViewById(R.id.eventDate);
-        TextView location         = view.findViewById(R.id.eventLocation);
+        TextView locationText     = view.findViewById(R.id.eventLocation);
         TextView regiPeriod       = view.findViewById(R.id.eventRegiPeriod);
         TextView capacity         = view.findViewById(R.id.eventCapacity);
         TextView wLCount          = view.findViewById(R.id.eventWLCount);
@@ -105,6 +143,7 @@ public class EventDetailFragment extends HomeBar {
         MaterialButton joinButton = view.findViewById(R.id.joinButton);
         MaterialButton doneButton = view.findViewById(R.id.doneButton);
         MaterialButton mapButton  = view.findViewById(R.id.mapButton);
+        viewEntrantsButton        = view.findViewById(R.id.viewEntrantsButton);
         View headerTitle          = view.findViewById(R.id.headerTitle);
         View posterCard           = view.findViewById(R.id.posterCard);
         View nameCard             = view.findViewById(R.id.nameCard);
@@ -137,7 +176,13 @@ public class EventDetailFragment extends HomeBar {
         notifyCard.setTranslationY(30f);
         notifyCard.animate().alpha(1f).translationY(0f).setDuration(500).setStartDelay(540).start();
         doneButton.setOnClickListener(v -> NavHostFragment.findNavController(this).popBackStack());
-        mapButton.setOnClickListener(v -> Navigation.findNavController(v).navigate(R.id.to_mapFragment));
+        
+        mapButton.setVisibility(View.GONE); // Default hidden
+        mapButton.setOnClickListener(v -> {
+            Bundle bundle = new Bundle();
+            bundle.putString("eventId", eventId);
+            Navigation.findNavController(v).navigate(R.id.to_mapFragment, bundle);
+        });
 
         uid = authService.getCurrentUserId();
         if (testingMode && uid == null) uid = "test_user";
@@ -200,7 +245,7 @@ public class EventDetailFragment extends HomeBar {
                 eventName.setText(event.getName());
                 description.setText(event.getDescription());
                 date.setText(event.getStartingEventDate());
-                location.setText(event.getLocation());
+                locationText.setText(event.getLocation());
                 regiPeriod.setText(event.getStartingRegistrationPeriod());
                 capacity.setText("Capacity: " + event.getCapacity());
                 wLCount.setText("Waitlist: " + event.getWaitlistCount());
@@ -224,7 +269,7 @@ public class EventDetailFragment extends HomeBar {
 
                 loadPoster(eventPoster);
                 loadQRCode(eventQRCode);
-                configureActionButton(joinButton, wLCount, event, notifyCard,notifyButton);
+                configureActionButton(joinButton, mapButton, wLCount, event, notifyCard,notifyButton);
             });
         });
     }
@@ -414,13 +459,20 @@ public class EventDetailFragment extends HomeBar {
                 });
     }
 
-    private void configureActionButton(MaterialButton joinButton, TextView wLCount, EventDetail event, View notifyCard, MaterialButton notifyButton) {
+    private void configureActionButton(MaterialButton joinButton, MaterialButton mapButton, TextView wLCount, EventDetail event, View notifyCard, MaterialButton notifyButton) {
         boolean isEventOrganizer = uid != null && uid.equals(event.getOrganizerUid());
 
         if (isEventOrganizer) {
             joinButton.setText("Manage Event");
             joinButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FF9800")));
             joinButton.setOnClickListener(v -> navigateToManageEvent());
+            mapButton.setVisibility(View.VISIBLE);
+            viewEntrantsButton.setVisibility(View.VISIBLE);
+            viewEntrantsButton.setOnClickListener(v -> {
+                Bundle bundle = new Bundle();
+                bundle.putString("eventId", eventId);
+                Navigation.findNavController(v).navigate(R.id.toEventSignupList, bundle);
+            });
             notifyCard.setVisibility(View.VISIBLE);
             notifyButton.setOnClickListener(v -> {
                 navigateToNotifyEntrants();
@@ -428,6 +480,8 @@ public class EventDetailFragment extends HomeBar {
             return;
         }
 
+        mapButton.setVisibility(View.GONE);
+        viewEntrantsButton.setVisibility(View.GONE);
 
         long now      = System.currentTimeMillis();
         long regStart = parseDateMillis(event.getStartingRegistrationPeriod());
@@ -465,6 +519,9 @@ public class EventDetailFragment extends HomeBar {
             Toast.makeText(getContext(), "Please login first", Toast.LENGTH_SHORT).show();
             return;
         }
+        joinButtonToUpdate = joinButton;
+        wLCountToUpdate = wLCount;
+
         new EventDetailRepository().getEventDetail(eventId, freshEvent -> {
             if (!isAdded()) return;
             long eventCapacity = freshEvent.getCapacity();
@@ -491,20 +548,63 @@ public class EventDetailFragment extends HomeBar {
                         joinButton.setEnabled(false);
                         Toast.makeText(getContext(), "Event is at capacity", Toast.LENGTH_SHORT).show();
                     } else {
-                        joinRepo.joinEvent(eventId, uid, success -> requireActivity().runOnUiThread(() -> {
-                            if (success) {
-                                joinButton.setText("Leave");
-                                int c = Integer.parseInt(wLCount.getText().toString().replaceAll("[^0-9]", ""));
-                                wLCount.setText("Waitlist: " + (c + 1));
-                                Toast.makeText(getContext(), "Successfully joined!", Toast.LENGTH_SHORT).show();
-                            } else {
-                                Toast.makeText(getContext(), "Join failed", Toast.LENGTH_SHORT).show();
-                            }
-                        }));
+                        checkLocationAndJoin();
                     }
                 }
             }));
         });
+    }
+
+    private void checkLocationAndJoin() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            attemptJoinWithLocation();
+        } else {
+            locationPermissionLauncher.launch(new String[]{
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            });
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private void attemptJoinWithLocation() {
+        fusedLocationClient.getLastLocation().addOnSuccessListener(requireActivity(), location -> {
+            if (location != null) {
+                performJoin(location.getLatitude(), location.getLongitude());
+            } else {
+                // If location is null but permission was granted, we still try to join with null coords if not required
+                new EventDetailRepository().getEventDetail(eventId, event -> {
+                    if (event != null && event.isGeoReq()) {
+                        Toast.makeText(getContext(), "Could not retrieve location. Required for this event.", Toast.LENGTH_SHORT).show();
+                    } else {
+                        performJoin(null, null);
+                    }
+                });
+            }
+        }).addOnFailureListener(e -> {
+            new EventDetailRepository().getEventDetail(eventId, event -> {
+                if (event != null && event.isGeoReq()) {
+                    Toast.makeText(getContext(), "Location error. Required for this event.", Toast.LENGTH_SHORT).show();
+                } else {
+                    performJoin(null, null);
+                }
+            });
+        });
+    }
+
+    private void performJoin(Double lat, Double lon) {
+        joinRepo.joinEvent(eventId, uid, lat, lon, success -> requireActivity().runOnUiThread(() -> {
+            if (success) {
+                if (joinButtonToUpdate != null) joinButtonToUpdate.setText("Leave");
+                if (wLCountToUpdate != null) {
+                    int c = Integer.parseInt(wLCountToUpdate.getText().toString().replaceAll("[^0-9]", ""));
+                    wLCountToUpdate.setText("Waitlist: " + (c + 1));
+                }
+                Toast.makeText(getContext(), "Successfully joined!", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getContext(), "Join failed", Toast.LENGTH_SHORT).show();
+            }
+        }));
     }
 
     private long parseDateMillis(String dateStr) {
