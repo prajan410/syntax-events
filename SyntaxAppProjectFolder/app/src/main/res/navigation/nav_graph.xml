@@ -415,9 +415,10 @@
         tools:layout="@layout/fragment_admin_image_details" />
 
     <fragment
-        android:id="@+id/mapFragment"
-        android:name="com.example.syntaxappproject.ui.MapFragment"
-        android:label="Map"
-        tools:layout="@layout/fragment_map" />
+        android:id="@+id/privateEventInviteFragment"
+        android:name="com.example.syntaxappproject.ui.PrivateEventInviteFragment"
+        android:label="PrivateEventInviteFragment"
+        tools:layout="@layout/fragment_private_event_invite" />
+
 
 </navigation>

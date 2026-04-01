@@ -357,6 +357,11 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/privateEventSwitch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Private Event" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

@@ -3,6 +3,8 @@ package com.example.syntaxappproject;
 import android.location.Criteria;
 import android.media.Image;
 
+import java.util.List;
+
 /**
  * Model class representing the detail of an event in the SyntaxEvents application.
  * <p>
@@ -33,6 +35,9 @@ public class EventDetail {
     private String lotteryCriteria;
     private String poster;
 
+    // ─── Private Event ────────────────────────────────────────────────────────────────
+    private boolean privateEvent;
+    private List<String> invitedUserIds;
     /**
      * Required no-argument constructor for Firestore deserialization.
      */
@@ -255,5 +260,22 @@ public class EventDetail {
      *
      * @param poster the poster uri to assign
      */
+    //Private Event
     public void setPoster(String poster) { this.poster = poster; }
+
+    public boolean isPrivateEvent() {
+        return privateEvent;
+    }
+
+    public void setPrivateEvent(boolean privateEvent) {
+        this.privateEvent = privateEvent;
+    }
+
+    public List<String> getInvitedUserIds() {
+        return invitedUserIds;
+    }
+
+    public void setInvitedUserIds(List<String> invitedUserIds) {
+        this.invitedUserIds = invitedUserIds;
+    }
 }
