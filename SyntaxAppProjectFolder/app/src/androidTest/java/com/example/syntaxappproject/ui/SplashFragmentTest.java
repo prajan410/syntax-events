@@ -60,6 +60,7 @@ public class SplashFragmentTest {
                 false,
                 false,
                 true,
+                false,
                 "test-uid"
         );
     }
@@ -119,6 +120,7 @@ public class SplashFragmentTest {
                 null,
                 false,
                 false,
+                true,
                 true,
                 true,
                 "admin-uid"

@@ -71,7 +71,8 @@ public class EditProfileFragmentTest {
                 false,
                 false,
                 true,
-                "test-uid-123"
+                false,
+                "test-uid"
         );
 
         doAnswer(inv -> {
