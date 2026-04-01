@@ -2,6 +2,8 @@ package com.example.syntaxappproject;
 
 
 
+import android.util.Log;
+
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
@@ -81,9 +83,14 @@ public class NotificationRepository {
                 .whereEqualTo("eventId", eventId)
                 .orderBy("timestamp", Query.Direction.DESCENDING)
                 .get()
-                .addOnSuccessListener(snapshot ->
-                        callback.onLoaded(snapshot.toObjects(Notification.class)))
-                .addOnFailureListener(e -> callback.onLoaded(null));
+                .addOnSuccessListener(snapshot -> {
+                    Log.d("NotifDebug", "query success, docs=" + snapshot.size());
+                    callback.onLoaded(snapshot.toObjects(Notification.class));
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("NotifDebug", "query failed: " + e.getMessage());
+                    callback.onLoaded(null);
+                });
     }
 
     /**
