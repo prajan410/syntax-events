@@ -182,7 +182,8 @@ public class AdminProfileDetails extends Fragment {
                             existing.isEntrant(),
                             existing.isOrganizer(),
                             willHaveAdmin,
-                            existing.isNotificationsEnabled(),
+                            existing.isOrganizerNotificationEnabled(),
+                            existing.isAdminNotificationEnabled(),
                             existing.getDeviceId()
                     );
                     profileRepo.updateProfile(profileId, updated, success -> {
@@ -218,7 +219,8 @@ public class AdminProfileDetails extends Fragment {
                             existing.isEntrant(),
                             willHaveOrganizer,
                             existing.isAdmin(),
-                            existing.isNotificationsEnabled(),
+                            existing.isOrganizerNotificationEnabled(),
+                            existing.isAdminNotificationEnabled(),
                             existing.getDeviceId()
                     );
                     profileRepo.updateProfile(profileId, updated, success -> {
@@ -250,7 +252,8 @@ public class AdminProfileDetails extends Fragment {
                             willHaveEntrant,
                             existing.isOrganizer(),
                             existing.isAdmin(),
-                            existing.isNotificationsEnabled(),
+                            existing.isOrganizerNotificationEnabled(),
+                            existing.isAdminNotificationEnabled(),
                             existing.getDeviceId()
                     );
                     profileRepo.updateProfile(profileId, updated, success -> {

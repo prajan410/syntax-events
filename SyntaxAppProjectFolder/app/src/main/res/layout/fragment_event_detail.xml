@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:background="#F5F5F5">
 
     <TextView
@@ -12,6 +13,7 @@
         android:layout_marginHorizontal="24dp"
         android:layout_marginTop="24dp"
         android:alpha="0"
+        tools:alpha="1"
         android:fontFamily="serif"
         android:text="Event Detail"
         android:textColor="#1A1A1A"
@@ -36,13 +38,14 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp">
-
+            <!-- Event card  -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/posterCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:alpha="0"
+                tools:alpha="1"
                 app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="24dp"
                 app:cardElevation="4dp">
@@ -52,38 +55,17 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:padding="12dp">
-
-                    <LinearLayout
+                    <!-- Image of Event -->
+                    <ImageView
+                        android:id="@+id/eventPoster"
                         android:layout_width="0dp"
                         android:layout_height="180dp"
                         android:layout_weight="1"
                         android:layout_marginEnd="8dp"
-                        android:orientation="vertical"
-                        android:gravity="center">
-
-                        <TextView
-                            android:visibility="gone"
-                            android:id="@+id/editImageText"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginBottom="8dp"
-                            android:letterSpacing="0.1"
-                            android:text="EDIT IMAGE"
-                            android:textColor="#2ECC71"
-                            android:textSize="11sp"
-                            android:textStyle="bold" />
-
-                        <ImageView
-                            android:id="@+id/eventPoster"
-                            android:layout_width="150dp"
-                            android:layout_height="150dp"
-                            android:scaleType="fitCenter"
-                            android:background="#F0F0F0"
-                            android:clipToOutline="true"
-                            android:clickable="true"
-                            app:shapeAppearanceOverlay="@style/RoundedImageStyle" />
-
-                    </LinearLayout>
+                        android:scaleType="fitCenter"
+                        android:background="#F0F0F0"
+                        android:clipToOutline="true"
+                        app:shapeAppearanceOverlay="@style/RoundedImageStyle" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -96,12 +78,12 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="8dp"
-                            android:letterSpacing="0.1"
+                            android:letterSpacing=  "0.1"
                             android:text="EVENT QR CODE"
                             android:textColor="#2ECC71"
                             android:textSize="11sp"
                             android:textStyle="bold" />
-
+                        <!-- Qr Image-->
                         <ImageView
                             android:id="@+id/eventQRCode"
                             android:layout_width="130dp"
@@ -113,13 +95,14 @@
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
-
+            <!-- Manage Event card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/nameCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:alpha="0"
+                tools:alpha="1"
                 app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="24dp"
                 app:cardElevation="4dp">
@@ -154,13 +137,57 @@
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+            <!--Notify card-->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/notifyCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:alpha="0"
+                tools:alpha="1"
+                android:visibility="gone"
+                app:cardBackgroundColor="#FFFFFF"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="4dp">
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:id="@+id/notifyText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Notifications"
+                        android:textColor="#1A1A1A"
+                        android:textSize="22sp"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/notifyEntrantsButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="48dp"
+                        android:backgroundTint="#2ECC71"
+                        android:text="Notify"
+                        android:textColor="@android:color/white"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        app:cornerRadius="12dp" />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+            <!-- Description card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/detailsCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:alpha="0"
+                tools:alpha="1"
                 app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="24dp"
                 app:cardElevation="4dp">
@@ -386,7 +413,7 @@
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
-
+            <!-- Comments card-->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/commentsCard"
                 android:layout_width="match_parent"
@@ -553,18 +580,6 @@
                 android:visibility="gone"
                 app:cornerRadius="16dp" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/mapButton"
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:layout_marginBottom="32dp"
-                android:backgroundTint="#2ECC71"
-                android:text="temp map button"
-                android:textColor="@android:color/white"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                app:cornerRadius="16dp" />
-
         </LinearLayout>
     </ScrollView>
 
@@ -576,6 +591,5 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

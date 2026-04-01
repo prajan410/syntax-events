@@ -60,6 +60,7 @@ public class EventDetailFragment extends HomeBar {
     private EditText commentInput;
     private MaterialButton postCommentButton;
     private MaterialButton prevPageButton;
+    private MaterialButton notifyButton;
     private MaterialButton nextPageButton;
     private TextView pageIndicator;
     private View paginationContainer;
@@ -110,6 +111,7 @@ public class EventDetailFragment extends HomeBar {
         View detailsCard          = view.findViewById(R.id.detailsCard);
         View actionCard           = view.findViewById(R.id.actionCard);
         View commentsCard         = view.findViewById(R.id.commentsCard);
+        View notifyCard           = view.findViewById(R.id.notifyCard);
         commentsRecyclerView      = view.findViewById(R.id.commentsRecyclerView);
         emptyCommentsText         = view.findViewById(R.id.emptyCommentsText);
         commentInput              = view.findViewById(R.id.commentInput);
@@ -118,6 +120,7 @@ public class EventDetailFragment extends HomeBar {
         nextPageButton            = view.findViewById(R.id.nextPageButton);
         pageIndicator             = view.findViewById(R.id.pageIndicator);
         paginationContainer       = view.findViewById(R.id.paginationContainer);
+        notifyButton              = view.findViewById(R.id.notifyEntrantsButton);
 
         headerTitle.setTranslationY(-20f);
         headerTitle.animate().alpha(1f).translationY(0f).setDuration(400).setStartDelay(100).start();
@@ -131,7 +134,8 @@ public class EventDetailFragment extends HomeBar {
         commentsCard.animate().alpha(1f).translationY(0f).setDuration(500).setStartDelay(460).start();
         actionCard.setTranslationY(30f);
         actionCard.animate().alpha(1f).translationY(0f).setDuration(500).setStartDelay(540).start();
-
+        notifyCard.setTranslationY(30f);
+        notifyCard.animate().alpha(1f).translationY(0f).setDuration(500).setStartDelay(540).start();
         doneButton.setOnClickListener(v -> NavHostFragment.findNavController(this).popBackStack());
         mapButton.setOnClickListener(v -> Navigation.findNavController(v).navigate(R.id.to_mapFragment));
 
@@ -220,7 +224,7 @@ public class EventDetailFragment extends HomeBar {
 
                 loadPoster(eventPoster);
                 loadQRCode(eventQRCode);
-                configureActionButton(joinButton, wLCount, event);
+                configureActionButton(joinButton, wLCount, event, notifyCard,notifyButton);
             });
         });
     }
@@ -410,15 +414,20 @@ public class EventDetailFragment extends HomeBar {
                 });
     }
 
-    private void configureActionButton(MaterialButton joinButton, TextView wLCount, EventDetail event) {
+    private void configureActionButton(MaterialButton joinButton, TextView wLCount, EventDetail event, View notifyCard, MaterialButton notifyButton) {
         boolean isEventOrganizer = uid != null && uid.equals(event.getOrganizerUid());
 
         if (isEventOrganizer) {
             joinButton.setText("Manage Event");
             joinButton.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FF9800")));
             joinButton.setOnClickListener(v -> navigateToManageEvent());
+            notifyCard.setVisibility(View.VISIBLE);
+            notifyButton.setOnClickListener(v -> {
+                navigateToNotifyEntrants();
+            });
             return;
         }
+
 
         long now      = System.currentTimeMillis();
         long regStart = parseDateMillis(event.getStartingRegistrationPeriod());
@@ -444,6 +453,11 @@ public class EventDetailFragment extends HomeBar {
         Bundle bundle = new Bundle();
         bundle.putString("eventId", eventId);
         Navigation.findNavController(requireView()).navigate(R.id.manageEventFragment, bundle);
+    }
+    private void navigateToNotifyEntrants(){
+        Bundle bundle = new Bundle();
+        bundle.putString("eventId", eventId);
+        Navigation.findNavController(requireView()).navigate(R.id.notifyEntrantsFragment, bundle);
     }
 
     private void handleJoinLeave(MaterialButton joinButton, TextView wLCount) {

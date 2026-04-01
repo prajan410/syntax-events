@@ -20,6 +20,14 @@ public class Profile {
     private boolean isOrganizer;
     private boolean isAdmin;
 
+
+
+    private boolean organizerNotificationEnabled;
+    private boolean adminNotificationEnabled;
+
+
+    private boolean notificationsOptedOut;
+
     /**
      * Required no-argument constructor for Firestore deserialization.
      */
@@ -34,19 +42,22 @@ public class Profile {
      * @param isEntrant            {@code true} if the user has the entrant role
      * @param isOrganizer          {@code true} if the user has the organizer role
      * @param isAdmin              {@code true} if the user has admin privileges; always {@code false} on registration
-     * @param notificationsEnabled {@code true} if the user has notifications enabled
+     * @param organizerNotificationsEnabled {@code true} if the user has notifications from organizersenabled
      * @param deviceId             the unique device identifier for the user
+     * @param adminNotificationEnabled {@code true} if the usaer has notifications from admins enabled
      */
     public Profile(String name, String email, String phone,
                    boolean isEntrant, boolean isOrganizer, boolean isAdmin,
-                   boolean notificationsEnabled, String deviceId) {
+                   boolean organizerNotificationsEnabled, boolean adminNotificationEnabled, String deviceId) {
         this.name = name;
         this.email = email;
         this.phone = phone;
         this.isEntrant = isEntrant;
         this.isOrganizer = isOrganizer;
         this.isAdmin = isAdmin;
-        this.notificationsEnabled = notificationsEnabled;
+
+        this.organizerNotificationEnabled = organizerNotificationsEnabled;
+        this.adminNotificationEnabled = adminNotificationEnabled;
         this.deviceId = deviceId;
     }
 
@@ -163,4 +174,31 @@ public class Profile {
      * @param deviceId the device ID to assign
      */
     public void setDeviceId(String deviceId) { this.deviceId = deviceId; }
+
+    /**
+     * Checks if user has notifications on
+     *
+     * @return notificationSettings, true or false
+     */
+
+    public void setNotificationsOptedOut(boolean notificationsOptedOut) {
+        this.notificationsOptedOut = notificationsOptedOut;
+    }
+    public boolean isOrganizerNotificationEnabled() {
+        return organizerNotificationEnabled;
+    }
+
+    public void setOrganizerNotificationEnabled(boolean organizerNotificationEnabled) {
+        this.organizerNotificationEnabled = organizerNotificationEnabled;
+    }
+
+    public boolean isAdminNotificationEnabled() {
+        return adminNotificationEnabled;
+    }
+
+    public void setAdminNotificationEnabled(boolean adminNotificationEnabled) {
+        this.adminNotificationEnabled = adminNotificationEnabled;
+    }
+
+
 }
