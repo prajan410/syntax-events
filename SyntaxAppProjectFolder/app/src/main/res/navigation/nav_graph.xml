@@ -420,5 +420,15 @@
         android:label="PrivateEventInviteFragment"
         tools:layout="@layout/fragment_private_event_invite" />
 
+    <fragment
+        android:id="@+id/mapFragment"
+        android:name="com.example.syntaxappproject.ui.MapFragment"
+        android:label="Map"
+        tools:layout="@layout/fragment_map">
+        <argument
+            android:name="eventId"
+            app:argType="string" />
+    </fragment>
+
 
 </navigation>
