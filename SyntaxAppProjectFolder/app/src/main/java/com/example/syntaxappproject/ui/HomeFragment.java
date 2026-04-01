@@ -223,6 +223,7 @@ public class HomeFragment extends HomeBar {
         });
 
         entrantHomeRepo.getEvents(events -> {
+            //-- No events currently available.
             if (events == null || events.isEmpty()) {
                 requireActivity().runOnUiThread(() -> {
                     rootView.findViewById(R.id.loadingSpinner).setVisibility(View.GONE);
@@ -233,7 +234,7 @@ public class HomeFragment extends HomeBar {
                 });
                 return;
             }
-
+            //otherwise list events
             List<EventDetail> filtered = new ArrayList<>();
             AtomicInteger counter = new AtomicInteger(0);
             long now = System.currentTimeMillis();
