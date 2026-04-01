@@ -6,12 +6,15 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import java.util.ArrayList;
+
 /**
  * Shared ViewModel for the event creation flow.
  * Allows the three event creation fragments to share event data across navigation steps.
  * Data persists across fragment transitions until the event is successfully created.
  */
 public class EventViewModel extends ViewModel {
+
     private final MutableLiveData<String> eventId = new MutableLiveData<>();
 
     private final MutableLiveData<String> lotteryCriteria = new MutableLiveData<>("");
@@ -27,6 +30,9 @@ public class EventViewModel extends ViewModel {
     private final MutableLiveData<Uri> imageUri = new MutableLiveData<>();
     private final MutableLiveData<String> qrCodeData = new MutableLiveData<>();
 
+    private final MutableLiveData<Boolean> privateEvent = new MutableLiveData<>(false);
+    private final MutableLiveData<ArrayList<String>> invitedUserIds = new MutableLiveData<>(new ArrayList<>());
+
     public LiveData<String> getEventId() { return eventId; }
     public void setEventId(String id) { eventId.setValue(id); }
 
@@ -39,9 +45,8 @@ public class EventViewModel extends ViewModel {
     public LiveData<String> getLocation() { return location; }
     public void setLocation(String loc) { location.setValue(loc); }
 
-    public LiveData<String> getLotteryCriteria() {
-        return lotteryCriteria;
-    }
+    public LiveData<String> getLotteryCriteria() { return lotteryCriteria; }
+    public void setLotteryCriteria(String criteria) { lotteryCriteria.setValue(criteria); }
 
     public LiveData<Integer> getCapacity() { return capacity; }
     public void setCapacity(int i) { capacity.setValue(i); }
@@ -54,19 +59,22 @@ public class EventViewModel extends ViewModel {
 
     public LiveData<String> getEndingEventDate() { return endingEventDate; }
     public void setEndingEventDate(String date) { endingEventDate.setValue(date); }
+
     public LiveData<String> getStartingRegistrationPeriod() { return startingRegistrationPeriod; }
     public void setStartingRegistrationPeriod(String date) { startingRegistrationPeriod.setValue(date); }
 
     public LiveData<String> getEndingRegistrationPeriod() { return endingRegistrationPeriod; }
     public void setEndingRegistrationPeriod(String date) { endingRegistrationPeriod.setValue(date); }
 
-    public void setLotteryCriteria(String criteria) {
-        lotteryCriteria.setValue(criteria);
-    }
-
     public LiveData<Uri> getImageUri() { return imageUri; }
     public void setImageUri(Uri uri) { imageUri.setValue(uri); }
 
     public LiveData<String> getQrCodeData() { return qrCodeData; }
     public void setQrCodeData(String qr) { qrCodeData.setValue(qr); }
+
+    public LiveData<Boolean> getPrivateEvent() { return privateEvent; }
+    public void setPrivateEvent(Boolean value) { privateEvent.setValue(value); }
+
+    public LiveData<ArrayList<String>> getInvitedUserIds() { return invitedUserIds; }
+    public void setInvitedUserIds(ArrayList<String> ids) { invitedUserIds.setValue(ids); }
 }

@@ -55,6 +55,7 @@ public class UserFragmentTest {
                 false,
                 false,
                 true,
+                false,
                 "test-uid"
         );
 

@@ -12,19 +12,26 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.example.syntaxappproject.BulletPointHelper;
 import com.example.syntaxappproject.EventViewModel;
 import com.example.syntaxappproject.R;
-import com.example.syntaxappproject.BulletPointHelper;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
-
 /**
  * Fragment that presents the event creation form to an organizer.
+ * <p>
  * Collects event name, description, location, capacity, event dates,
- * registration period dates, and lottery criteria. On successful validation,
- * the input is stored in a shared {@link EventViewModel} and the user is
+ * and registration period dates. On successful validation, the input
+ * is stored in a shared {@link EventViewModel} and the user is
  * navigated to the poster upload step.
+ * </p>
+ *
+ * <p>Extends {@link HomeBar} to inherit the bottom navigation hotbar.</p>
+ *
+ * <p>Outstanding issues: geo-requirement flag is not yet collected on
+ * this screen; lottery criteria input is also absent.</p>
  */
+
 public class CreateEventFragment extends HomeBar {
 
     private TextInputEditText eventNameInput, descriptionInput, locationInput, capacityInput;
@@ -32,16 +39,36 @@ public class CreateEventFragment extends HomeBar {
     private TextInputEditText regisStartDateInput, regisEndDateInput;
     private TextInputEditText lotteryCriteriaInput;
     private SwitchMaterial geoSwitch;
+    private SwitchMaterial privateEventSwitch;
 
+    /**
+     * Inflates the create event layout.
+     *
+     * @param inflater  the layout inflater
+     * @param container the parent view group
+     * @param savedInstanceState previously saved state, or {@code null}
+     * @return the inflated view for this fragment
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_create_event, container, false);
     }
 
+
+    /**
+     * Called immediately after {@link #onCreateView}. Binds input fields,
+     * sets up date pickers, applies entrance animations, and attaches the
+     * continue button click handler.
+     *
+     * @param view               the view returned by {@link #onCreateView}
+     * @param savedInstanceState previously saved state, or {@code null}
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         try { setupHotbar(view); } catch (Exception ignored) {}
+
+        privateEventSwitch = view.findViewById(R.id.privateEventSwitch);
 
         eventNameInput = view.findViewById(R.id.eventNameInput);
         descriptionInput = view.findViewById(R.id.descriptionInput);
@@ -56,11 +83,13 @@ public class CreateEventFragment extends HomeBar {
 
         BulletPointHelper.setupBulletPointField(lotteryCriteriaInput);
 
+        // Date pickers
         eventStartDateInput.setOnClickListener(v -> showDatePicker(eventStartDateInput));
         eventEndDateInput.setOnClickListener(v -> showDatePicker(eventEndDateInput));
         regisStartDateInput.setOnClickListener(v -> showDatePicker(regisStartDateInput));
         regisEndDateInput.setOnClickListener(v -> showDatePicker(regisEndDateInput));
 
+        // Entrance animations
         View headerTitle = view.findViewById(R.id.headerTitle);
         View detailsCard = view.findViewById(R.id.detailsCard);
         View capacityCard = view.findViewById(R.id.capacityCard);
@@ -107,39 +136,30 @@ public class CreateEventFragment extends HomeBar {
             String endingEventDate = getText(eventEndDateInput);
             String startingRegistrationPeriod = getText(regisStartDateInput);
             String endingRegistrationPeriod = getText(regisEndDateInput);
-
             String lotteryCriteria = BulletPointHelper.getPlainText(getText(lotteryCriteriaInput));
 
+            // --Error check inputs --
             if (name.isEmpty()) {
-                toast("Event name is required");
-                return;
+                toast("Event name is required"); return;
             }
             if (description.isEmpty()) {
-                toast("Description is required");
-                return;
+                toast("Description is required"); return;
             }
             if (location.isEmpty()) {
-                toast("Location is required");
-                return;
+                toast("Location is required"); return;
             }
             if (!isInteger(capacityStr)) {
-                toast("Capacity must be a valid number");
-                return;
+                toast("Capacity must be a valid number"); return;
             }
 
             int capacity = 0;
             if (!capacityStr.isEmpty()) {
-                if (!isInteger(capacityStr)) {
-                    toast("Capacity must be a valid number");
-                    return;
-                }
+                if (!isInteger(capacityStr)) { toast("Capacity must be a valid number"); return; }
                 capacity = Integer.parseInt(capacityStr);
-                if (capacity < 1) {
-                    toast("Capacity must be 1 or greater");
-                    return;
-                }
+                if (capacity < 1) { toast("Capacity must be 1 or greater"); return; }
             }
 
+            // -- Save values into view model --
             EventViewModel viewModel = new ViewModelProvider(requireActivity()).get(EventViewModel.class);
             viewModel.setName(name);
             viewModel.setGeoReq(geoSwitch.isChecked());
@@ -151,11 +171,18 @@ public class CreateEventFragment extends HomeBar {
             viewModel.setStartingRegistrationPeriod(startingRegistrationPeriod);
             viewModel.setEndingRegistrationPeriod(endingRegistrationPeriod);
             viewModel.setLotteryCriteria(lotteryCriteria);
+            viewModel.setPrivateEvent(privateEventSwitch.isChecked());
 
             navController.navigate(R.id.toUploadImageFragment);
         });
     }
 
+    /**
+     * Displays a {@link android.app.DatePickerDialog} and writes the selected
+     * date into the given input field in {@code YYYY-MM-DD} format.
+     *
+     * @param target the {@link TextInputEditText} to populate with the selected date
+     */
     private void showDatePicker(TextInputEditText target) {
         android.app.DatePickerDialog picker = new android.app.DatePickerDialog(
                 requireContext(),
@@ -170,14 +197,34 @@ public class CreateEventFragment extends HomeBar {
         picker.show();
     }
 
+
+    /**
+     * Safely extracts and trims the text from a {@link TextInputEditText}.
+     *
+     * @param field the input field to read
+     * @return the trimmed string, or an empty string if the field is {@code null}
+     */
     private String getText(TextInputEditText field) {
         return field.getText() != null ? field.getText().toString().trim() : "";
     }
 
+
+    /**
+     * Displays a short {@link Toast} message.
+     *
+     * @param msg the message to display
+     */
     private void toast(String msg) {
         Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
     }
 
+
+    /**
+     * Checks whether the given string can be parsed as an integer.
+     *
+     * @param str the string to validate
+     * @return {@code true} if {@code str} is a valid integer, {@code false} otherwise
+     */
     private boolean isInteger(String str) {
         if (str == null || str.isBlank()) return false;
         try {

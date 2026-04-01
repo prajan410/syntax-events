@@ -2,6 +2,7 @@ package com.example.syntaxappproject.ui;
 
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +16,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.syntaxappproject.AuthenticationService;
+import com.example.syntaxappproject.EventJoinRepository;
+import com.example.syntaxappproject.Invitation;
 import com.example.syntaxappproject.InvitationRepository;
 import com.example.syntaxappproject.ProfileRepository;
 import com.example.syntaxappproject.R;
@@ -22,21 +25,10 @@ import com.google.android.material.materialswitch.MaterialSwitch;
 
 public class NotificationFragment extends HomeBar {
 
-    // --- Unchanged ---
     private final AuthenticationService authService = new AuthenticationService();
     private final InvitationRepository invitationRepository = new InvitationRepository();
+    private final ProfileRepository profileRepository = new ProfileRepository();
 
-    // --- Removed (no longer in XML) ---
-    // private TextView currentUserText;
-    // private TextView eventNameText;
-    // private TextView messageText;
-    // private TextView statusText;
-    // private View invitationCard;
-    // private Button acceptButton;
-    // private Button declineButton;
-    // private TextView emptyText;
-
-    // --- New views from XML ---
     private MaterialSwitch organizerToggle;
     private MaterialSwitch adminToggle;
     private RecyclerView notificationsRecyclerView;
@@ -45,20 +37,20 @@ public class NotificationFragment extends HomeBar {
     private View toggleCard;
     private View notificationsCard;
 
+    private Invitation currentInvitation = null;
+
     public NotificationFragment() {}
-    private ProfileRepository profileRepository = new ProfileRepository();
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // unchanged
         return inflater.inflate(R.layout.fragment_notification, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        setupHotbar(view); // unchanged
+        setupHotbar(view);
 
-        // --- New: bind views ---
         organizerToggle = view.findViewById(R.id.organizerToggle);
         adminToggle = view.findViewById(R.id.adminToggle);
         notificationsRecyclerView = view.findViewById(R.id.notificationsRecyclerView);
@@ -67,94 +59,147 @@ public class NotificationFragment extends HomeBar {
         toggleCard = view.findViewById(R.id.toggleCard);
         notificationsCard = view.findViewById(R.id.notificationsCard);
 
-        // --- New: RecyclerView setup ---
         notificationsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        // TODO: set your adapter here once built
-        // notificationsRecyclerView.setAdapter(new NotificationAdapter(...));
 
-        // --- New: load and apply toggle states from Firestore ---
         String userId = authService.getCurrentUserId();
         if (userId != null) {
             loadToggleStates(userId);
             loadNotifications(userId);
+        } else {
+            newBadge.setVisibility(View.GONE);
         }
 
-        // --- New: save toggle state back to Firestore on change ---
+        notificationsCard.setOnClickListener(v -> {
+            if (currentInvitation == null) {
+                Toast.makeText(getContext(), "No pending invitations right now.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            showInvitationDialog(userId);
+        });
 
-
-        // --- New: fade-in animation matching profile fragment style ---
         animateIn();
     }
 
-    // --- New ---
     private void loadToggleStates(String userId) {
         profileRepository.getProfile(userId, profile -> {
-            if (profile != null) {
+            if (profile != null && isAdded()) {
                 requireActivity().runOnUiThread(() -> {
                     organizerToggle.setChecked(profile.isOrganizerNotificationEnabled());
                     adminToggle.setChecked(profile.isAdminNotificationEnabled());
-                    setupToggleListeners(userId); // attach listeners only after state is set
+                    setupToggleListeners(userId);
                 });
             }
         });
     }
-    private void setupToggleListeners(String userId){
+
+    private void setupToggleListeners(String userId) {
         organizerToggle.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (userId != null) {
-                profileRepository.getProfile(userId, profile -> {
-                    if (profile != null) {
-                        profile.setOrganizerNotificationEnabled(isChecked); //updates profile object
-                        profileRepository.updateProfile(userId, profile, success -> { //updates profile in firebase.
-                            requireActivity().runOnUiThread(() -> {
-                                if (!success) { //Warns when failed
-                                    Toast.makeText(getContext(), "Failed to save preference", Toast.LENGTH_SHORT).show();
-                                    organizerToggle.setChecked(!isChecked);
-                                }
-                            });
+            profileRepository.getProfile(userId, profile -> {
+                if (profile != null) {
+                    profile.setOrganizerNotificationEnabled(isChecked);
+                    profileRepository.updateProfile(userId, profile, success -> {
+                        if (!isAdded()) return;
+                        requireActivity().runOnUiThread(() -> {
+                            if (!success) {
+                                Toast.makeText(getContext(), "Failed to save preference", Toast.LENGTH_SHORT).show();
+                                organizerToggle.setChecked(!isChecked);
+                            }
                         });
-                    }
-                });
-            }
+                    });
+                }
+            });
         });
 
         adminToggle.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (userId != null) {
-                profileRepository.getProfile(userId, profile -> {
-                    if (profile != null) {
-                        profile.setAdminNotificationEnabled(isChecked);
-                        profileRepository.updateProfile(userId, profile, success -> {
-                            requireActivity().runOnUiThread(() -> {
-                                if (!success) {
-                                    Toast.makeText(getContext(), "Failed to save preference", Toast.LENGTH_SHORT).show();
-                                    adminToggle.setChecked(!isChecked);
-                                }
-                            });
+            profileRepository.getProfile(userId, profile -> {
+                if (profile != null) {
+                    profile.setAdminNotificationEnabled(isChecked);
+                    profileRepository.updateProfile(userId, profile, success -> {
+                        if (!isAdded()) return;
+                        requireActivity().runOnUiThread(() -> {
+                            if (!success) {
+                                Toast.makeText(getContext(), "Failed to save preference", Toast.LENGTH_SHORT).show();
+                                adminToggle.setChecked(!isChecked);
+                            }
                         });
-                    }
-                });
-            }
+                    });
+                }
+            });
         });
     }
 
-    // --- New: replaces loadPendingInvitation — now loads into RecyclerView ---
     private void loadNotifications(String userId) {
-        invitationRepository.getPendingInvitationForUser(userId, invitation ->
-                requireActivity().runOnUiThread(() -> {
-                    if (invitation == null) {
-                        newBadge.setVisibility(View.GONE);
-                        return;
-                    }
-                    // TODO: pass list to adapter and update newBadge count
+        invitationRepository.getPendingInvitationForUser(userId, invitation -> {
+            if (!isAdded()) return;
+            requireActivity().runOnUiThread(() -> {
+                currentInvitation = invitation;
+                if (invitation == null) {
+                    newBadge.setVisibility(View.GONE);
+                } else {
                     newBadge.setText("1 new");
                     newBadge.setVisibility(View.VISIBLE);
-                })
-        );
+                }
+            });
+        });
     }
 
-    /**
-     * Function to animate fading in of cards.
-     *
-     */
+    private void showInvitationDialog(String userId) {
+        if (currentInvitation == null || getContext() == null) return;
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle(currentInvitation.getEventName())
+                .setMessage("You have been invited to join the waiting list for this private event.")
+                .setNegativeButton("Decline", (dialog, which) -> declineInvitation(userId))
+                .setPositiveButton("Accept", (dialog, which) -> acceptInvitation(userId))
+                .show();
+    }
+
+    private void acceptInvitation(String userId) {
+        if (currentInvitation == null) return;
+
+        EventJoinRepository joinRepo = new EventJoinRepository();
+        String eventId = currentInvitation.getEventId();
+
+        joinRepo.joinEvent(eventId, userId, joinSuccess -> {
+            if (!isAdded()) return;
+
+            if (!joinSuccess) {
+                requireActivity().runOnUiThread(() ->
+                        Toast.makeText(getContext(), "Failed to join waitlist", Toast.LENGTH_SHORT).show()
+                );
+                return;
+            }
+
+            invitationRepository.acceptInvitation(currentInvitation.getInvitationId(), success -> {
+                if (!isAdded()) return;
+                requireActivity().runOnUiThread(() -> {
+                    if (success) {
+                        Toast.makeText(getContext(), "Invitation accepted", Toast.LENGTH_SHORT).show();
+                        loadNotifications(userId);
+                    } else {
+                        Toast.makeText(getContext(), "Joined waitlist but failed to update invitation", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            });
+        });
+    }
+
+    private void declineInvitation(String userId) {
+        if (currentInvitation == null) return;
+
+        invitationRepository.declineInvitation(currentInvitation.getInvitationId(), success -> {
+            if (!isAdded()) return;
+            requireActivity().runOnUiThread(() -> {
+                if (success) {
+                    Toast.makeText(getContext(), "Invitation declined", Toast.LENGTH_SHORT).show();
+                    loadNotifications(userId);
+                } else {
+                    Toast.makeText(getContext(), "Failed to decline invitation", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+    }
+
     private void animateIn() {
         View[] views = {headerTitle, toggleCard, notificationsCard};
         AnimatorSet set = new AnimatorSet();

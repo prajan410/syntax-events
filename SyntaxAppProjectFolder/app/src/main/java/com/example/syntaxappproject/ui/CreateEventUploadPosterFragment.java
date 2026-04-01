@@ -36,10 +36,12 @@ import java.util.Map;
 
 /**
  * Fragment that allows the organizer to upload an event poster image.
+ * <p>
  * The user can select an image from the gallery, preview it, or skip the poster.
  * The event data from {@link EventViewModel} is saved to Firestore; if an image
  * is selected, it is also uploaded to Firebase Realtime Database and cached with
  * {@link ImageCacheManager}. On success, the fragment navigates to the QR code step.
+ * </p>
  */
 public class CreateEventUploadPosterFragment extends Fragment {
 
@@ -50,6 +52,14 @@ public class CreateEventUploadPosterFragment extends Fragment {
 
     private final AuthenticationService authService = new AuthenticationService();
 
+    /**
+     * Inflates the upload poster layout.
+     *
+     * @param inflater  the layout inflater
+     * @param container the parent view group
+     * @param savedInstanceState previously saved state, or {@code null}
+     * @return the inflated view for this fragment
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -58,6 +68,14 @@ public class CreateEventUploadPosterFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_create_event_upload_poster, container, false);
     }
 
+    /**
+     * Called immediately after {@link #onCreateView}. Binds views, applies
+     * entrance animations, and attaches click handlers for poster selection,
+     * continue, and skip.
+     *
+     * @param view               the view returned by {@link #onCreateView}
+     * @param savedInstanceState previously saved state, or {@code null}
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -100,6 +118,10 @@ public class CreateEventUploadPosterFragment extends Fragment {
         view.findViewById(R.id.skipPosterButton).setOnClickListener(v -> saveEventToFirebase());
     }
 
+    /**
+     * Launches the device gallery via an {@link Intent} to allow the
+     * organizer to pick an image for the event poster.
+     */
     private void openGallery() {
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType("image/*");
@@ -107,23 +129,32 @@ public class CreateEventUploadPosterFragment extends Fragment {
     }
 
     /**
-     * Writes all event data from {@link EventViewModel} to Firestore as a new document.
-     * On success, either uploads the poster or navigates directly to QR step.
+     * Writes all event data collected in {@link EventViewModel} to Firestore
+     * as a new document in the {@code events} collection.
+     * <p>
+     * On success, navigates to the QR code step passing the new event ID.
+     * On failure, displays a short toast to the user.
+     * </p>
      */
     private void saveEventToFirebase() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         String organizerUid = authService.getCurrentUserId();
 
         Map<String, Object> eventData = new HashMap<>();
-        eventData.put("name",         viewModel.getName().getValue());
-        eventData.put("description",  viewModel.getDescription().getValue());
-        eventData.put("location",     viewModel.getLocation().getValue());
-        eventData.put("capacity",     viewModel.getCapacity().getValue());
-        eventData.put("startingEventDate",     viewModel.getStartingEventDate().getValue());
-        eventData.put("endingEventDate",     viewModel.getEndingEventDate().getValue());
-        eventData.put("startingRegistrationPeriod",     viewModel.getStartingRegistrationPeriod().getValue());
-        eventData.put("endingRegistrationPeriod",     viewModel.getEndingRegistrationPeriod().getValue());
+        eventData.put("name", viewModel.getName().getValue());
+        eventData.put("description", viewModel.getDescription().getValue());
+        eventData.put("location", viewModel.getLocation().getValue());
+        eventData.put("capacity", viewModel.getCapacity().getValue());
+        eventData.put("startingEventDate", viewModel.getStartingEventDate().getValue());
+        eventData.put("endingEventDate", viewModel.getEndingEventDate().getValue());
+        eventData.put("startingRegistrationPeriod", viewModel.getStartingRegistrationPeriod().getValue());
+        eventData.put("endingRegistrationPeriod", viewModel.getEndingRegistrationPeriod().getValue());
         eventData.put("organizerUid", organizerUid);
+        eventData.put("lotteryCriteria", viewModel.getLotteryCriteria().getValue());
+        eventData.put("privateEvent", Boolean.TRUE.equals(viewModel.getPrivateEvent().getValue()));
+        eventData.put("invitedUserIds", viewModel.getInvitedUserIds().getValue());
+        eventData.put("waitlistCount", 0);
+        eventData.put("geoReq", Boolean.TRUE.equals(viewModel.getGeoReq().getValue()));
 
         db.collection("events")
                 .add(eventData)
@@ -131,10 +162,12 @@ public class CreateEventUploadPosterFragment extends Fragment {
                     String eventId = documentReference.getId();
                     viewModel.setEventId(eventId);
 
+                    boolean isPrivate = Boolean.TRUE.equals(viewModel.getPrivateEvent().getValue());
+
                     if (selectedImageUri != null) {
-                        uploadPosterToRealtimeDatabase(eventId);
+                        uploadPosterToRealtimeDatabase(eventId, isPrivate);
                     } else {
-                        navigateToQRFragment(eventId);
+                        afterEventSaved(eventId, isPrivate);
                     }
                 })
                 .addOnFailureListener(e ->
@@ -144,18 +177,24 @@ public class CreateEventUploadPosterFragment extends Fragment {
 
     /**
      * Uploads the selected poster image to Firebase Realtime Database.
-     * Resizes to max 512px and compresses at JPEG 60% before Base64-encoding.
+     * <p>
+     * Reads the image from {@link #selectedImageUri}, compresses it as PNG or JPEG,
+     * Base64-encodes it, and stores it under {@code event_posters/{eventId}}.
+     * The bitmap is also cached in {@link ImageCacheManager}. On success or failure,
+     * the fragment navigates to the QR code step.
+     * </p>
+     *
+     * @param eventId the ID of the event whose poster is being uploaded
      */
-    private void uploadPosterToRealtimeDatabase(String eventId) {
+    private void uploadPosterToRealtimeDatabase(String eventId, boolean isPrivate) {
         new Thread(() -> {
             try {
                 ContentResolver resolver = requireContext().getContentResolver();
-                InputStream imageStream  = resolver.openInputStream(selectedImageUri);
-                Bitmap imageBitmap       = BitmapFactory.decodeStream(imageStream);
+                InputStream imageStream = resolver.openInputStream(selectedImageUri);
+                Bitmap imageBitmap = BitmapFactory.decodeStream(imageStream);
 
-
-                int maxDim = 512; // Resize to max 512px on the longest side to reduce storage
-                int width  = imageBitmap.getWidth();
+                int maxDim = 512;
+                int width = imageBitmap.getWidth();
                 int height = imageBitmap.getHeight();
                 if (width > maxDim || height > maxDim) {
                     float scale = Math.min((float) maxDim / width, (float) maxDim / height);
@@ -181,25 +220,40 @@ public class CreateEventUploadPosterFragment extends Fragment {
                 imageData.put("image", base64Image);
                 imageData.put("type", "image/jpeg");
 
-                final Bitmap finalBitmap = imageBitmap;
                 reference.child(eventId).setValue(imageData)
-                        .addOnSuccessListener(aVoid -> navigateToQRFragment(eventId))
+                        .addOnSuccessListener(aVoid -> {
+                            if (!isAdded()) return;
+                            requireActivity().runOnUiThread(() -> afterEventSaved(eventId, isPrivate));
+                        })
                         .addOnFailureListener(e -> {
                             if (!isAdded()) return;
-                            requireActivity().runOnUiThread(() ->
-                                    Toast.makeText(getContext(), "Failed to upload poster", Toast.LENGTH_SHORT).show()
-                            );
-                            navigateToQRFragment(eventId);
+                            requireActivity().runOnUiThread(() -> {
+                                Toast.makeText(getContext(), "Failed to upload poster", Toast.LENGTH_SHORT).show();
+                                afterEventSaved(eventId, isPrivate);
+                            });
                         });
 
             } catch (Exception e) {
                 if (!isAdded()) return;
-                requireActivity().runOnUiThread(() ->
-                        Toast.makeText(getContext(), "Failed to process image", Toast.LENGTH_SHORT).show()
-                );
-                navigateToQRFragment(eventId);
+                requireActivity().runOnUiThread(() -> {
+                    Toast.makeText(getContext(), "Failed to process image", Toast.LENGTH_SHORT).show();
+                    afterEventSaved(eventId, isPrivate);
+                });
             }
         }).start();
+    }
+
+    private void afterEventSaved(String eventId, boolean isPrivate) {
+        if (isPrivate) {
+            Bundle bundle = new Bundle();
+            bundle.putString("eventId", eventId);
+            bundle.putString("eventName", viewModel.getName().getValue());
+
+            NavHostFragment.findNavController(this)
+                    .navigate(R.id.privateEventInviteFragment, bundle);
+        } else {
+            navigateToQRFragment(eventId);
+        }
     }
 
     private void navigateToQRFragment(String eventId) {
