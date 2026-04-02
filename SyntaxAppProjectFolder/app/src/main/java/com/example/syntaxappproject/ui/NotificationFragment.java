@@ -165,11 +165,7 @@ public class NotificationFragment extends HomeBar {
      * Filters by the user's opt-out preferences before displaying.
      * Updates the newBadge count based on how many were loaded.
      */
-    /**
-     * Loads notifications for the current user.
-     * Filters by sender role opt-out preferences, then by
-     * targetGroup membership (WAITLIST / SELECTED / CANCELLED / ALL).
-     */
+
     private void loadNotifications(String userId) {
         Log.d("NotifDebug", "loadNotifications called for userId=" + userId);
 
@@ -217,7 +213,7 @@ public class NotificationFragment extends HomeBar {
                 }
 
                 Log.d("NotifDebug", "roleFiltered size=" + roleFiltered.size());
-                filterAndDisplay(roleFiltered, userId);
+                resolveEventNames(roleFiltered, userId);
             });
         });
     }
@@ -231,6 +227,29 @@ public class NotificationFragment extends HomeBar {
                 .setNegativeButton("Decline", (dialog, which) -> declineInvitation(userId))
                 .setPositiveButton("Accept", (dialog, which) -> acceptInvitation(userId))
                 .show();
+    }
+    private void resolveEventNames(List<Notification> notifications, String userId) {
+        if (notifications.isEmpty()) {
+            filterAndDisplay(notifications, userId);
+            return;
+        }
+
+        AtomicInteger pending = new AtomicInteger(notifications.size());
+
+        for (Notification notif : notifications) {
+            String eventId = notif.getEventId(); // however you access the eventId
+            eventRepository.getEvent(eventId, event -> {
+                if (event != null) {
+                    notif.setEventName(event.getEventName()); // or getName(), whatever your Event model uses
+                } else {
+                    notif.setEventName("Unknown Event"); // fallback
+                }
+                if (pending.decrementAndGet() == 0) {
+                    // All names resolved — proceed to filtering and display
+                    filterAndDisplay(notifications, userId);
+                }
+            });
+        }
     }
 
     private void acceptInvitation(String userId) {

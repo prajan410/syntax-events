@@ -8,6 +8,11 @@ public class Notification {
     private String eventId;
     private String senderId;
     private String senderRole;   // "ORGANIZER" or "ADMIN"
+
+
+
+    private String eventName;
+
     private String title;
     private String body;
     private long timestamp;
@@ -46,4 +51,14 @@ public class Notification {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public String getEventName() {
+        return eventName;
+    }
+
+    public void setEventName(String eventName) {
+        this.eventName = eventName;
+    }
+
+
 }

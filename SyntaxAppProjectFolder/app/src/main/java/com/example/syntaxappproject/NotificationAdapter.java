@@ -42,7 +42,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         // Event name — currently shows eventId as placeholder
         // TODO: resolve eventId to a human-readable event name via EventDetailRepository
         holder.eventName.setText(notification.getEventId());
-
+        holder.eventName.setText(notification.getEventName());
         // Sender role displayed as "Organizer · John" style subtitle
         // Currently just shows the role until senderId resolves to a name
         holder.senderRole.setText(notification.getSenderRole());
