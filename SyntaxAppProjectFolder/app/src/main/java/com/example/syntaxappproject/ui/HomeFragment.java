@@ -318,7 +318,7 @@ public class HomeFragment extends HomeBar {
 
             if (endDateFilter != null && !endDateFilter.isEmpty()) {
                 long end = parseDateMillis(endDateFilter);
-                if (eventEndDate == -1 || eventEndDate > end) continue;
+                if (eventStartDate == -1 || eventStartDate > end) continue;
             }
 
             if (capacityFilter != -1) {
