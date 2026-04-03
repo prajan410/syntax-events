@@ -80,6 +80,8 @@ public class AdminFragment extends Fragment {
                 NavHostFragment.findNavController(this).navigate(R.id.adminBrowseImages));
         btnComments.setOnClickListener(v ->
                 NavHostFragment.findNavController(this).navigate(R.id.adminBrowseComments));
+        btnNotifs.setOnClickListener(v ->
+                NavHostFragment.findNavController(this).navigate(R.id.adminBrowseNotification));
 
         AuthenticationService authService = new AuthenticationService();
         String uid = authService.getCurrentUserId();
