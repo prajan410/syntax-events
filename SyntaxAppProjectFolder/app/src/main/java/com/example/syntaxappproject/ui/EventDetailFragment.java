@@ -26,6 +26,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.syntaxappproject.AuthenticationService;
 import com.example.syntaxappproject.BulletPointHelper;
+import com.example.syntaxappproject.CoOrganizerRepository;
 import com.example.syntaxappproject.Comment;
 import com.example.syntaxappproject.CommentAdapter;
 import com.example.syntaxappproject.CommentRepository;
@@ -74,6 +75,7 @@ public class EventDetailFragment extends HomeBar {
     private boolean isOrganizer = false;
     private boolean isAdmin = false;
     private int profilesLoaded = 0;
+    private boolean isCoOrganizer = false;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -222,7 +224,10 @@ public class EventDetailFragment extends HomeBar {
 
                 loadPoster(eventPoster);
                 loadQRCode(eventQRCode);
-                configureActionButton(joinButton, wLCount, event, notifyCard,notifyButton);
+                new CoOrganizerRepository().isCoOrganizer(eventId, uid, coOrganizer -> {
+                    isCoOrganizer = coOrganizer;
+                    configureActionButton(joinButton, wLCount, event, notifyCard,notifyButton);
+                });
             });
         });
     }
@@ -413,7 +418,9 @@ public class EventDetailFragment extends HomeBar {
     }
 
     private void configureActionButton(MaterialButton joinButton, TextView wLCount, EventDetail event, View notifyCard, MaterialButton notifyButton) {
-        boolean isEventOrganizer = uid != null && uid.equals(event.getOrganizerUid());
+        boolean isMainOrganizer = uid != null && uid.equals(event.getOrganizerUid());
+        boolean isEventOrganizer = isMainOrganizer || isCoOrganizer;
+
 
         if (isEventOrganizer) {
             joinButton.setText("Manage Event");
