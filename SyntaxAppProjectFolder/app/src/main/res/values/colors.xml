@@ -3,4 +3,8 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="green">#1FC954</color>
+    <color name="chip_checked_bg">#F0FBF4</color>
+    <color name="chip_checked_stroke">#2ECC71</color>
+    <color name="chip_unchecked_bg">#FFFFFF</color>
+    <color name="chip_unchecked_stroke">#E0E0E0</color>
 </resources>

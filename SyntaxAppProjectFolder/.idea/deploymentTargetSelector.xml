@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2026-03-24T19:35:03.994462Z">
+        <DropdownSelection timestamp="2026-04-03T12:38:54.858874655Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\praja\.android\avd\Pixel_5_3.avd" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=/home/vredstarx/.android/avd/Medium_Phone_2.avd" />
             </handle>
           </Target>
         </DropdownSelection>
@@ -15,10 +15,10 @@
       </SelectionState>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2026-03-24T19:35:03.994462Z">
+        <DropdownSelection timestamp="2026-04-03T12:38:54.858874655Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\praja\.android\avd\Pixel_5_3.avd" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=/home/vredstarx/.android/avd/Medium_Phone_2.avd" />
             </handle>
           </Target>
         </DropdownSelection>
