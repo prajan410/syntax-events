@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -279,7 +280,7 @@ public class EventDetailFragment extends HomeBar {
                         isOrganizer = coOrganizer;
                     }
                     checkAndUpdateAdapter();
-                    configureActionButton(joinButton, wLCount, event, notifyCard,notifyButton);
+                    configureActionButton(joinButton, wLCount, event, notifyCard,notifyButton, mapButton);
                 });
             });
         });
@@ -470,7 +471,7 @@ public class EventDetailFragment extends HomeBar {
                 });
     }
 
-    private void configureActionButton(MaterialButton joinButton, TextView wLCount, EventDetail event, View notifyCard, MaterialButton notifyButton) {
+    private void configureActionButton(MaterialButton joinButton, TextView wLCount, EventDetail event, View notifyCard, MaterialButton notifyButton, MaterialButton mapButton) {
         boolean isMainOrganizer = uid != null && uid.equals(event.getOrganizerUid());
         boolean isEventOrganizer = isMainOrganizer || isCoOrganizer;
 
