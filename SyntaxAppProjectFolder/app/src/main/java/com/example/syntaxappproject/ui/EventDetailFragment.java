@@ -225,7 +225,13 @@ public class EventDetailFragment extends HomeBar {
                 loadPoster(eventPoster);
                 loadQRCode(eventQRCode);
                 new CoOrganizerRepository().isCoOrganizer(eventId, uid, coOrganizer -> {
-                    isCoOrganizer = coOrganizer;
+                    if (event != null && uid != null) {
+                        isCoOrganizer = coOrganizer;
+                    }
+                    if (coOrganizer) {
+                        isOrganizer = coOrganizer;
+                    }
+                    checkAndUpdateAdapter();
                     configureActionButton(joinButton, wLCount, event, notifyCard,notifyButton);
                 });
             });
