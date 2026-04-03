@@ -174,7 +174,45 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:padding="20dp">
+                        <!-- Title box -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Title"
+                            android:textColor="#888888"
+                            android:textSize="11sp"
+                            android:letterSpacing="0.08"
+                            android:layout_marginBottom="10dp" />
 
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            app:hintTextColor="#BBBBBB">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/titleInput"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:minHeight="30dp"
+                                android:hint="Enter title..."
+                                android:maxLines="1"
+                                android:inputType="text"
+                                android:gravity="top"
+                                android:maxLength="50"
+                                android:imeOptions="actionDone"
+                                />
+
+                        </com.google.android.material.textfield.TextInputLayout>
+                        <TextView
+                            android:id="@+id/titleCharCount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="end"
+                            android:layout_marginTop="6dp"
+                            android:text="0 / 50"
+                            android:textColor="#BBBBBB"
+                            android:textSize="11sp" />
+                        <!--Message Input box -->
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"

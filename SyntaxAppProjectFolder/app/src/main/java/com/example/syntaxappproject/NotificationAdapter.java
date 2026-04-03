@@ -39,14 +39,8 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
     public void onBindViewHolder(@NonNull NotificationViewHolder holder, int position) {
         Notification notification = notifications.get(position);
 
-        // Event name — currently shows eventId as placeholder
-        // TODO: resolve eventId to a human-readable event name via EventDetailRepository
-        holder.eventName.setText(notification.getEventId());
-        holder.eventName.setText(notification.getEventName());
-        // Sender role displayed as "Organizer · John" style subtitle
-        // Currently just shows the role until senderId resolves to a name
+        holder.notifTitle.setText(notification.getTitle());
         holder.senderRole.setText(notification.getSenderRole());
-
         holder.body.setText(notification.getBody());
         holder.timestamp.setText(formatTimestamp(notification.getTimestamp()));
 
@@ -98,24 +92,16 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
      */
     static class NotificationViewHolder extends RecyclerView.ViewHolder {
 
-        /** Displays the event name or ID. */
-        TextView eventName;
-
-        /** Displays the sender role e.g. "Organizer". */
+        //Init displays
+        TextView notifTitle;
         TextView senderRole;
-
-        /** Displays the notification message body. */
         TextView body;
-
-        /** Displays the formatted timestamp. */
         TextView timestamp;
-
-        /** Green dot shown for unread notifications. */
         View unreadDot;
 
         public NotificationViewHolder(@NonNull View itemView) {
             super(itemView);
-            eventName  = itemView.findViewById(R.id.notifEventName);
+            notifTitle  = itemView.findViewById(R.id.notifTitle);
             senderRole = itemView.findViewById(R.id.notifSender);
             body       = itemView.findViewById(R.id.notifBody);
             timestamp  = itemView.findViewById(R.id.notifTimestamp);

@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.syntaxappproject.AuthenticationService;
+import com.example.syntaxappproject.EventDetailRepository;
 import com.example.syntaxappproject.Notification;
 import com.example.syntaxappproject.NotificationAdapter;
 import com.example.syntaxappproject.NotificationRepository;
@@ -53,6 +54,7 @@ public class NotificationFragment extends HomeBar {
     private final ProfileRepository profileRepository = new ProfileRepository();
     private final NotificationRepository notificationRepository = new NotificationRepository();
     private final InvitationRepository invitationRepository = new InvitationRepository();
+    private final EventDetailRepository eventDetailRepository = new EventDetailRepository();
 
 
     private MaterialSwitch organizerToggle;
@@ -173,7 +175,6 @@ public class NotificationFragment extends HomeBar {
             if (!isAdded()) return;
             requireActivity().runOnUiThread(() -> {
                 currentInvitation = invitation;
-                Log.d("NotifDebug", "invitation=" + (invitation == null ? "null" : invitation.getInvitationId()));
                 if (invitation != null) {
                     newBadge.setText("1 new");
                     newBadge.setVisibility(View.VISIBLE);
@@ -181,40 +182,20 @@ public class NotificationFragment extends HomeBar {
             });
         });
 
-        profileRepository.getProfile(userId, profile -> {
+        notificationRepository.getNotificationsForUser(userId, notifications -> {
             if (!isAdded()) return;
-            if (profile == null) {
-                Log.d("NotifDebug", "profile is null, aborting");
+            Log.d("NotifDebug", "notifications fetched: " + (notifications == null ? "null" : notifications.size()));
+
+            if (notifications == null || notifications.isEmpty()) {
+                requireActivity().runOnUiThread(() -> {
+                    newBadge.setVisibility(View.GONE);
+                    notificationsCard.setVisibility(View.GONE);
+                });
                 return;
             }
 
-            boolean wantsOrganizer = profile.isOrganizerNotificationEnabled();
-            boolean wantsAdmin     = profile.isAdminNotificationEnabled();
-            Log.d("NotifDebug", "wantsOrganizer=" + wantsOrganizer + " wantsAdmin=" + wantsAdmin);
-
-            notificationRepository.getNotificationsForUser("AEIggcqIZzAqNgfG7H46", notifications -> {
-                if (!isAdded()) return;
-                Log.d("NotifDebug", "notifications fetched: " + (notifications == null ? "null" : notifications.size()));
-
-                if (notifications == null || notifications.isEmpty()) return;
-
-                List<Notification> roleFiltered = new ArrayList<>();
-                for (Notification n : notifications) {
-                    Log.d("NotifDebug", "checking notif senderRole=" + n.getSenderRole() + " targetGroup=" + n.getTargetGroup());
-                    if ("ORGANIZER".equals(n.getSenderRole()) && !wantsOrganizer) {
-                        Log.d("NotifDebug", "filtered out by organizer toggle");
-                        continue;
-                    }
-                    if ("ADMIN".equals(n.getSenderRole()) && !wantsAdmin) {
-                        Log.d("NotifDebug", "filtered out by admin toggle");
-                        continue;
-                    }
-                    roleFiltered.add(n);
-                }
-
-                Log.d("NotifDebug", "roleFiltered size=" + roleFiltered.size());
-                resolveEventNames(roleFiltered, userId);
-            });
+            // Skip filterAndDisplay entirely — just resolve names and show
+            resolveEventNames(notifications, userId);
         });
     }
 
@@ -230,75 +211,38 @@ public class NotificationFragment extends HomeBar {
     }
     private void resolveEventNames(List<Notification> notifications, String userId) {
         if (notifications.isEmpty()) {
-            filterAndDisplay(notifications, userId);
+            displayNotifications(notifications);
             return;
         }
 
         AtomicInteger pending = new AtomicInteger(notifications.size());
 
         for (Notification notif : notifications) {
-            String eventId = notif.getEventId(); // however you access the eventId
-            eventRepository.getEvent(eventId, event -> {
-                if (event != null) {
-                    notif.setEventName(event.getEventName()); // or getName(), whatever your Event model uses
-                } else {
-                    notif.setEventName("Unknown Event"); // fallback
-                }
+            eventDetailRepository.getEventDetail(notif.getEventId(), event -> {
+                if (event != null) notif.setEventName(event.getName());
                 if (pending.decrementAndGet() == 0) {
-                    // All names resolved — proceed to filtering and display
-                    filterAndDisplay(notifications, userId);
+                    displayNotifications(notifications);
                 }
             });
         }
     }
 
-    private void acceptInvitation(String userId) {
-        if (currentInvitation == null) return;
-
-        EventJoinRepository joinRepo = new EventJoinRepository();
-        String eventId = currentInvitation.getEventId();
-
-        joinRepo.joinEvent(eventId, userId, joinSuccess -> {
-            if (!isAdded()) return;
-
-            if (!joinSuccess) {
-                requireActivity().runOnUiThread(() ->
-                        Toast.makeText(getContext(), "Failed to join waitlist", Toast.LENGTH_SHORT).show()
-                );
-                return;
+    private void displayNotifications(List<Notification> notifications) {
+        if (!isAdded()) return;
+        requireActivity().runOnUiThread(() -> {
+            if (notifications.isEmpty()) {
+                newBadge.setVisibility(View.GONE);
+                notificationsCard.setVisibility(View.GONE);
+            } else {
+                newBadge.setText(notifications.size() + " new");
+                newBadge.setVisibility(View.VISIBLE);
+                notificationAdapter.setNotifications(notifications);
+                notificationsCard.setVisibility(View.VISIBLE);
             }
-
-            invitationRepository.acceptInvitation(currentInvitation.getInvitationId(), success -> {
-                if (!isAdded()) return;
-                requireActivity().runOnUiThread(() -> {
-                    if (success) {
-                        Toast.makeText(getContext(), "Invitation accepted", Toast.LENGTH_SHORT).show();
-                        loadNotifications(userId);
-                    } else {
-                        Toast.makeText(getContext(), "Joined waitlist but failed to update invitation", Toast.LENGTH_SHORT).show();
-                    }
-                });
-            });
         });
     }
 
-    private void declineInvitation(String userId) {
-        if (currentInvitation == null) return;
 
-        invitationRepository.declineInvitation(currentInvitation.getInvitationId(), success -> {
-            if (!isAdded()) return;
-            requireActivity().runOnUiThread(() -> {
-                if (success) {
-                    Toast.makeText(getContext(), "Invitation declined", Toast.LENGTH_SHORT).show();
-                    loadNotifications(userId);
-                } else {
-                    Toast.makeText(getContext(), "Failed to decline invitation", Toast.LENGTH_SHORT).show();
-                }
-            });
-        });
-
-
-    }
 
     /**
      * Loads notifications for the current user.
@@ -312,7 +256,7 @@ public class NotificationFragment extends HomeBar {
      * to complete before rendering.
      */
     private void filterAndDisplay(List<Notification> notifications, String userId) {
-        if (notifications.isEmpty()) {
+        if (notifications.isEmpty()) { //Don't display if notification is empty
             requireActivity().runOnUiThread(() -> {
                 newBadge.setVisibility(View.GONE);
                 notificationsCard.setVisibility(View.GONE);
@@ -325,7 +269,7 @@ public class NotificationFragment extends HomeBar {
 
         for (Notification notif : notifications) {
             checkMembership(notif, userId, belongs -> {
-                if (belongs) filtered.add(notif);
+                if (belongs) filtered.add(notif); //keep if notif is allowed.
                 if (pending.decrementAndGet() == 0) {
                     requireActivity().runOnUiThread(() -> {
                         if (filtered.isEmpty()) {
@@ -421,6 +365,53 @@ public class NotificationFragment extends HomeBar {
                 Log.d("NotifDebug", "unknown group=" + group + " returning false");
                 callback.onResult(false);
         }
+    }
+    private void acceptInvitation(String userId) {
+        if (currentInvitation == null) return;
+
+        EventJoinRepository joinRepo = new EventJoinRepository();
+        String eventId = currentInvitation.getEventId();
+
+        joinRepo.joinEvent(eventId, userId, joinSuccess -> {
+            if (!isAdded()) return;
+
+            if (!joinSuccess) {
+                requireActivity().runOnUiThread(() ->
+                        Toast.makeText(getContext(), "Failed to join waitlist", Toast.LENGTH_SHORT).show()
+                );
+                return;
+            }
+
+            invitationRepository.acceptInvitation(currentInvitation.getInvitationId(), success -> {
+                if (!isAdded()) return;
+                requireActivity().runOnUiThread(() -> {
+                    if (success) {
+                        Toast.makeText(getContext(), "Invitation accepted", Toast.LENGTH_SHORT).show();
+                        loadNotifications(userId);
+                    } else {
+                        Toast.makeText(getContext(), "Joined waitlist but failed to update invitation", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            });
+        });
+    }
+
+    private void declineInvitation(String userId) {
+        if (currentInvitation == null) return;
+
+        invitationRepository.declineInvitation(currentInvitation.getInvitationId(), success -> {
+            if (!isAdded()) return;
+            requireActivity().runOnUiThread(() -> {
+                if (success) {
+                    Toast.makeText(getContext(), "Invitation declined", Toast.LENGTH_SHORT).show();
+                    loadNotifications(userId);
+                } else {
+                    Toast.makeText(getContext(), "Failed to decline invitation", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+
+
     }
 
     /**

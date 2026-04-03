@@ -25,6 +25,9 @@ import com.example.syntaxappproject.R;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class NotifyEntrantsFragment extends Fragment {
 
     // --- Repos ---
@@ -44,7 +47,8 @@ public class NotifyEntrantsFragment extends Fragment {
     private TextView recipientCount;
     private EditText messageInput;
     private TextView charCount;
-
+    private EditText titleInput;
+    private TextView titleCharCount;
     // --- Event ID passed from EventDetailFragment via Bundle ---
     private String eventId;
 
@@ -76,6 +80,9 @@ public class NotifyEntrantsFragment extends Fragment {
         recipientCount = view.findViewById(R.id.recipientCount);
         messageInput   = view.findViewById(R.id.messageInput);
         charCount      = view.findViewById(R.id.charCount);
+        titleInput = view.findViewById(R.id.titleInput);
+        titleCharCount = view.findViewById(R.id.titleCharCount);
+
 
         // --- Hint color ---
         messageInput.setHintTextColor(Color.parseColor("#BBBBBB"));
@@ -149,7 +156,22 @@ public class NotifyEntrantsFragment extends Fragment {
      * the character counter label as the user types.
      */
     private void setupCharCounter() {
+        titleCharCount.setText("0 / 50");
+        titleInput.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void afterTextChanged(Editable s) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                titleCharCount.setText(s.length() + " / 50");
+                titleCharCount.setTextColor(s.length() >= 40 //change color of title
+                        ? Color.parseColor("#E24B4A")
+                        : Color.parseColor("#BBBBBB"));
+
+            }
+        });
         charCount.setText("0 / 500");
+
         messageInput.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void afterTextChanged(Editable s) {}
@@ -162,29 +184,57 @@ public class NotifyEntrantsFragment extends Fragment {
                         : Color.parseColor("#BBBBBB"));
             }
         });
+
     }
 
     /**
      * Validates inputs then fires one sendToGroup() call per checked chip.
      */
     private void sendNotification() {
+        String title = titleInput.getText().toString().trim();
         String message = messageInput.getText().toString().trim();
 
+        if (title.isEmpty()) {
+            Toast.makeText(getContext(), "Please enter a title", Toast.LENGTH_SHORT).show();
+            return;
+        }
         if (message.isEmpty()) {
             Toast.makeText(getContext(), "Please enter a message", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (!chipWaitlist.isChecked() && !chipSelected.isChecked()
-                && !chipCancelled.isChecked() && !chipAll.isChecked()) {
+        List<String> selectedGroups = new ArrayList<>();
+        if (chipWaitlist.isChecked())  selectedGroups.add("WAITLIST");
+        if (chipSelected.isChecked())  selectedGroups.add("SELECTED");
+        if (chipCancelled.isChecked()) selectedGroups.add("CANCELLED");
+        if (chipAll.isChecked())       selectedGroups.add("ALL");
+
+        if (selectedGroups.isEmpty()) {
             Toast.makeText(getContext(), "Please select at least one group", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (chipWaitlist.isChecked())  sendToGroup("WAITLIST", message);
-        if (chipSelected.isChecked())  sendToGroup("SELECTED", message);
-        if (chipCancelled.isChecked()) sendToGroup("CANCELLED", message);
-        if (chipAll.isChecked())       sendToGroup("ALL", message);
+        Notification notif = new Notification();
+        notif.setEventId(eventId);
+        notif.setSenderId(authService.getCurrentUserId());
+        notif.setTitle(title);
+        notif.setSenderRole("ORGANIZER");
+        notif.setTargetGroup(String.join(",", selectedGroups)); // e.g. "WAITLIST,SELECTED"
+        notif.setBody(message);
+        notif.setTimestamp(System.currentTimeMillis());
+        notif.setStatus("SENT");
+
+        notificationRepository.sendNotification(notif, eventId, selectedGroups, success ->
+                requireActivity().runOnUiThread(() -> {
+                    if (success) {
+                        messageInput.setText("");
+                        titleInput.setText("");
+                        Toast.makeText(getContext(), "Notification sent", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getContext(), "Failed to send", Toast.LENGTH_SHORT).show();
+                    }
+                })
+        );
     }
 
     /**w
@@ -194,37 +244,14 @@ public class NotifyEntrantsFragment extends Fragment {
      * @param targetGroup one of "WAITLIST", "SELECTED", "CANCELLED", "ALL"
      * @param message     the message body to send
      */
-    private void sendToGroup(String targetGroup, String message) {
-        //--- Create new notification object ---
-        Notification notif = new Notification();
-        notif.setEventId(eventId);
-        notif.setSenderId(authService.getCurrentUserId());
-        notif.setSenderRole("ORGANIZER");
-        notif.setTargetGroup(targetGroup);
-        notif.setBody(message);
-        notif.setTimestamp(System.currentTimeMillis());
-        notif.setStatus("SENT");
 
-        notificationRepository.sendNotification(notif, success ->
-                requireActivity().runOnUiThread(() -> {
-                    if (success) {
-                        messageInput.setText("");
-                        Toast.makeText(getContext(),
-                                "Sent to " + targetGroup, Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(getContext(),
-                                "Failed to send to " + targetGroup, Toast.LENGTH_SHORT).show();
-                    }
-                })
-        );
-    }
 
     /**
      * Fades in cards sequentially with an 80ms stagger.
      * Matches entrance animation style used across other fragments.
      */
     private void animateIn() {
-        View[] views = { sendToCard, messageCard, sendButton };
+        View[] views = { sendToCard, messageCard, sendButton, };
 
         AnimatorSet set = new AnimatorSet();
         android.animation.Animator[] animators = new android.animation.Animator[views.length];
