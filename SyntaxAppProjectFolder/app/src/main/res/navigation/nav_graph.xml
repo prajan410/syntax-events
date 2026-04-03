@@ -240,6 +240,9 @@
         <action
             android:id="@+id/toNotifyEntrantsFragment"
             app:destination="@+id/notifyEntrantsFragment" />
+        <action
+            android:id="@+id/to_mapFragment"
+            app:destination="@id/mapFragment" />
 
     </fragment>
     <fragment
@@ -252,7 +255,7 @@
 
     <fragment
         android:id="@+id/eventSignupList"
-        android:name="com.example.syntaxappproject.ui.EventSignupList"
+        android:name="com.example.syntaxappproject.ui.EventSignupListFragment"
         android:label="Event Signups"
         tools:layout="@layout/event_signup_list">
         <argument

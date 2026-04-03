@@ -71,9 +71,11 @@ public class EventJoinRepository {
      *
      * @param eventId  the ID of the event to join
      * @param userId   the ID of the user joining
+     * @param latitude the latitude of the user joining (can be null)
+     * @param longitude the longitude of the user joining (can be null)
      * @param callback the {@link JoinCallback} invoked with the result
      */
-    public void joinEvent(String eventId, String userId, JoinCallback callback) {
+    public void joinEvent(String eventId, String userId, Double latitude, Double longitude, JoinCallback callback) {
         db.runTransaction(transaction -> {
                     DocumentReference docRef = db.collection("events")
                             .document(eventId)
@@ -87,6 +89,10 @@ public class EventJoinRepository {
                     }
                     Map<String, Object> data = new HashMap<>();
                     data.put("joinedAt", Timestamp.now());
+                    if (latitude != null && longitude != null) {
+                        data.put("latitude", latitude);
+                        data.put("longitude", longitude);
+                    }
                     transaction.set(docRef, data);
 
                     DocumentReference eventRef = db.collection("events").document(eventId);
@@ -99,6 +105,15 @@ public class EventJoinRepository {
                     Log.e("EventJoinRepo", "Join transaction failed: " + e.getMessage());
                     callback.onComplete(false);
                 });
+    }
+
+    /**
+     * Alias for {@link #joinEvent(String, String, Double, Double, JoinCallback)}
+     * with {@code latitude} and {@code longitude} set to {@code null}.
+     */
+    @Deprecated
+    public void joinEvent(String eventId, String userId, JoinCallback callback) {
+        joinEvent(eventId, userId, null, null, callback);
     }
 
 
