@@ -32,6 +32,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.syntaxappproject.AuthenticationService;
 import com.example.syntaxappproject.BulletPointHelper;
+import com.example.syntaxappproject.CoOrganizerRepository;
 import com.example.syntaxappproject.Comment;
 import com.example.syntaxappproject.CommentAdapter;
 import com.example.syntaxappproject.CommentRepository;
@@ -83,6 +84,7 @@ public class EventDetailFragment extends HomeBar {
     private boolean isOrganizer = false;
     private boolean isAdmin = false;
     private int profilesLoaded = 0;
+    private boolean isCoOrganizer = false;
 
     private FusedLocationProviderClient fusedLocationClient;
     private ActivityResultLauncher<String[]> locationPermissionLauncher;
@@ -269,7 +271,16 @@ public class EventDetailFragment extends HomeBar {
 
                 loadPoster(eventPoster);
                 loadQRCode(eventQRCode);
-                configureActionButton(joinButton, mapButton, wLCount, event, notifyCard,notifyButton);
+                new CoOrganizerRepository().isCoOrganizer(eventId, uid, coOrganizer -> {
+                    if (event != null && uid != null) {
+                        isCoOrganizer = coOrganizer;
+                    }
+                    if (coOrganizer) {
+                        isOrganizer = coOrganizer;
+                    }
+                    checkAndUpdateAdapter();
+                    configureActionButton(joinButton, wLCount, event, notifyCard,notifyButton);
+                });
             });
         });
     }
@@ -459,8 +470,10 @@ public class EventDetailFragment extends HomeBar {
                 });
     }
 
-    private void configureActionButton(MaterialButton joinButton, MaterialButton mapButton, TextView wLCount, EventDetail event, View notifyCard, MaterialButton notifyButton) {
-        boolean isEventOrganizer = uid != null && uid.equals(event.getOrganizerUid());
+    private void configureActionButton(MaterialButton joinButton, TextView wLCount, EventDetail event, View notifyCard, MaterialButton notifyButton) {
+        boolean isMainOrganizer = uid != null && uid.equals(event.getOrganizerUid());
+        boolean isEventOrganizer = isMainOrganizer || isCoOrganizer;
+
 
         if (isEventOrganizer) {
             joinButton.setText("Manage Event");
