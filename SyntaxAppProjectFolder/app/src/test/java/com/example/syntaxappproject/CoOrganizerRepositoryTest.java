@@ -8,7 +8,9 @@ import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.Set;
-
+/**
+ * Unit tests for the {@link CoOrganizerRepository}.
+ */
 public class CoOrganizerRepositoryTest {
 
     /**
@@ -51,17 +53,26 @@ public class CoOrganizerRepositoryTest {
     }
 
     private FakeCoOrganizerRepository repo;
-
+    /**
+     * Initializes a fake repository.
+     */
     @Before
     public void setUp() {
         repo = new FakeCoOrganizerRepository();
     }
+
+    /**
+     * Test when the user is not in co-organizer
+     */
     @Test
     public void testisCoOrganizerReturnFalse(){
         boolean[] result = {true};
         repo.isCoOrganizer("event","user",coOrganizer -> result[0] = coOrganizer);
         assertFalse(result[0]);
     }
+    /**
+     * Test when the user is in co-organizer
+     */
     @Test
     public void testisCoOrganizerReturnTrue(){
         repo.addCoOrganizer("event","user", success -> {});
@@ -69,6 +80,9 @@ public class CoOrganizerRepositoryTest {
         repo.isCoOrganizer("event","user",coOrganizer -> result[0] = coOrganizer);
         assertTrue(result[0]);
     }
+    /**
+     * Test add a user to co-organizer
+     */
     @Test
     public void testAddCoOrganizerReturnTrue(){
         boolean[] result = {false};
