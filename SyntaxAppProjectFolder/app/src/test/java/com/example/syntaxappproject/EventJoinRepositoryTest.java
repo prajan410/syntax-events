@@ -49,10 +49,21 @@ public class EventJoinRepositoryTest {
             callback.onResult(waitlist.contains(key(eventId, userId)));
         }
 
+        /**
+         * Overrides the 5-parameter joinEvent method (latitude and longitude can be null).
+         */
         @Override
-        public void joinEvent(String eventId, String userId, JoinCallback callback) {
+        public void joinEvent(String eventId, String userId, Double latitude, Double longitude, JoinCallback callback) {
             waitlist.add(key(eventId, userId));
             callback.onComplete(true);
+        }
+
+        /**
+         * Convenience method for tests that don't care about location.
+         * Calls the main joinEvent method with null latitude/longitude.
+         */
+        public void joinEvent(String eventId, String userId, JoinCallback callback) {
+            joinEvent(eventId, userId, null, null, callback);
         }
 
         @Override

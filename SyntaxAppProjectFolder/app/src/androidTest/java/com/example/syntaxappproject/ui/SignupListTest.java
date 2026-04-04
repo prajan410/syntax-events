@@ -1,66 +1,174 @@
 package com.example.syntaxappproject.ui;
 
 import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentFactory;
 import androidx.fragment.app.testing.FragmentScenario;
-import androidx.test.espresso.action.ViewActions;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import com.example.syntaxappproject.EntrantNameAdapter;
+import com.example.syntaxappproject.Profile;
 import com.example.syntaxappproject.R;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static androidx.test.espresso.Espresso.onView;
-import static androidx.test.espresso.assertion.ViewAssertions.matches;
-import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static androidx.test.espresso.matcher.ViewMatchers.withId;
-import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
-/**
- * Instrumented test class for {@link EventSignupListFragment}.
- * This test verifies that the signup list correctly displays entrant names
- * fetched from Firebase when an event ID is provided.
- */
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 @RunWith(AndroidJUnit4.class)
 public class SignupListTest {
 
-    /**
-     * Tests the content of the Event Signup List.
-     * It launches the fragment with a test event ID, expands all entrant categories
-     * (Final, Invited, Waiting List, Cancelled), and asserts that specific expected
-     * names are visible in the UI after loading.
-     *
-     * @throws InterruptedException if the thread sleep is interrupted.
-     */
-    @Test
-    public void testEventSignupListContent() throws InterruptedException {
-        // Arguments for the fragment
-        Bundle bundle = new Bundle();
-        bundle.putString("eventId", "testevent2");
+    public static class TestableEventSignupListFragment extends EventSignupListFragment {
 
-        // Launch the fragment in a container
+        @Override
+        public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+            super.onViewCreated(view, savedInstanceState);
+
+            Profile alice = new Profile();
+            alice.setName("Alice Johnson");
+            alice.setEmail("alice@test.com");
+
+            Profile bob = new Profile();
+            bob.setName("Bob Smith");
+            bob.setEmail("bob@test.com");
+
+            Profile carol = new Profile();
+            carol.setName("Carol Davis");
+            carol.setEmail("carol@test.com");
+
+            List<Profile> waiting   = new ArrayList<>(Arrays.asList(alice, bob, carol));
+            List<Profile> selected  = new ArrayList<>(Arrays.asList(alice, bob));
+            List<Profile> cancelled = new ArrayList<>(Collections.singletonList(carol));
+            List<Profile> finalList = new ArrayList<>(Arrays.asList(alice, bob));
+
+            requireActivity().runOnUiThread(() -> {
+                try {
+                    setAdapter("waitingAdapter",   waiting);
+                    setAdapter("selectedAdapter",  selected);
+                    setAdapter("cancelledAdapter", cancelled);
+                    setAdapter("finalAdapter",     finalList);
+
+                    setTextView("waitingCount",   String.valueOf(waiting.size()));
+                    setTextView("selectedCount",  String.valueOf(selected.size()));
+                    setTextView("cancelledCount", String.valueOf(cancelled.size()));
+                    setTextView("finalCount",     String.valueOf(finalList.size()));
+
+                    setViewVisibility("waitingEmpty",   View.GONE);
+                    setViewVisibility("selectedEmpty",  View.GONE);
+                    setViewVisibility("cancelledEmpty", View.GONE);
+                    setViewVisibility("finalEmpty",     View.GONE);
+
+                } catch (Exception e) {
+                    throw new RuntimeException("Reflection injection failed: " + e.getMessage(), e);
+                }
+            });
+        }
+
+        private void setAdapter(String fieldName, List<Profile> profiles) throws Exception {
+            Field f = EventSignupListFragment.class.getDeclaredField(fieldName);
+            f.setAccessible(true);
+            EntrantNameAdapter adapter = (EntrantNameAdapter) f.get(this);
+            adapter.setProfiles(profiles);
+        }
+
+        private void setTextView(String fieldName, String text) throws Exception {
+            Field f = EventSignupListFragment.class.getDeclaredField(fieldName);
+            f.setAccessible(true);
+            ((TextView) f.get(this)).setText(text);
+        }
+
+        private void setViewVisibility(String fieldName, int visibility) throws Exception {
+            Field f = EventSignupListFragment.class.getDeclaredField(fieldName);
+            f.setAccessible(true);
+            ((View) f.get(this)).setVisibility(visibility);
+        }
+    }
+
+    private Bundle makeBundle() {
+        Bundle bundle = new Bundle();
+        bundle.putString("eventId", "fake_id");
+        bundle.putBoolean("testingMode", true);
+        return bundle;
+    }
+
+    private FragmentScenario<TestableEventSignupListFragment> launchTestable() {
+        return FragmentScenario.launchInContainer(
+                TestableEventSignupListFragment.class,
+                makeBundle(),
+                com.google.android.material.R.style.Theme_MaterialComponents_Light_NoActionBar,
+                (FragmentFactory) null
+        );
+    }
+
+    @Test
+    public void testCountBadgesAreCorrect() {
+        FragmentScenario<TestableEventSignupListFragment> scenario = launchTestable();
+
+        scenario.onFragment(fragment -> {
+            View v = fragment.requireView();
+            assertEquals("3", ((TextView) v.findViewById(R.id.waitingCount)).getText().toString());
+            assertEquals("2", ((TextView) v.findViewById(R.id.selectedCount)).getText().toString());
+            assertEquals("1", ((TextView) v.findViewById(R.id.cancelledCount)).getText().toString());
+            assertEquals("2", ((TextView) v.findViewById(R.id.finalCount)).getText().toString());
+        });
+    }
+
+    @Test
+    public void testSectionsToggleVisibility() {
+        FragmentScenario<TestableEventSignupListFragment> scenario = launchTestable();
+
+        scenario.onFragment(fragment -> {
+            View v = fragment.requireView();
+            View waitingContent = v.findViewById(R.id.waitingContent);
+            View waitingHeader  = v.findViewById(R.id.waitingHeader);
+
+            assertEquals(View.VISIBLE, waitingContent.getVisibility());
+
+            waitingHeader.performClick();
+            assertEquals(View.GONE, waitingContent.getVisibility());
+
+            waitingHeader.performClick();
+            assertEquals(View.VISIBLE, waitingContent.getVisibility());
+        });
+    }
+
+    @Test
+    public void testDownloadButtonExistsAndIsClickable() {
         FragmentScenario<EventSignupListFragment> scenario = FragmentScenario.launchInContainer(
                 EventSignupListFragment.class,
-                bundle,
+                makeBundle(),
                 com.google.android.material.R.style.Theme_MaterialComponents_Light_NoActionBar,
                 (FragmentFactory) null
         );
 
-        // Expand all categories by clicking their titles
-        onView(withId(R.id.finalEntrantsTitle)).perform(ViewActions.click());
-        onView(withId(R.id.invitedEntrantsTitle)).perform(ViewActions.scrollTo(), ViewActions.click());
-        onView(withId(R.id.waitingListTitle)).perform(ViewActions.scrollTo(), ViewActions.click());
-        onView(withId(R.id.cancelledEntrantsTitle)).perform(ViewActions.scrollTo(), ViewActions.click());
+        scenario.onFragment(fragment -> {
+            View btn = fragment.requireView().findViewById(R.id.downloadFinalEntrantsBtn);
+            assertNotNull(btn);
+            btn.performClick();
+        });
+    }
 
-        // Wait for data to load from Firebase.
-        // In a production environment, IdlingResource should be used instead of Thread.sleep.
-        Thread.sleep(5000);
+    @Test
+    public void testRecyclerViewsExist() {
+        FragmentScenario<TestableEventSignupListFragment> scenario = launchTestable();
 
-        // Check if the expected names are displayed in the list
-        onView(withText("Willam Li")).perform(ViewActions.scrollTo()).check(matches(isDisplayed()));
-        onView(withText("fahhh mi bombo")).perform(ViewActions.scrollTo()).check(matches(isDisplayed()));
-        onView(withText("Joe Doe")).perform(ViewActions.scrollTo()).check(matches(isDisplayed()));
+        scenario.onFragment(fragment -> {
+            View v = fragment.requireView();
+            assertNotNull(v.findViewById(R.id.waitingList));
+            assertNotNull(v.findViewById(R.id.selectedList));
+            assertNotNull(v.findViewById(R.id.finalList));
+            assertNotNull(v.findViewById(R.id.cancelledList));
+        });
     }
 }

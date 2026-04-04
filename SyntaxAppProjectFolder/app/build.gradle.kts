@@ -102,4 +102,6 @@ dependencies {
 
     implementation("org.osmdroid:osmdroid-android:6.1.20")
     implementation("com.google.android.gms:play-services-location:21.3.0")
+    implementation(files("C:/Users/praja/AppData/Local/Android/Sdk/platforms/android-36/android.jar"))
+
 }
