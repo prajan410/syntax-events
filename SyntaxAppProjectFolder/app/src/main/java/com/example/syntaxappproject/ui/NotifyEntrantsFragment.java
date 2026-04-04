@@ -16,6 +16,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.syntaxappproject.AuthenticationService;
@@ -38,6 +39,7 @@ public class NotifyEntrantsFragment extends Fragment {
     private View sendToCard;
     private View messageCard;
     private MaterialButton sendButton;
+    private MaterialButton coOrganizerInviteButton;
 
     private Chip chipWaitlist;
     private Chip chipSelected;
@@ -98,6 +100,13 @@ public class NotifyEntrantsFragment extends Fragment {
 
         // --- Send button ---
         sendButton.setOnClickListener(v -> sendNotification());
+
+        coOrganizerInviteButton = view.findViewById(R.id.coOrganizerInviteButton);
+        coOrganizerInviteButton.setOnClickListener(v -> {
+            Bundle bundle = new Bundle();
+            bundle.putString("eventId", eventId);
+            NavHostFragment.findNavController(this).navigate(R.id.coOrganizerInviteFragment, bundle);
+        });
 
         // --- Animations ---
         animateIn();
