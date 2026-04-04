@@ -97,6 +97,7 @@ dependencies {
     implementation("com.google.firebase:firebase-database")
     androidTestImplementation("androidx.fragment:fragment-testing:1.6.2")
     androidTestImplementation("androidx.arch.core:core-testing:2.2.0")
+    androidTestImplementation("org.hamcrest:hamcrest:2.2")
 
     debugImplementation("androidx.fragment:fragment-testing:1.7.0")
 

@@ -18,10 +18,17 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+/**
+ * Unit test for the QRCodeService.
+ * Uses Robolectric to test Android Bitmap operations and ZXing to verify QR code content.
+ */
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = {34}) // Using a specific SDK version can sometimes help with compatibility
 public class QRCodeTest {
 
+    /**
+     * Verifies that a string can be converted to a QR code and then decoded back to the original string.
+     */
     @Test
     public void testStringConversion() {
         String testing = "Holy hand grenade";

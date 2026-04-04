@@ -1,5 +1,4 @@
 
-/*
 import com.example.syntaxappproject.AuthenticationService;
 import com.example.syntaxappproject.ProfileRepository;
 
@@ -36,7 +35,7 @@ import com.example.syntaxappproject.ui.SplashFragment;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-*/
+
 
 import com.example.syntaxappproject.AuthenticationService;
 import com.example.syntaxappproject.ui.SplashFragment;
@@ -44,7 +43,7 @@ import com.example.syntaxappproject.ui.SplashFragment;
 /**
  * Instrumented tests for {@link SplashFragment} navigation routing.
  */
-/*
+
 import androidx.navigation.NavController;
 
 import com.example.syntaxappproject.AuthenticationService;
@@ -152,12 +151,12 @@ public class SplashFragmentTest {
         onView(withId(R.id.enterButton)).perform(click());
         verify(mockNavController).navigate(R.id.action_splash_to_admin);
     }
-    */
+
     /**
      * Test subclass that bypasses heavy loading (events/images) and routes immediately.
      * We keep the same auth flow but skip the image‑caching loop.
      */
-/*
+
     public static class TestSplashFragment extends SplashFragment {
 
         @Override
@@ -177,4 +176,3 @@ public class SplashFragmentTest {
         }
     }
 }
-*/
