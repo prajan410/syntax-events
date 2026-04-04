@@ -252,6 +252,21 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
+                <!-- invite co_organizer -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/coOrganizerInviteButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="14dp"
+                    android:backgroundTint="#2ECC71"
+                    android:text="Invite Co-organizer"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="16dp" />
+
                 <!-- Send button -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/sendButton"
