@@ -72,6 +72,7 @@ public class EventDetailFragment extends HomeBar {
     private MaterialButton notifyButton;
     private MaterialButton nextPageButton;
     private MaterialButton viewEntrantsButton;
+    private MaterialButton mapButton;
     private TextView pageIndicator;
     private View paginationContainer;
 
@@ -144,7 +145,7 @@ public class EventDetailFragment extends HomeBar {
         TextView lotteryCriteria  = view.findViewById(R.id.eventLotteryCriteria);
         MaterialButton joinButton = view.findViewById(R.id.joinButton);
         MaterialButton doneButton = view.findViewById(R.id.doneButton);
-        MaterialButton mapButton  = view.findViewById(R.id.mapButton);
+        mapButton                 = view.findViewById(R.id.mapButton);
         viewEntrantsButton        = view.findViewById(R.id.viewEntrantsButton);
         View headerTitle          = view.findViewById(R.id.headerTitle);
         View posterCard           = view.findViewById(R.id.posterCard);

@@ -28,8 +28,18 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Instrumented test class for verifying connectivity and data integrity with Firebase.
+ */
 public class TestFirebaseConnection {
 
+    /**
+     * Tests writing a Base64 encoded image to Firebase Realtime Database and reading it back.
+     * It verifies that the retrieved string matches the original and can be decoded back to a Bitmap
+     * with identical dimensions.
+     *
+     * @throws InterruptedException if the CountDownLatch wait is interrupted.
+     */
     @Test
     public void writeAndReadBackImage() throws InterruptedException {
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
