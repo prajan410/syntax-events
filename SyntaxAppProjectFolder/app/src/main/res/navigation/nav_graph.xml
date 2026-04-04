@@ -517,6 +517,7 @@
             android:id="@+id/toOrganizerEventsFragment"
             app:destination="@id/organizerEventsFragment" />
     </fragment>
+    <fragment
         android:id="@+id/coOrganizerInviteFragment"
         android:name="com.example.syntaxappproject.ui.CoOrganizerInviteFragment"
         android:label="CoOrganizerInviteFragment"

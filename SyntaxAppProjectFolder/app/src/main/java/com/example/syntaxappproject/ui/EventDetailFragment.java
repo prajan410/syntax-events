@@ -299,6 +299,13 @@ public class EventDetailFragment extends HomeBar {
      * @param views the views to animate
      */
     private void animateViews(View... views) {
+        for (View v : views) {
+            if (v != null) {
+                v.setAlpha(1f);
+                v.setTranslationY(0f);
+                v.setVisibility(View.VISIBLE);
+            }
+        }
     }
 
     /**
