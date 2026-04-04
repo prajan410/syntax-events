@@ -1,6 +1,9 @@
 package com.example.syntaxappproject.ui;
 
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.fragment.app.testing.FragmentScenario;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -11,19 +14,16 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static androidx.test.espresso.Espresso.onView;
-import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.assertion.ViewAssertions.matches;
-import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
-import static androidx.test.espresso.matcher.ViewMatchers.withId;
-import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Instrumented UI tests for {@link EventDetailFragment}.
  *
  * Uses {@code testingMode = true} to bypass Firestore, Firebase, and
  * NavController dependencies so tests run in isolation without network calls.
+ *
+ * These tests use direct fragment view access instead of Espresso matchers
+ * to avoid Hamcrest dependency issues.
  */
 @RunWith(AndroidJUnit4.class)
 public class EventDetailFragmentTest {
@@ -59,19 +59,17 @@ public class EventDetailFragmentTest {
     /**
      * Verifies that the poster, QR code, join button, and done button are
      * present and visible immediately after the fragment is created.
-     * The done button uses an effective-visibility check since it may be
-     * scrolled outside the test container's visible rectangle.
      */
     @Test
     public void testViewsAreVisible() {
-        launch();
+        FragmentScenario<EventDetailFragment> scenario = launch();
 
-        onView(withId(R.id.eventPoster)).check(matches(isDisplayed()));
-        onView(withId(R.id.eventQRCode)).check(matches(isDisplayed()));
-        onView(withId(R.id.joinButton)).check(matches(isDisplayed()));
-        onView(withId(R.id.doneButton)).check(matches(
-                withEffectiveVisibility(androidx.test.espresso.matcher.ViewMatchers.Visibility.VISIBLE)
-        ));
+        scenario.onFragment(fragment -> {
+            assertEquals(View.VISIBLE, fragment.requireView().findViewById(R.id.eventPoster).getVisibility());
+            assertEquals(View.VISIBLE, fragment.requireView().findViewById(R.id.eventQRCode).getVisibility());
+            assertEquals(View.VISIBLE, fragment.requireView().findViewById(R.id.joinButton).getVisibility());
+            assertEquals(View.VISIBLE, fragment.requireView().findViewById(R.id.doneButton).getVisibility());
+        });
     }
 
     /**
@@ -84,16 +82,23 @@ public class EventDetailFragmentTest {
 
         scenario.onFragment(fragment ->
                 fragment.requireActivity().runOnUiThread(() ->
-                        fragment.requireView()
-                                .<android.widget.TextView>findViewById(R.id.eventWLCount)
+                        ((TextView) fragment.requireView().findViewById(R.id.eventWLCount))
                                 .setText("Waitlist: 3")
                 )
         );
 
-        onView(withId(R.id.joinButton)).check(matches(withText("Join")));
-        onView(withId(R.id.joinButton)).perform(click());
-        onView(withId(R.id.joinButton)).check(matches(withText("Leave")));
-        onView(withId(R.id.eventWLCount)).check(matches(withText("Waitlist: 4")));
+        scenario.onFragment(fragment -> {
+            Button joinButton = fragment.requireView().findViewById(R.id.joinButton);
+            TextView wlCount = fragment.requireView().findViewById(R.id.eventWLCount);
+
+            assertEquals("Join", joinButton.getText().toString());
+            assertEquals("Waitlist: 3", wlCount.getText().toString());
+
+            joinButton.performClick();
+
+            assertEquals("Leave", joinButton.getText().toString());
+            assertEquals("Waitlist: 4", wlCount.getText().toString());
+        });
     }
 
     /**
@@ -106,18 +111,23 @@ public class EventDetailFragmentTest {
 
         scenario.onFragment(fragment ->
                 fragment.requireActivity().runOnUiThread(() ->
-                        fragment.requireView()
-                                .<android.widget.TextView>findViewById(R.id.eventWLCount)
+                        ((TextView) fragment.requireView().findViewById(R.id.eventWLCount))
                                 .setText("Waitlist: 5")
                 )
         );
 
-        onView(withId(R.id.joinButton)).perform(click());
-        onView(withId(R.id.joinButton)).check(matches(withText("Leave")));
+        scenario.onFragment(fragment -> {
+            Button joinButton = fragment.requireView().findViewById(R.id.joinButton);
+            TextView wlCount = fragment.requireView().findViewById(R.id.eventWLCount);
 
-        onView(withId(R.id.joinButton)).perform(click());
-        onView(withId(R.id.joinButton)).check(matches(withText("Join")));
-        onView(withId(R.id.eventWLCount)).check(matches(withText("Waitlist: 5")));
+            joinButton.performClick();
+            assertEquals("Leave", joinButton.getText().toString());
+            assertEquals("Waitlist: 6", wlCount.getText().toString());
+
+            joinButton.performClick();
+            assertEquals("Join", joinButton.getText().toString());
+            assertEquals("Waitlist: 5", wlCount.getText().toString());
+        });
     }
 
     /**
@@ -130,22 +140,26 @@ public class EventDetailFragmentTest {
 
         scenario.onFragment(fragment ->
                 fragment.requireActivity().runOnUiThread(() ->
-                        fragment.requireView()
-                                .<android.widget.TextView>findViewById(R.id.eventWLCount)
+                        ((TextView) fragment.requireView().findViewById(R.id.eventWLCount))
                                 .setText("Waitlist: 2")
                 )
         );
 
-        onView(withId(R.id.joinButton)).perform(click());
-        onView(withId(R.id.joinButton)).check(matches(withText("Leave")));
-        onView(withId(R.id.eventWLCount)).check(matches(withText("Waitlist: 3")));
+        scenario.onFragment(fragment -> {
+            Button joinButton = fragment.requireView().findViewById(R.id.joinButton);
+            TextView wlCount = fragment.requireView().findViewById(R.id.eventWLCount);
 
-        onView(withId(R.id.joinButton)).perform(click());
-        onView(withId(R.id.joinButton)).check(matches(withText("Join")));
-        onView(withId(R.id.eventWLCount)).check(matches(withText("Waitlist: 2")));
+            joinButton.performClick();
+            assertEquals("Leave", joinButton.getText().toString());
+            assertEquals("Waitlist: 3", wlCount.getText().toString());
 
-        onView(withId(R.id.joinButton)).perform(click());
-        onView(withId(R.id.joinButton)).check(matches(withText("Leave")));
-        onView(withId(R.id.eventWLCount)).check(matches(withText("Waitlist: 3")));
+            joinButton.performClick();
+            assertEquals("Join", joinButton.getText().toString());
+            assertEquals("Waitlist: 2", wlCount.getText().toString());
+
+            joinButton.performClick();
+            assertEquals("Leave", joinButton.getText().toString());
+            assertEquals("Waitlist: 3", wlCount.getText().toString());
+        });
     }
 }
