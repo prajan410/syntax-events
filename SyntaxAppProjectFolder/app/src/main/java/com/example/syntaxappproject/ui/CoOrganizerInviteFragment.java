@@ -130,35 +130,37 @@ public class CoOrganizerInviteFragment extends Fragment {
                 notify.setTimestamp(System.currentTimeMillis());
                 notify.setStatus("SENT");
 
-                repo.isCoOrganizer(eventId, userId, coOrganizer -> { isCoOrganizer = coOrganizer; });
+                repo.isCoOrganizer(eventId, userId, coOrganizer -> {
+                    isCoOrganizer = coOrganizer;
 
-                if (isCoOrganizer) {
-                    Toast.makeText(getContext(), "Already invite this entrant", Toast.LENGTH_SHORT).show();
-                }
-                else{
-                    repo.sendInvitation(eventId, eventName, userId, notify, success -> {
-                        if (!isAdded()) return;
+                    if (isCoOrganizer) {
+                        Toast.makeText(getContext(), "Already invite this entrant", Toast.LENGTH_SHORT).show();
+                    }
+                    else{
+                        repo.sendInvitation(eventId, eventName, userId, notify, success -> {
+                            if (!isAdded()) return;
 
-                        requireActivity().runOnUiThread(() -> {
-                            if (!success) {
-                                Toast.makeText(getContext(), "Failed to send invitation", Toast.LENGTH_SHORT).show();
-                                return;
-                            }
+                            requireActivity().runOnUiThread(() -> {
+                                if (!success) {
+                                    Toast.makeText(getContext(), "Failed to send invitation", Toast.LENGTH_SHORT).show();
+                                    return;
+                                }
 
-                            repo.addCoOrganizer(eventId, userId, added -> {
-                                if (!isAdded()) return;
+                                repo.addCoOrganizer(eventId, userId, added -> {
+                                    if (!isAdded()) return;
 
-                                requireActivity().runOnUiThread(() -> {
-                                    if (added) {
-                                        Toast.makeText(getContext(), "Invitation sent", Toast.LENGTH_SHORT).show();
-                                    } else {
-                                        Toast.makeText(getContext(), "Invitation sent but failed to update event", Toast.LENGTH_SHORT).show();
-                                    }
+                                    requireActivity().runOnUiThread(() -> {
+                                        if (added) {
+                                            Toast.makeText(getContext(), "Invitation sent", Toast.LENGTH_SHORT).show();
+                                        } else {
+                                            Toast.makeText(getContext(), "Invitation sent but failed to update event", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
                                 });
                             });
                         });
-                    });
-                }
+                    }
+                });
             });
         });
     }
