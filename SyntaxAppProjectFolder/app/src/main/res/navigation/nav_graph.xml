@@ -242,7 +242,7 @@
             app:destination="@+id/notifyEntrantsFragment" />
         <action
             android:id="@+id/to_mapFragment"
-            app:destination="@id/mapFragment" />
+            app:destination="@+id/mapFragment" />
 
     </fragment>
 
@@ -272,7 +272,7 @@
         android:id="@+id/eventSignupList"
         android:name="com.example.syntaxappproject.ui.EventSignupListFragment"
         android:label="Event Signups"
-        tools:layout="@layout/event_signup_list">
+        tools:layout="@layout/fragment_event_signup_list">
         <argument
             android:name="eventId"
             app:argType="string" />
@@ -517,5 +517,10 @@
             android:id="@+id/toOrganizerEventsFragment"
             app:destination="@id/organizerEventsFragment" />
     </fragment>
+        android:id="@+id/coOrganizerInviteFragment"
+        android:name="com.example.syntaxappproject.ui.CoOrganizerInviteFragment"
+        android:label="CoOrganizerInviteFragment"
+        tools:layout="@layout/fragment_co_organizer_invite" />
+
 
 </navigation>
