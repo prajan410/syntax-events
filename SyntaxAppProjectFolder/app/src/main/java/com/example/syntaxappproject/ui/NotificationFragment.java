@@ -4,9 +4,11 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.app.AlertDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,6 +18,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.syntaxappproject.AuthenticationService;
+import com.example.syntaxappproject.EventDetailRepository;
+import com.example.syntaxappproject.Notification;
+import com.example.syntaxappproject.NotificationAdapter;
+import com.example.syntaxappproject.NotificationRepository;
 import com.example.syntaxappproject.EventJoinRepository;
 import com.example.syntaxappproject.Invitation;
 import com.example.syntaxappproject.InvitationRepository;
@@ -23,11 +29,33 @@ import com.example.syntaxappproject.ProfileRepository;
 import com.example.syntaxappproject.R;
 import com.google.android.material.materialswitch.MaterialSwitch;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+/**
+ * Fragment that displays entrant invitation notifications and lets the user
+ * accept or decline a pending invitation.
+ * <p>
+ * This screen now supports both winner notifications and not-chosen notifications.
+ * It also supports organizer and admin notification preference toggles,
+ * a RecyclerView area for notification display, and a badge for new items.
+ * </p>
+ *
+ * <p>Outstanding issues: currently shows only one latest relevant notification
+ * at a time for the entrant, the RecyclerView adapter is not yet attached,
+ * and the new badge count is currently limited to a single pending invitation.</p>
+ */
 public class NotificationFragment extends HomeBar {
 
     private final AuthenticationService authService = new AuthenticationService();
-    private final InvitationRepository invitationRepository = new InvitationRepository();
     private final ProfileRepository profileRepository = new ProfileRepository();
+    private final NotificationRepository notificationRepository = new NotificationRepository();
+    private final InvitationRepository invitationRepository = new InvitationRepository();
+    private final EventDetailRepository eventDetailRepository = new EventDetailRepository();
+
 
     private MaterialSwitch organizerToggle;
     private MaterialSwitch adminToggle;
@@ -38,7 +66,7 @@ public class NotificationFragment extends HomeBar {
     private View notificationsCard;
 
     private Invitation currentInvitation = null;
-
+    private NotificationAdapter notificationAdapter;
     public NotificationFragment() {}
 
     @Override
@@ -58,8 +86,9 @@ public class NotificationFragment extends HomeBar {
         headerTitle = view.findViewById(R.id.headerTitle);
         toggleCard = view.findViewById(R.id.toggleCard);
         notificationsCard = view.findViewById(R.id.notificationsCard);
-
+        notificationAdapter = new NotificationAdapter();
         notificationsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        notificationsRecyclerView.setAdapter(notificationAdapter);
 
         String userId = authService.getCurrentUserId();
         if (userId != null) {
@@ -80,13 +109,18 @@ public class NotificationFragment extends HomeBar {
         animateIn();
     }
 
+    /**
+     * Reads toggle states from Firestore and applies them to the switches.
+     * Only attaches listeners after state is set to avoid triggering
+     * unwanted Firestore writes on load.
+     */
     private void loadToggleStates(String userId) {
         profileRepository.getProfile(userId, profile -> {
-            if (profile != null && isAdded()) {
+            if (profile != null) {
                 requireActivity().runOnUiThread(() -> {
                     organizerToggle.setChecked(profile.isOrganizerNotificationEnabled());
                     adminToggle.setChecked(profile.isAdminNotificationEnabled());
-                    setupToggleListeners(userId);
+                    setupToggleListeners(userId); // attach listeners only after state is set
                 });
             }
         });
@@ -128,18 +162,40 @@ public class NotificationFragment extends HomeBar {
         });
     }
 
+    /**
+     * Loads notifications for the current user from Firestore.
+     * Filters by the user's opt-out preferences before displaying.
+     * Updates the newBadge count based on how many were loaded.
+     */
+
     private void loadNotifications(String userId) {
+        Log.d("NotifDebug", "loadNotifications called for userId=" + userId);
+
         invitationRepository.getPendingInvitationForUser(userId, invitation -> {
             if (!isAdded()) return;
             requireActivity().runOnUiThread(() -> {
                 currentInvitation = invitation;
-                if (invitation == null) {
-                    newBadge.setVisibility(View.GONE);
-                } else {
+                if (invitation != null) {
                     newBadge.setText("1 new");
                     newBadge.setVisibility(View.VISIBLE);
                 }
             });
+        });
+
+        notificationRepository.getNotificationsForUser(userId, notifications -> {
+            if (!isAdded()) return;
+            Log.d("NotifDebug", "notifications fetched: " + (notifications == null ? "null" : notifications.size()));
+
+            if (notifications == null || notifications.isEmpty()) {
+                requireActivity().runOnUiThread(() -> {
+                    newBadge.setVisibility(View.GONE);
+                    notificationsCard.setVisibility(View.GONE);
+                });
+                return;
+            }
+
+            // Skip filterAndDisplay entirely — just resolve names and show
+            resolveEventNames(notifications, userId);
         });
     }
 
@@ -153,7 +209,163 @@ public class NotificationFragment extends HomeBar {
                 .setPositiveButton("Accept", (dialog, which) -> acceptInvitation(userId))
                 .show();
     }
+    private void resolveEventNames(List<Notification> notifications, String userId) {
+        if (notifications.isEmpty()) {
+            displayNotifications(notifications);
+            return;
+        }
 
+        AtomicInteger pending = new AtomicInteger(notifications.size());
+
+        for (Notification notif : notifications) {
+            eventDetailRepository.getEventDetail(notif.getEventId(), event -> {
+                if (event != null) notif.setEventName(event.getName());
+                if (pending.decrementAndGet() == 0) {
+                    displayNotifications(notifications);
+                }
+            });
+        }
+    }
+
+    private void displayNotifications(List<Notification> notifications) {
+        if (!isAdded()) return;
+        requireActivity().runOnUiThread(() -> {
+            if (notifications.isEmpty()) {
+                newBadge.setVisibility(View.GONE);
+                notificationsCard.setVisibility(View.GONE);
+            } else {
+                newBadge.setText(notifications.size() + " new");
+                newBadge.setVisibility(View.VISIBLE);
+                notificationAdapter.setNotifications(notifications);
+                notificationsCard.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+
+
+    /**
+     * Loads notifications for the current user.
+     * Filters by sender role opt-out preferences, then by
+     * targetGroup membership (WAITLIST / SELECTED / CANCELLED / ALL).
+     */
+
+    /**
+     * Checks each notification against the user's actual group membership
+     * before displaying. Uses AtomicInteger to wait for all async checks
+     * to complete before rendering.
+     */
+    private void filterAndDisplay(List<Notification> notifications, String userId) {
+        if (notifications.isEmpty()) { //Don't display if notification is empty
+            requireActivity().runOnUiThread(() -> {
+                newBadge.setVisibility(View.GONE);
+                notificationsCard.setVisibility(View.GONE);
+            });
+            return;
+        }
+
+        List<Notification> filtered = Collections.synchronizedList(new ArrayList<>());
+        AtomicInteger pending = new AtomicInteger(notifications.size());
+
+        for (Notification notif : notifications) {
+            checkMembership(notif, userId, belongs -> {
+                if (belongs) filtered.add(notif); //keep if notif is allowed.
+                if (pending.decrementAndGet() == 0) {
+                    requireActivity().runOnUiThread(() -> {
+                        if (filtered.isEmpty()) {
+                            newBadge.setVisibility(View.GONE);
+                            notificationsCard.setVisibility(View.GONE);
+                        } else {
+                            newBadge.setText(filtered.size() + " new");
+                            newBadge.setVisibility(View.VISIBLE);
+                            notificationAdapter.setNotifications(filtered);
+                            notificationsCard.setVisibility(View.VISIBLE);
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+    /**
+     * Checks whether the current user belongs to the targetGroup
+     * of the given notification by querying Firestore membership.
+     *
+     * WAITLIST  — in waitlist-entrants and not in invitedUserIds
+     * SELECTED  — has a lottery_win invitation document
+     * CANCELLED — has a lottery_loss invitation document
+     * ALL       — always true
+     */
+    private void checkMembership(Notification notif, String uid, BooleanCallback callback) {
+        String group   = notif.getTargetGroup();
+        String eventId = notif.getEventId();
+        Log.d("NotifDebug", "checkMembership group=" + group + " eventId=" + eventId + " uid=" + uid);
+
+        switch (group) {
+            case "ALL":
+                Log.d("NotifDebug", "ALL — returning true");
+                callback.onResult(true);
+                break;
+
+            case "WAITLIST":
+                new EventJoinRepository().hasJoined(eventId, uid, joined -> {
+                    Log.d("NotifDebug", "WAITLIST hasJoined=" + joined);
+                    if (!joined) { callback.onResult(false); return; }
+                    FirebaseFirestore.getInstance()
+                            .collection("events").document(eventId)
+                            .get()
+                            .addOnSuccessListener(doc -> {
+                                List<String> invited = (List<String>) doc.get("invitedUserIds");
+                                boolean result = invited == null || !invited.contains(uid);
+                                Log.d("NotifDebug", "WAITLIST not in invitedUserIds=" + result);
+                                callback.onResult(result);
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.e("NotifDebug", "WAITLIST event fetch failed: " + e.getMessage());
+                                callback.onResult(false);
+                            });
+                });
+                break;
+
+            case "SELECTED":
+                FirebaseFirestore.getInstance()
+                        .collection("invitations")
+                        .whereEqualTo("eventId", eventId)
+                        .whereEqualTo("userId", uid)
+                        .whereEqualTo("type", "lottery_win")
+                        .get()
+                        .addOnSuccessListener(snap -> {
+                            Log.d("NotifDebug", "SELECTED found " + snap.size() + " docs");
+                            callback.onResult(!snap.isEmpty());
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.e("NotifDebug", "SELECTED query failed: " + e.getMessage());
+                            callback.onResult(false);
+                        });
+                break;
+
+            case "CANCELLED":
+                FirebaseFirestore.getInstance()
+                        .collection("invitations")
+                        .whereEqualTo("eventId", eventId)
+                        .whereEqualTo("userId", uid)
+                        .whereEqualTo("type", "lottery_loss")
+                        .get()
+                        .addOnSuccessListener(snap -> {
+                            Log.d("NotifDebug", "CANCELLED found " + snap.size() + " docs");
+                            callback.onResult(!snap.isEmpty());
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.e("NotifDebug", "CANCELLED query failed: " + e.getMessage());
+                            callback.onResult(false);
+                        });
+                break;
+
+            default:
+                Log.d("NotifDebug", "unknown group=" + group + " returning false");
+                callback.onResult(false);
+        }
+    }
     private void acceptInvitation(String userId) {
         if (currentInvitation == null) return;
 
@@ -198,8 +410,13 @@ public class NotificationFragment extends HomeBar {
                 }
             });
         });
+
+
     }
 
+    /**
+     * Animates fade in of cards
+     */
     private void animateIn() {
         View[] views = {headerTitle, toggleCard, notificationsCard};
         AnimatorSet set = new AnimatorSet();
@@ -212,5 +429,8 @@ public class NotificationFragment extends HomeBar {
         }
         set.playTogether(animators);
         set.start();
+    }
+    private interface BooleanCallback {
+        void onResult(boolean result);
     }
 }

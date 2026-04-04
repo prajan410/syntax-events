@@ -230,7 +230,7 @@ public class EventDetail {
      */
     public long getWaitlistCount() { return waitlistCount; }
     /**
-     * Sets the count of people in the event wait list
+get     * Sets the count of people in the event wait list
      *
      * @param waitlistCount the count of people to assign
      */
