@@ -16,9 +16,16 @@ import com.example.syntaxappproject.R;
 
 import java.util.List;
 
+/**
+ * RecyclerView adapter for displaying events for all events list recyclerview
+ *
+ * <p>Each row shows the event image and name</p>
+ */
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> {
     private List<EventDetail> events;
     private OnItemClickListener listener;
+
+    public boolean isTestMode = false;
 
     public interface OnItemClickListener {
         void onItemClick(EventDetail event);
@@ -29,6 +36,11 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
         this.listener = listener;
     }
 
+    /**
+     * The single view of events in the list
+     * display a image and a name
+     * contain the event id.
+     */
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView eventImage;
         TextView eventName;
@@ -75,13 +87,31 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> 
         holder.eventImage.setImageResource(R.drawable.ic_launcher_background);
     }
 
+    /**
+     * Notify the view to update the list.
+     * @param newList a new list to update
+     */
     public void updateList(List<EventDetail> newList) {
         events = newList;
-        notifyDataSetChanged();
+        if (!isTestMode) {
+            notifyDataSetChanged();
+        }
     }
 
+    /**
+     * Get the number of events in a list.
+     * @return the size to events list
+     */
     @Override
     public int getItemCount() {
         return events.size();
+    }
+
+    /**
+     * Get the events list.
+     * @return the list of events
+     */
+    public List<EventDetail> getEvents() {
+        return events;
     }
 }

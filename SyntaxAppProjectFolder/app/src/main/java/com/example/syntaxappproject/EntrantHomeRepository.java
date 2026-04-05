@@ -25,6 +25,7 @@ public class EntrantHomeRepository {
     public EntrantHomeRepository(){
         db = FirebaseFirestore.getInstance();
     }
+    protected EntrantHomeRepository(boolean testMode){}
     /**
      * Callback interface for operations that success return a list of events
      */
