@@ -240,24 +240,57 @@
         <action
             android:id="@+id/toNotifyEntrantsFragment"
             app:destination="@+id/notifyEntrantsFragment" />
+        <action
+            android:id="@+id/to_mapFragment"
+            app:destination="@+id/mapFragment" />
 
     </fragment>
+
     <fragment
         android:id="@+id/notifyEntrantsFragment"
         android:name="com.example.syntaxappproject.ui.NotifyEntrantsFragment"
         android:label="Notify Entrants"
         tools:layout="@layout/fragment_notify_entrants">
-
+        <action
+            android:id="@+id/toHomeFragment"
+            app:destination="@id/homeFragment" />
+        <action
+            android:id="@+id/toUserFragment"
+            app:destination="@id/userFragment" />
+        <action
+            android:id="@+id/toQrCodeScannerFragment"
+            app:destination="@id/QRCodeScannerFragment" />
+        <action
+            android:id="@+id/toNotificationFragment"
+            app:destination="@id/notificationFragment" />
+        <action
+            android:id="@+id/toOrganizerEventsFragment"
+            app:destination="@id/organizerEventsFragment" />
     </fragment>
 
     <fragment
         android:id="@+id/eventSignupList"
-        android:name="com.example.syntaxappproject.ui.EventSignupList"
+        android:name="com.example.syntaxappproject.ui.EventSignupListFragment"
         android:label="Event Signups"
-        tools:layout="@layout/event_signup_list">
+        tools:layout="@layout/fragment_event_signup_list">
         <argument
             android:name="eventId"
             app:argType="string" />
+        <action
+            android:id="@+id/toHomeFragment"
+            app:destination="@id/homeFragment" />
+        <action
+            android:id="@+id/toUserFragment"
+            app:destination="@id/userFragment" />
+        <action
+            android:id="@+id/toQrCodeScannerFragment"
+            app:destination="@id/QRCodeScannerFragment" />
+        <action
+            android:id="@+id/toNotificationFragment"
+            app:destination="@id/notificationFragment" />
+        <action
+            android:id="@+id/toOrganizerEventsFragment"
+            app:destination="@id/organizerEventsFragment" />
     </fragment>
 
     <fragment
@@ -320,6 +353,18 @@
             app:destination="@id/homeFragment"
             app:popUpTo="@id/homeFragment"
             app:popUpToInclusive="false" />
+        <action
+            android:id="@+id/toUserFragment"
+            app:destination="@id/userFragment" />
+        <action
+            android:id="@+id/toQrCodeScannerFragment"
+            app:destination="@id/QRCodeScannerFragment" />
+        <action
+            android:id="@+id/toNotificationFragment"
+            app:destination="@id/notificationFragment" />
+        <action
+            android:id="@+id/toOrganizerEventsFragment"
+            app:destination="@id/organizerEventsFragment" />
     </fragment>
 
     <fragment
@@ -379,6 +424,21 @@
         <argument
             android:name="eventId"
             app:argType="string" />
+        <action
+            android:id="@+id/toHomeFragment"
+            app:destination="@id/homeFragment" />
+        <action
+            android:id="@+id/toUserFragment"
+            app:destination="@id/userFragment" />
+        <action
+            android:id="@+id/toQrCodeScannerFragment"
+            app:destination="@id/QRCodeScannerFragment" />
+        <action
+            android:id="@+id/toNotificationFragment"
+            app:destination="@id/notificationFragment" />
+        <action
+            android:id="@+id/toOrganizerEventsFragment"
+            app:destination="@id/organizerEventsFragment" />
     </fragment>
 
     <fragment
@@ -415,7 +475,78 @@
         android:id="@+id/privateEventInviteFragment"
         android:name="com.example.syntaxappproject.ui.PrivateEventInviteFragment"
         android:label="PrivateEventInviteFragment"
-        tools:layout="@layout/fragment_private_event_invite" />
+        tools:layout="@layout/fragment_private_event_invite">
+        <action
+            android:id="@+id/toHomeFragment"
+            app:destination="@id/homeFragment" />
+        <action
+            android:id="@+id/toUserFragment"
+            app:destination="@id/userFragment" />
+        <action
+            android:id="@+id/toQrCodeScannerFragment"
+            app:destination="@id/QRCodeScannerFragment" />
+        <action
+            android:id="@+id/toNotificationFragment"
+            app:destination="@id/notificationFragment" />
+        <action
+            android:id="@+id/toOrganizerEventsFragment"
+            app:destination="@id/organizerEventsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/mapFragment"
+        android:name="com.example.syntaxappproject.ui.MapFragment"
+        android:label="Map"
+        tools:layout="@layout/fragment_map">
+        <argument
+            android:name="eventId"
+            app:argType="string" />
+        <action
+            android:id="@+id/toHomeFragment"
+            app:destination="@id/homeFragment" />
+        <action
+            android:id="@+id/toUserFragment"
+            app:destination="@id/userFragment" />
+        <action
+            android:id="@+id/toQrCodeScannerFragment"
+            app:destination="@id/QRCodeScannerFragment" />
+        <action
+            android:id="@+id/toNotificationFragment"
+            app:destination="@id/notificationFragment" />
+        <action
+            android:id="@+id/toOrganizerEventsFragment"
+            app:destination="@id/organizerEventsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/coOrganizerInviteFragment"
+        android:name="com.example.syntaxappproject.ui.CoOrganizerInviteFragment"
+        android:label="CoOrganizerInviteFragment"
+        tools:layout="@layout/fragment_co_organizer_invite" />
+
+    <fragment
+        android:id="@+id/mapFragment"
+        android:name="com.example.syntaxappproject.ui.MapFragment"
+        android:label="Map"
+        tools:layout="@layout/fragment_map">
+        <argument
+            android:name="eventId"
+            app:argType="string" />
+        <action
+            android:id="@+id/toHomeFragment"
+            app:destination="@id/homeFragment" />
+        <action
+            android:id="@+id/toUserFragment"
+            app:destination="@id/userFragment" />
+        <action
+            android:id="@+id/toQrCodeScannerFragment"
+            app:destination="@id/QRCodeScannerFragment" />
+        <action
+            android:id="@+id/toNotificationFragment"
+            app:destination="@id/notificationFragment" />
+        <action
+            android:id="@+id/toOrganizerEventsFragment"
+            app:destination="@id/organizerEventsFragment" />
+    </fragment>
 
 
 </navigation>

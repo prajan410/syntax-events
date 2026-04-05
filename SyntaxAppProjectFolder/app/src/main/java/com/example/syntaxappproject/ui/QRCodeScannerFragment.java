@@ -16,18 +16,34 @@ import com.journeyapps.barcodescanner.BarcodeResult;
 import com.journeyapps.barcodescanner.DecoratedBarcodeView;
 import com.journeyapps.barcodescanner.CaptureManager;
 
+/**
+ * A fragment that provides QR code scanning functionality using the ZXing library.
+ * It integrates with a hotbar and handles navigation to event details upon a successful scan.
+ */
 public class QRCodeScannerFragment extends HomeBar {
 
     private DecoratedBarcodeView barcodeView;
     private CaptureManager capture;
     private boolean flashlightOn = false;
 
+    /**
+     * Inflates the scanner layout.
+     * @param inflater The LayoutInflater object.
+     * @param container The parent view group.
+     * @param savedInstanceState The saved instance state.
+     * @return The root view of the fragment.
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.activity_scan_qrcode, container, false);
     }
 
+    /**
+     * Initializes the barcode scanner, UI animations, and button listeners.
+     * @param view The fragment view.
+     * @param savedInstanceState The saved instance state.
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -76,30 +92,47 @@ public class QRCodeScannerFragment extends HomeBar {
         );
     }
 
+    /**
+     * Resumes the barcode scanner.
+     */
     @Override
     public void onResume() {
         super.onResume();
         capture.onResume();
     }
 
+    /**
+     * Pauses the barcode scanner.
+     */
     @Override
     public void onPause() {
         super.onPause();
         capture.onPause();
     }
 
+    /**
+     * Destroys the capture manager.
+     */
     @Override
     public void onDestroy() {
         super.onDestroy();
         capture.onDestroy();
     }
 
+    /**
+     * Saves the scanner state.
+     * @param outState Bundle to save state into.
+     */
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         capture.onSaveInstanceState(outState);
     }
 
+    /**
+     * Callback that handles the result of a barcode scan.
+     * Navigates to the EventDetailFragment using the scanned text as the event ID.
+     */
     private final BarcodeCallback callback = new BarcodeCallback() {
         @Override
         public void barcodeResult(BarcodeResult result) {

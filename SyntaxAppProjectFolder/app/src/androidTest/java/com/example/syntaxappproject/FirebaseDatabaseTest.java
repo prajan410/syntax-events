@@ -10,8 +10,15 @@ import com.google.firebase.database.ValueEventListener;
 
 import org.junit.Test;
 
+/**
+ * Instrumented test class for verifying Firebase Realtime Database functionality.
+ */
 public class FirebaseDatabaseTest {
 
+    /**
+     * Tests basic read and write operations to the Firebase Realtime Database.
+     * Sets a value in the "test" node and verifies it via a ValueEventListener.
+     */
     @Test
     public void testFirebaseDatabase() {
         FirebaseDatabase database = FirebaseDatabase.getInstance();

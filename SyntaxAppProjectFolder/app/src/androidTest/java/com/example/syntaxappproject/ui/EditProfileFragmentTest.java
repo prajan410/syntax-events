@@ -47,6 +47,7 @@ import java.lang.reflect.Field;
  * a {@link FragmentFactory}, so the real {@link EditProfileFragment} class is
  * instantiated while dependencies on Firestore and Firebase Auth are fully isolated.</p>
  */
+
 @RunWith(AndroidJUnit4.class)
 public class EditProfileFragmentTest {
 

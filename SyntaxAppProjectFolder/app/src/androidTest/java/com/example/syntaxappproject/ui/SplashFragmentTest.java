@@ -1,3 +1,11 @@
+
+import com.example.syntaxappproject.AuthenticationService;
+import com.example.syntaxappproject.ProfileRepository;
+
+import org.junit.Before;
+import org.junit.runner.RunWith;
+
+
 package com.example.syntaxappproject.ui;
 
 import static androidx.test.espresso.Espresso.onView;
@@ -22,14 +30,28 @@ import com.example.syntaxappproject.AuthenticationService;
 import com.example.syntaxappproject.Profile;
 import com.example.syntaxappproject.ProfileRepository;
 import com.example.syntaxappproject.R;
+import com.example.syntaxappproject.ui.SplashFragment;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+
+import com.example.syntaxappproject.AuthenticationService;
+import com.example.syntaxappproject.ui.SplashFragment;
+
 /**
  * Instrumented tests for {@link SplashFragment} navigation routing.
  */
+
+import androidx.navigation.NavController;
+
+import com.example.syntaxappproject.AuthenticationService;
+import com.example.syntaxappproject.ProfileRepository;
+
+import org.junit.Before;
+import org.junit.runner.RunWith;
+
 @RunWith(AndroidJUnit4.class)
 public class SplashFragmentTest {
 
@@ -134,6 +156,7 @@ public class SplashFragmentTest {
      * Test subclass that bypasses heavy loading (events/images) and routes immediately.
      * We keep the same auth flow but skip the image‑caching loop.
      */
+
     public static class TestSplashFragment extends SplashFragment {
 
         @Override
