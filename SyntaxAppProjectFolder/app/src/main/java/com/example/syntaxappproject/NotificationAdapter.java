@@ -55,9 +55,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         holder.body.setText(notification.getBody());
         holder.timestamp.setText(formatTimestamp(notification.getTimestamp()));
 
-        // Unread dot — always visible for now
-        // TODO: track read/unread state on the Notification object
-        // and toggle dot visibility: holder.unreadDot.setVisibility(isRead ? View.GONE : View.VISIBLE)
+
         holder.unreadDot.setVisibility(View.VISIBLE);
     }
 

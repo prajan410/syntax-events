@@ -52,6 +52,29 @@ public class NotificationRepository {
         Log.d("NotifDebug", "sendNotification called, eventId=" + eventId + " groups=" + targetGroups);
         db.collection("notifications").add(notification);
         // Map each targetGroup to its Firestore subcollection
+        if ("ADMINISTRATION".equals(eventId)) {
+            db.collection("profiles").get()
+                    .addOnSuccessListener(snapshot -> {
+                        List<Task<Void>> writeTasks = Collections.synchronizedList(new ArrayList<>());
+                        for (DocumentSnapshot userDoc : snapshot.getDocuments()) {
+                            boolean wantsAdmin = !Boolean.FALSE.equals(userDoc.getBoolean("adminNotificationEnabled"));
+                            if (!wantsAdmin) continue;
+
+                            Task<Void> writeTask = db.collection("users")
+                                    .document(userDoc.getId())
+                                    .collection("notifications")
+                                    .add(notification)
+                                    .continueWith(task -> null);
+                            writeTasks.add(writeTask);
+                        }
+                        Tasks.whenAll(writeTasks)
+                                .addOnSuccessListener(v -> callback.onComplete(true))
+                                .addOnFailureListener(e -> callback.onComplete(false));
+                    })
+                    .addOnFailureListener(e -> callback.onComplete(false));
+            return; // ← don't fall through to the event-based logic
+        }
+
         List<String> subcollections = new ArrayList<>();
         for (String group : targetGroups) {
             switch (group) {

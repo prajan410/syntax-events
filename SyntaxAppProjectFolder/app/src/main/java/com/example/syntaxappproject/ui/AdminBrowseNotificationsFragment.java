@@ -77,18 +77,6 @@ public class AdminBrowseNotificationsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        if (getArguments() != null) {
-            eventId = getArguments().getString(ARG_EVENT_ID);
-        }
-
-        Log.d("NotifDebug", "eventId on load = " + eventId);
-
-        if (eventId == null) {
-            Toast.makeText(getContext(), "No event ID provided", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         bindViews(view);
         setupRecycler();
         setupSendButton();
@@ -159,17 +147,15 @@ public class AdminBrowseNotificationsFragment extends Fragment {
                 notifMessageInput.setError("Message required");
                 return;
             }
-            if (eventId == null || eventId.isEmpty()) {
-                Toast.makeText(getContext(), "No event selected", Toast.LENGTH_SHORT).show();
-                return;
-            }
+
 
             Notification notification = new Notification();
-            notification.setEventId(eventId);
+
             notification.setSenderId(authService.getCurrentUserId());
             notification.setTitle(title);
+            notification.setSenderRole(("ADMIN"));
             notification.setBody(message);
-            notification.setSenderRole("ADMIN");
+            notification.setEventId("ADMINISTRATION");
             notification.setTargetGroup("ALL");
             notification.setTimestamp(System.currentTimeMillis());
             notification.setStatus("SENT");
@@ -180,7 +166,7 @@ public class AdminBrowseNotificationsFragment extends Fragment {
             sendNotifBtn.setEnabled(false);
             sendNotifBtn.setText("Sending…");
 
-            notifRepository.sendNotification(notification, eventId, targetGroups, success -> {
+            notifRepository.sendNotification(notification, "ADMINISTRATION", targetGroups, success -> {
                 if (!isAdded()) return;
                 requireActivity().runOnUiThread(() -> {
                     sendNotifBtn.setEnabled(true);

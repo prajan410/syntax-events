@@ -480,10 +480,21 @@ public class NotificationFragment extends HomeBar {
          */
         private void bindNotification(NotificationViewHolder holder, Notification notif) {
             holder.notifTitle.setText(notif.getTitle());
-            holder.senderRole.setText(notif.getSenderRole());
             holder.body.setText(notif.getBody());
             holder.timestamp.setText(formatTimestamp(notif.getTimestamp()));
             holder.unreadDot.setVisibility(View.VISIBLE);
+
+            // Fix the sender display
+            if ("ADMIN".equals(notif.getSenderRole())) {
+                holder.senderRole.setText("From: Administration");
+            } else {
+                String eventName = notif.getEventName();
+                holder.senderRole.setText(
+                        eventName != null && !eventName.isEmpty()
+                                ? "From: " + eventName
+                                : "From: Unknown Event"
+                );
+            }
         }
 
         /**

@@ -53,7 +53,7 @@ public class NotifyEntrantsFragment extends Fragment {
     private TextView titleCharCount;
     // --- Event ID passed from EventDetailFragment via Bundle ---
     private String eventId;
-
+    private String eventName;
     public NotifyEntrantsFragment() {}
 
     @Override
@@ -69,6 +69,7 @@ public class NotifyEntrantsFragment extends Fragment {
         // --- Retrieve eventId from bundle ---
         if (getArguments() != null) {
             eventId = getArguments().getString("eventId");
+            eventName = getArguments().getString("eventName");
         }
 
         // --- Bind views ---
@@ -105,6 +106,7 @@ public class NotifyEntrantsFragment extends Fragment {
         coOrganizerInviteButton.setOnClickListener(v -> {
             Bundle bundle = new Bundle();
             bundle.putString("eventId", eventId);
+            bundle.putString("eventName", eventName);
             NavHostFragment.findNavController(this).navigate(R.id.coOrganizerInviteFragment, bundle);
         });
 
@@ -227,6 +229,7 @@ public class NotifyEntrantsFragment extends Fragment {
         notif.setEventId(eventId);
         notif.setSenderId(authService.getCurrentUserId());
         notif.setTitle(title);
+        notif.setEventName(eventName);
         notif.setSenderRole("ORGANIZER");
         notif.setTargetGroup(String.join(",", selectedGroups)); // e.g. "WAITLIST,SELECTED"
         notif.setBody(message);
