@@ -126,7 +126,7 @@ public class CoOrganizerInviteFragment extends Fragment {
                 notify.setTitle("Invite Co-organizer");
                 notify.setSenderRole("ORGANIZER");
                 notify.setTargetGroup("CO_ORGANIZER");
-                notify.setBody("Invite you to be co-organizer of" + eventName);
+                notify.setBody("Invite you to be co-organizer of " + eventName);
                 notify.setTimestamp(System.currentTimeMillis());
                 notify.setStatus("SENT");
 

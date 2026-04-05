@@ -15,12 +15,12 @@ public class CoOrganizerRepositoryTest {
 
     /**
      * In-memory fake subclass of {@link CoOrganizerRepository} that simulates
-     * the Firestore waitlist-entrants subcollection using a {@link HashSet}.
+     * the Firestore co-organizer subcollection using a {@link HashSet}.
      * Stores entries as {@code "eventId::userId"} composite keys.
      */
     static class FakeCoOrganizerRepository extends CoOrganizerRepository {
 
-        private final Set<String> waitlist = new HashSet<>();
+        private final Set<String> coorganizer = new HashSet<>();
 
         /**
          * Constructs the fake repository using the test-mode constructor
@@ -39,14 +39,26 @@ public class CoOrganizerRepositoryTest {
             return eventId + "::" + userId;
         }
 
+        /**
+         * Override of isCoOrganizer, check if userId is already in the event co-organizer collection
+         * @param eventId the Id of event to check
+         * @param userId  the Id of user to check
+         * @param callback the {@link checkCallback} invoked with the result,
+         */
         @Override
         public void isCoOrganizer(String eventId, String userId, checkCallback callback) {
-            callback.onResult(waitlist.contains(key(eventId, userId)));
+            callback.onResult(coorganizer.contains(key(eventId, userId)));
         }
 
+        /**
+         * Override of addCoOrganizer, add the userid to the event co-organizer collection
+         * @param eventId the Id of a event for add
+         * @param userId   the Id of a user to add
+         * @param callback the {@link addCallback} invoked with the result,
+         */
         @Override
         public void addCoOrganizer(String eventId, String userId, addCallback callback) {
-            waitlist.add(key(eventId, userId));
+            coorganizer.add(key(eventId, userId));
             callback.onComplete(true);
         }
 
