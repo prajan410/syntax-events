@@ -94,7 +94,6 @@ public class ManageEventFragment extends HomeBar {
     private final EventLotteryRepository eventLotteryRepository = new EventLotteryRepository();
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-    // City autocomplete
     private List<String> allCities = new ArrayList<>();
     private boolean citiesLoaded = false;
 
@@ -162,7 +161,6 @@ public class ManageEventFragment extends HomeBar {
         runLotteryButton = view.findViewById(R.id.runLotteryButton);
         drawReplacementButton = view.findViewById(R.id.drawReplacementButton);
 
-        // Setup location field toggling based on geo switch
         toggleLocationField(geoSwitch.isChecked());
         geoSwitch.setOnCheckedChangeListener((btn, isChecked) -> toggleLocationField(isChecked));
     }
@@ -199,7 +197,6 @@ public class ManageEventFragment extends HomeBar {
                         firstLine = false;
                         continue;
                     }
-                    // Handle quoted CSV properly
                     List<String> values = new ArrayList<>();
                     StringBuilder current = new StringBuilder();
                     boolean inQuotes = false;
@@ -216,10 +213,9 @@ public class ManageEventFragment extends HomeBar {
                     }
                     values.add(current.toString().trim());
 
-                    // Based on your headers: city_ascii is index 1, country is index 5
                     if (values.size() >= 6) {
-                        String city = values.get(1).replace("\"", "");  // city_ascii
-                        String country = values.get(5).replace("\"", ""); // country
+                        String city = values.get(1).replace("\"", "");
+                        String country = values.get(5).replace("\"", "");
                         if (!city.isEmpty() && !country.isEmpty()) {
                             cities.add(city + ", " + country);
                         }
@@ -249,7 +245,6 @@ public class ManageEventFragment extends HomeBar {
     private void setupLocationAutocomplete() {
         if (allCities.isEmpty()) return;
 
-        // Create popup window for suggestions
         PopupWindow popupWindow = new PopupWindow(requireContext());
         ListView listView = new ListView(requireContext());
         listView.setBackgroundColor(0xFFFFFFFF);
@@ -269,14 +264,12 @@ public class ManageEventFragment extends HomeBar {
         popupWindow.setOutsideTouchable(true);
         popupWindow.setBackgroundDrawable(getResources().getDrawable(android.R.drawable.editbox_background));
 
-        // Text watcher for the input field
         TextWatcher textWatcher = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // Only show suggestions if location is enabled
                 if (!locationInput.isEnabled()) return;
 
                 String query = s.toString().toLowerCase().trim();
@@ -315,7 +308,6 @@ public class ManageEventFragment extends HomeBar {
 
         locationInput.addTextChangedListener(textWatcher);
 
-        // Handle item click
         listView.setOnItemClickListener((parent, view, position, id) -> {
             String selected = adapter.getItem(position);
             String selectedCity = selected.split(",")[0].trim();
@@ -325,7 +317,6 @@ public class ManageEventFragment extends HomeBar {
             popupWindow.dismiss();
             locationInput.requestFocus();
 
-            // Show keyboard
             android.view.inputmethod.InputMethodManager imm =
                     (android.view.inputmethod.InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.showSoftInput(locationInput, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
@@ -333,7 +324,6 @@ public class ManageEventFragment extends HomeBar {
             markChanges();
         });
 
-        // Handle focus
         locationInput.setOnFocusChangeListener((v, hasFocus) -> {
             if (!hasFocus && popupWindow.isShowing()) {
                 locationInput.postDelayed(() -> {
@@ -544,7 +534,6 @@ public class ManageEventFragment extends HomeBar {
         regisEndDateInput.setText(regisEnd != null ? regisEnd : "");
         geoSwitch.setChecked(geoRequired != null && geoRequired);
 
-        // Toggle location field based on geo requirement
         toggleLocationField(geoRequired != null && geoRequired);
 
         if (lotteryCriteria != null && !lotteryCriteria.isEmpty()) {
@@ -606,8 +595,6 @@ public class ManageEventFragment extends HomeBar {
             Toast.makeText(requireContext(), "Description is required", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        // Location is only required when geolocation is enabled
         if (geoEnabled) {
             if (location.isEmpty()) {
                 Toast.makeText(requireContext(), "Location is required when geolocation is enabled", Toast.LENGTH_SHORT).show();

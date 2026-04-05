@@ -118,8 +118,6 @@
 
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Standalone AutoCompleteTextView - This will work! -->
-                    <!-- Replace the entire location section with this -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
