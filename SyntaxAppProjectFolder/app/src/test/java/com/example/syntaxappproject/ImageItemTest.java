@@ -5,11 +5,20 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class ImageItemTest {
+
+    /**
+     * Verifies that the no-argument constructor creates a non-null ImageItem object.
+     */
     @Test
     public void testEmptyConstructorCreatesObject() {
         ImageItem item = new ImageItem();
         assertNotNull(item);
     }
+
+    /**
+     * Verifies that the parameterized constructor correctly assigns
+     * the image URL and uploader name fields.
+     */
     @Test
     public void testConstructorSetsFieldsCorrectly() {
         ImageItem item = new ImageItem(

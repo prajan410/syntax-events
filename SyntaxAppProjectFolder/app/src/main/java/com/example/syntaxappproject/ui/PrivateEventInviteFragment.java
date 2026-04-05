@@ -38,15 +38,33 @@ public class PrivateEventInviteFragment extends Fragment {
     private String eventId;
     private String eventName;
 
+    /**
+     * Required empty constructor for fragment initialization.
+     */
     public PrivateEventInviteFragment() {
     }
 
+    /**
+     * Inflates the private event invite fragment layout.
+     *
+     * @param inflater the LayoutInflater object used to inflate views
+     * @param container the parent view that the fragment UI should attach to
+     * @param savedInstanceState the previously saved state of the fragment, if any
+     * @return the root view for this fragment
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_private_event_invite, container, false);
     }
 
+    /**
+     * Initializes the fragment views, repository, arguments, adapter,
+     * and button click listeners after the view has been created.
+     *
+     * @param view the fragment's root view
+     * @param savedInstanceState the previously saved state of the fragment, if any
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -80,6 +98,11 @@ public class PrivateEventInviteFragment extends Fragment {
         );
     }
 
+    /**
+     * Searches for entrant profiles based on the user's input text.
+     * Displays a toast if the search field is empty and updates the result text
+     * and adapter data when search results are returned.
+     */
     private void doSearch() {
         String query = "";
         if (searchInput.getText() != null) {
@@ -108,6 +131,13 @@ public class PrivateEventInviteFragment extends Fragment {
         });
     }
 
+    /**
+     * Sends a private event invitation to the specified user and then
+     * attempts to add that user to the invited users list for the event.
+     * Displays a toast message to indicate success or failure.
+     *
+     * @param userId the ID of the user being invited
+     */
     private void inviteUser(String userId) {
         if (eventId == null || eventName == null) {
             Toast.makeText(getContext(), "Missing event info", Toast.LENGTH_SHORT).show();

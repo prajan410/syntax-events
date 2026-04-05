@@ -17,6 +17,10 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 @RunWith(AndroidJUnit4.class)
 public class AdminImageDetailsTest {
 
+    /**
+     * Verifies that the image details screen displays the title and
+     * remove image button when launched with valid image data.
+     */
     @Test
     public void testImageDetailsDisplaysRemoveButton() {
         Bundle bundle = new Bundle();
