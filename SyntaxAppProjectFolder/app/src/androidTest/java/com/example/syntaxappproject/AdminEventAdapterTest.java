@@ -25,16 +25,33 @@ import org.mockito.ArgumentCaptor;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+/**
+ * Instrumented test class for {@link AdminEventAdapter}.
+ * <p>
+ * This class verifies that the adapter correctly reports item count,
+ * binds event data to view holders, updates its internal data set,
+ * and navigates to the event details screen with the expected bundle
+ * when the details button is clicked.
+ * </p>
+ */
 @RunWith(AndroidJUnit4.class)
 public class AdminEventAdapterTest {
 
     private Context context;
 
+    /**
+     * Sets up the test context before each test runs.
+     */
     @Before
     public void setUp() {
         context = InstrumentationRegistry.getInstrumentation().getTargetContext();
     }
 
+    /**
+     * Creates a themed parent layout for inflating adapter item views.
+     *
+     * @return a {@link FrameLayout} using a Material Components theme
+     */
     private FrameLayout createThemedParent() {
         Context themedContext = new ContextThemeWrapper(
                 context,
@@ -43,6 +60,14 @@ public class AdminEventAdapterTest {
         return new FrameLayout(themedContext);
     }
 
+    /**
+     * Creates a sample {@link EventDetail} object with preset test data.
+     *
+     * @param name the name of the event
+     * @param location the location of the event
+     * @param organizerUid the organizer UID for the event
+     * @return a populated {@link EventDetail} instance
+     */
     private EventDetail makeEvent(String name, String location, String organizerUid) {
         EventDetail event = new EventDetail();
         event.setName(name);
@@ -61,6 +86,9 @@ public class AdminEventAdapterTest {
         return event;
     }
 
+    /**
+     * Verifies that {@code getItemCount()} returns the correct number of events.
+     */
     @Test
     public void testGetItemCount_returnsCorrectSize() {
         ArrayList<EventDetail> events = new ArrayList<>();
@@ -74,6 +102,10 @@ public class AdminEventAdapterTest {
         assertEquals(2, adapter.getItemCount());
     }
 
+    /**
+     * Verifies that binding a view holder sets the expected event title,
+     * location, and default organizer name in the item view.
+     */
     @Test
     public void testOnBindViewHolder_setsBasicTexts() {
         ArrayList<EventDetail> events = new ArrayList<>();
@@ -95,6 +127,10 @@ public class AdminEventAdapterTest {
                 ((TextView) holder.itemView.findViewById(R.id.tv_organizer_name)).getText().toString());
     }
 
+    /**
+     * Verifies that {@code updateData()} replaces the adapter's event list
+     * and that the updated data is reflected when binding a view holder.
+     */
     @Test
     public void testUpdateData_replacesAdapterData() {
         ArrayList<EventDetail> oldEvents = new ArrayList<>();
@@ -122,6 +158,10 @@ public class AdminEventAdapterTest {
                 ((TextView) holder.itemView.findViewById(R.id.tv_event_location)).getText().toString());
     }
 
+    /**
+     * Verifies that clicking the details button triggers navigation to
+     * the admin event details screen with the correct bundle contents.
+     */
     @Test
     public void testDetailsButton_navigatesWithBundle() {
         ArrayList<EventDetail> events = new ArrayList<>();

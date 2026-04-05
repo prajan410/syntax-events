@@ -32,17 +32,28 @@ public class ImageAdapterTest {
 
     private Context context;
 
+    /**
+     * Sets up the test context and clears the image cache before each test.
+     */
     @Before
     public void setUp() {
         context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         ImageCacheManager.clear();
     }
 
+    /**
+     * Clears the image cache after each test completes.
+     */
     @After
     public void tearDown() {
         ImageCacheManager.clear();
     }
 
+    /**
+     * Creates a themed parent layout for inflating adapter item views.
+     *
+     * @return a {@link FrameLayout} using a Material Components theme
+     */
     private FrameLayout createThemedParent() {
         Context themedContext = new ContextThemeWrapper(
                 context,
@@ -51,6 +62,9 @@ public class ImageAdapterTest {
         return new FrameLayout(themedContext);
     }
 
+    /**
+     * Verifies that {@code getItemCount()} returns the correct number of images.
+     */
     @Test
     public void testGetItemCount_returnsCorrectSize() {
         ArrayList<ImageItem> images = new ArrayList<>();
@@ -64,6 +78,10 @@ public class ImageAdapterTest {
         assertEquals(2, adapter.getItemCount());
     }
 
+    /**
+     * Verifies that {@code updateData()} replaces the adapter's image list
+     * and updates the item count accordingly.
+     */
     @Test
     public void testUpdateData_replacesAdapterData() {
         ArrayList<ImageItem> oldImages = new ArrayList<>();
@@ -82,6 +100,10 @@ public class ImageAdapterTest {
         assertEquals(2, adapter.getItemCount());
     }
 
+    /**
+     * Verifies that binding a view holder uses a cached bitmap when one
+     * exists for the image ID and displays it in the preview image view.
+     */
     @Test
     public void testOnBindViewHolder_usesCachedBitmap() {
         Bitmap bitmap = Bitmap.createBitmap(20, 20, Bitmap.Config.ARGB_8888);
@@ -102,6 +124,10 @@ public class ImageAdapterTest {
         assertNotNull(imageView.getDrawable());
     }
 
+    /**
+     * Verifies that clicking the preview image triggers navigation to
+     * the admin image details screen with the correct image data.
+     */
     @Test
     public void testImageClick_navigatesWithBundle() {
         Bitmap bitmap = Bitmap.createBitmap(20, 20, Bitmap.Config.ARGB_8888);
