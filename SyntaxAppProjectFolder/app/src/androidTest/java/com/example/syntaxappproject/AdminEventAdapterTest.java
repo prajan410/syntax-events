@@ -25,15 +25,7 @@ import org.mockito.ArgumentCaptor;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-/**
- * Instrumented test class for {@link AdminEventAdapter}.
- * <p>
- * This class verifies that the adapter correctly reports item count,
- * binds event data to view holders, updates its internal data set,
- * and navigates to the event details screen with the expected bundle
- * when the details button is clicked.
- * </p>
- */
+
 @RunWith(AndroidJUnit4.class)
 public class AdminEventAdapterTest {
 
