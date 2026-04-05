@@ -56,11 +56,27 @@ public class CreateEventFragment extends HomeBar {
     private List<String> allCities = new ArrayList<>();
     private boolean citiesLoaded = false;
 
+    /**
+     * Inflates the fragment layout.
+     *
+     * @param inflater  the LayoutInflater used to inflate the view
+     * @param container the parent ViewGroup, or null if none
+     * @param savedInstanceState previously saved state, or null
+     * @return the inflated root view for this fragment
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_create_event, container, false);
     }
 
+    /**
+     * Called immediately after {@link #onCreateView}. Binds all views, sets up
+     * date pickers, entrance animations, the geolocation toggle, bullet-point
+     * behavior, and the continue button's validation and navigation logic.
+     *
+     * @param view               the root view returned by {@link #onCreateView}
+     * @param savedInstanceState previously saved state, or null
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -80,18 +96,15 @@ public class CreateEventFragment extends HomeBar {
 
         BulletPointHelper.setupBulletPointField(lotteryCriteriaInput);
 
-        // Date pickers
         eventStartDateInput.setOnClickListener(v -> showDatePicker(eventStartDateInput));
         eventEndDateInput.setOnClickListener(v -> showDatePicker(eventEndDateInput));
         regisStartDateInput.setOnClickListener(v -> showDatePicker(regisStartDateInput));
         regisEndDateInput.setOnClickListener(v -> showDatePicker(regisEndDateInput));
 
-        // Location autocomplete setup
         toggleLocationField(geoSwitch.isChecked());
         geoSwitch.setOnCheckedChangeListener((btn, isChecked) -> toggleLocationField(isChecked));
         loadCitiesAsync();
 
-        // Entrance animations
         View headerTitle       = view.findViewById(R.id.headerTitle);
         View detailsCard       = view.findViewById(R.id.detailsCard);
         View capacityCard      = view.findViewById(R.id.capacityCard);
@@ -135,7 +148,6 @@ public class CreateEventFragment extends HomeBar {
             if (name.isEmpty())        { toast("Event name is required"); return; }
             if (description.isEmpty()) { toast("Description is required"); return; }
 
-            // Location is only required + validated when geo is enabled
             if (geoEnabled) {
                 if (location.isEmpty()) {
                     toast("Location is required when geolocation is enabled");
@@ -180,8 +192,12 @@ public class CreateEventFragment extends HomeBar {
         });
     }
 
-    // ── City autocomplete ────────────────────────────────────────────────────
-
+    /**
+     * Loads city names from the {@code worldcities.csv} asset file on a background
+     * thread. Each entry is formatted as {@code "City, Country"} and stored in
+     * {@link #allCities}. Once loading completes, {@link #setupLocationAutocomplete()}
+     * is invoked on the main thread.
+     */
     private void loadCitiesAsync() {
         new Thread(() -> {
             List<String> cities = new ArrayList<>();
@@ -195,7 +211,6 @@ public class CreateEventFragment extends HomeBar {
                         firstLine = false;
                         continue;
                     }
-                    // Handle quoted CSV properly
                     List<String> values = new ArrayList<>();
                     StringBuilder current = new StringBuilder();
                     boolean inQuotes = false;
@@ -212,10 +227,9 @@ public class CreateEventFragment extends HomeBar {
                     }
                     values.add(current.toString().trim());
 
-                    // Based on your headers: city_ascii is index 1, country is index 5
                     if (values.size() >= 6) {
-                        String city = values.get(1).replace("\"", "");  // city_ascii
-                        String country = values.get(5).replace("\"", ""); // country
+                        String city = values.get(1).replace("\"", "");
+                        String country = values.get(5).replace("\"", "");
                         if (!city.isEmpty() && !country.isEmpty()) {
                             cities.add(city + ", " + country);
                         }
@@ -239,11 +253,18 @@ public class CreateEventFragment extends HomeBar {
         }).start();
     }
 
+    /**
+     * Attaches a {@link TextWatcher} to {@link #locationInput} that filters
+     * {@link #allCities} by prefix match and displays up to 20 suggestions in a
+     * {@link PopupWindow} dropdown. Selecting an item populates the field with
+     * only the city name (country portion is dropped) and dismisses the popup.
+     * The popup is also dismissed when the field loses focus and no item is being
+     * selected.
+     */
     private void setupLocationAutocomplete() {
         Log.d("CreateEventFragment", "setupLocationAutocomplete called");
         Log.d("CreateEventFragment", "allCities size: " + allCities.size());
 
-        // Create popup window for suggestions
         PopupWindow popupWindow = new PopupWindow(requireContext());
         ListView listView = new ListView(requireContext());
         listView.setBackgroundColor(0xFFFFFFFF);
@@ -259,11 +280,10 @@ public class CreateEventFragment extends HomeBar {
         popupWindow.setContentView(listView);
         popupWindow.setWidth(ViewGroup.LayoutParams.MATCH_PARENT);
         popupWindow.setHeight(400);
-        popupWindow.setFocusable(false);  // CHANGE: Don't let popup steal focus
+        popupWindow.setFocusable(false);
         popupWindow.setOutsideTouchable(true);
         popupWindow.setBackgroundDrawable(getResources().getDrawable(android.R.drawable.editbox_background));
 
-        // Text watcher for the input field
         TextWatcher textWatcher = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -293,7 +313,6 @@ public class CreateEventFragment extends HomeBar {
                         if (!popupWindow.isShowing()) {
                             Log.d("CreateEventFragment", "Showing popup window");
                             popupWindow.showAsDropDown(locationInput, 0, 0);
-                            // Keep keyboard open
                             locationInput.requestFocus();
                         }
                     } else if (popupWindow.isShowing()) {
@@ -312,35 +331,27 @@ public class CreateEventFragment extends HomeBar {
 
         locationInput.addTextChangedListener(textWatcher);
 
-        // Handle item click
         listView.setOnItemClickListener((parent, view, position, id) -> {
             String selected = adapter.getItem(position);
             Log.d("CreateEventFragment", "Selected: " + selected);
 
-            // Get just the city name (before the comma)
             String selectedCity = selected.split(",")[0].trim();
 
-            // Set the text to just the city name (or full with country if you prefer)
             locationInput.setText(selectedCity);
             locationInput.setSelection(selectedCity.length());
 
-            // Dismiss popup after selection
             popupWindow.dismiss();
 
-            // Keep keyboard open and focused
             locationInput.requestFocus();
 
-            // Show keyboard
             android.view.inputmethod.InputMethodManager imm =
                     (android.view.inputmethod.InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.showSoftInput(locationInput, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
         });
 
-        // Handle focus - don't dismiss popup immediately on focus change
         locationInput.setOnFocusChangeListener((v, hasFocus) -> {
             Log.d("CreateEventFragment", "Focus changed: " + hasFocus);
             if (!hasFocus && popupWindow.isShowing()) {
-                // Delay dismissal slightly to allow for item clicks
                 locationInput.postDelayed(() -> {
                     if (popupWindow.isShowing() && !locationInput.hasFocus()) {
                         popupWindow.dismiss();
@@ -350,6 +361,13 @@ public class CreateEventFragment extends HomeBar {
         });
     }
 
+    /**
+     * Enables or disables the location input field based on the geolocation toggle.
+     * When disabled, the field is cleared, dimmed to 40% opacity, and its hint
+     * prompts the user to enable geolocation first.
+     *
+     * @param enabled {@code true} to enable location input; {@code false} to disable it
+     */
     private void toggleLocationField(boolean enabled) {
         locationInput.setEnabled(enabled);
         locationInput.setText("");
@@ -359,8 +377,12 @@ public class CreateEventFragment extends HomeBar {
                 : "Enable geolocation to set location");
     }
 
-    // ── Helpers ──────────────────────────────────────────────────────────────
-
+    /**
+     * Displays a {@link android.app.DatePickerDialog} pre-set to today's date and
+     * writes the selected date into {@code target} in {@code YYYY-MM-DD} format.
+     *
+     * @param target the {@link TextInputEditText} to populate with the selected date
+     */
     private void showDatePicker(TextInputEditText target) {
         new android.app.DatePickerDialog(
                 requireContext(),
@@ -372,14 +394,32 @@ public class CreateEventFragment extends HomeBar {
         ).show();
     }
 
+    /**
+     * Safely extracts and trims the text content of a {@link TextInputEditText}.
+     *
+     * @param field the input field to read
+     * @return the trimmed text, or an empty string if the field's text is null
+     */
     private String getText(TextInputEditText field) {
         return field.getText() != null ? field.getText().toString().trim() : "";
     }
 
+    /**
+     * Displays a short {@link Toast} message using the current context.
+     *
+     * @param msg the message to display
+     */
     private void toast(String msg) {
         Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Validates whether a string can be parsed as an integer.
+     *
+     * @param str the string to validate
+     * @return {@code true} if {@code str} is non-null, non-blank, and parseable
+     *         as an integer; {@code false} otherwise
+     */
     private boolean isInteger(String str) {
         if (str == null || str.isBlank()) return false;
         try { Integer.parseInt(str); return true; }
