@@ -3,15 +3,22 @@ package com.example.syntaxappproject.ui;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.PopupWindow;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -35,9 +42,14 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -82,6 +94,10 @@ public class ManageEventFragment extends HomeBar {
     private final EventLotteryRepository eventLotteryRepository = new EventLotteryRepository();
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+    // City autocomplete
+    private List<String> allCities = new ArrayList<>();
+    private boolean citiesLoaded = false;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_manage_event, container, false);
@@ -98,6 +114,8 @@ public class ManageEventFragment extends HomeBar {
             setupBulletPointBehavior();
             setupClickListeners(view);
             setupChangeListeners();
+            setupLocationAutocomplete();
+            loadCitiesAsync();
             return;
         }
         if (getArguments() != null) {
@@ -117,6 +135,8 @@ public class ManageEventFragment extends HomeBar {
         setupClickListeners(view);
         loadEventData();
         setupChangeListeners();
+        setupLocationAutocomplete();
+        loadCitiesAsync();
     }
 
     /**
@@ -141,6 +161,188 @@ public class ManageEventFragment extends HomeBar {
         sampleSizeInput = view.findViewById(R.id.sampleSizeInput);
         runLotteryButton = view.findViewById(R.id.runLotteryButton);
         drawReplacementButton = view.findViewById(R.id.drawReplacementButton);
+
+        // Setup location field toggling based on geo switch
+        toggleLocationField(geoSwitch.isChecked());
+        geoSwitch.setOnCheckedChangeListener((btn, isChecked) -> toggleLocationField(isChecked));
+    }
+
+    /**
+     * Toggles the location input field based on geolocation requirement.
+     *
+     * @param enabled true if geolocation is required, false otherwise
+     */
+    private void toggleLocationField(boolean enabled) {
+        locationInput.setEnabled(enabled);
+        if (!enabled) {
+            locationInput.setText("");
+        }
+        locationInput.setAlpha(enabled ? 1f : 0.4f);
+        locationInput.setHint(enabled
+                ? "Start typing a city..."
+                : "Enable geolocation to set location");
+    }
+
+    /**
+     * Loads cities from CSV file asynchronously.
+     */
+    private void loadCitiesAsync() {
+        new Thread(() -> {
+            List<String> cities = new ArrayList<>();
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(requireContext().getAssets().open("worldcities.csv")))) {
+
+                String line;
+                boolean firstLine = true;
+                while ((line = reader.readLine()) != null) {
+                    if (firstLine) {
+                        firstLine = false;
+                        continue;
+                    }
+                    // Handle quoted CSV properly
+                    List<String> values = new ArrayList<>();
+                    StringBuilder current = new StringBuilder();
+                    boolean inQuotes = false;
+
+                    for (char c : line.toCharArray()) {
+                        if (c == '"') {
+                            inQuotes = !inQuotes;
+                        } else if (c == ',' && !inQuotes) {
+                            values.add(current.toString().trim());
+                            current.setLength(0);
+                        } else {
+                            current.append(c);
+                        }
+                    }
+                    values.add(current.toString().trim());
+
+                    // Based on your headers: city_ascii is index 1, country is index 5
+                    if (values.size() >= 6) {
+                        String city = values.get(1).replace("\"", "");  // city_ascii
+                        String country = values.get(5).replace("\"", ""); // country
+                        if (!city.isEmpty() && !country.isEmpty()) {
+                            cities.add(city + ", " + country);
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                Log.e("ManageEventFragment", "Failed to load cities", e);
+            }
+
+            allCities = cities;
+            citiesLoaded = true;
+
+            if (!isAdded()) return;
+            requireActivity().runOnUiThread(() -> {
+                setupLocationAutocomplete();
+                Log.d("ManageEventFragment", "Loaded " + allCities.size() + " cities");
+                if (allCities.size() > 0) {
+                    Log.d("ManageEventFragment", "Sample: " + allCities.get(0));
+                }
+            });
+        }).start();
+    }
+
+    /**
+     * Sets up the location autocomplete with popup window.
+     */
+    private void setupLocationAutocomplete() {
+        if (allCities.isEmpty()) return;
+
+        // Create popup window for suggestions
+        PopupWindow popupWindow = new PopupWindow(requireContext());
+        ListView listView = new ListView(requireContext());
+        listView.setBackgroundColor(0xFFFFFFFF);
+        listView.setDividerHeight(1);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_list_item_1,
+                new ArrayList<>()
+        );
+        listView.setAdapter(adapter);
+
+        popupWindow.setContentView(listView);
+        popupWindow.setWidth(ViewGroup.LayoutParams.MATCH_PARENT);
+        popupWindow.setHeight(400);
+        popupWindow.setFocusable(false);
+        popupWindow.setOutsideTouchable(true);
+        popupWindow.setBackgroundDrawable(getResources().getDrawable(android.R.drawable.editbox_background));
+
+        // Text watcher for the input field
+        TextWatcher textWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Only show suggestions if location is enabled
+                if (!locationInput.isEnabled()) return;
+
+                String query = s.toString().toLowerCase().trim();
+                if (query.length() >= 2) {
+                    List<String> suggestions = new ArrayList<>();
+                    for (String city : allCities) {
+                        String cityName = city.split(",")[0].toLowerCase().trim();
+                        if (cityName.startsWith(query)) {
+                            suggestions.add(city);
+                            if (suggestions.size() >= 20) break;
+                        }
+                    }
+
+                    adapter.clear();
+                    adapter.addAll(suggestions);
+                    adapter.notifyDataSetChanged();
+
+                    if (!suggestions.isEmpty()) {
+                        if (!popupWindow.isShowing()) {
+                            popupWindow.showAsDropDown(locationInput, 0, 0);
+                            locationInput.requestFocus();
+                        }
+                    } else if (popupWindow.isShowing()) {
+                        popupWindow.dismiss();
+                    }
+                } else {
+                    if (popupWindow.isShowing()) {
+                        popupWindow.dismiss();
+                    }
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        };
+
+        locationInput.addTextChangedListener(textWatcher);
+
+        // Handle item click
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            String selected = adapter.getItem(position);
+            String selectedCity = selected.split(",")[0].trim();
+
+            locationInput.setText(selectedCity);
+            locationInput.setSelection(selectedCity.length());
+            popupWindow.dismiss();
+            locationInput.requestFocus();
+
+            // Show keyboard
+            android.view.inputmethod.InputMethodManager imm =
+                    (android.view.inputmethod.InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.showSoftInput(locationInput, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+
+            markChanges();
+        });
+
+        // Handle focus
+        locationInput.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus && popupWindow.isShowing()) {
+                locationInput.postDelayed(() -> {
+                    if (popupWindow.isShowing() && !locationInput.hasFocus()) {
+                        popupWindow.dismiss();
+                    }
+                }, 200);
+            }
+        });
     }
 
     /**
@@ -270,7 +472,10 @@ public class ManageEventFragment extends HomeBar {
         regisStartDateInput.addTextChangedListener(watcher);
         regisEndDateInput.addTextChangedListener(watcher);
         lotteryCriteriaInput.addTextChangedListener(watcher);
-        geoSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> markChanges());
+        geoSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            toggleLocationField(isChecked);
+            markChanges();
+        });
     }
 
     /**
@@ -339,6 +544,9 @@ public class ManageEventFragment extends HomeBar {
         regisEndDateInput.setText(regisEnd != null ? regisEnd : "");
         geoSwitch.setChecked(geoRequired != null && geoRequired);
 
+        // Toggle location field based on geo requirement
+        toggleLocationField(geoRequired != null && geoRequired);
+
         if (lotteryCriteria != null && !lotteryCriteria.isEmpty()) {
             String formattedCriteria = BulletPointHelper.formatWithBullets(lotteryCriteria);
             lotteryCriteriaInput.setText(formattedCriteria);
@@ -388,6 +596,7 @@ public class ManageEventFragment extends HomeBar {
         String regisStart = getText(regisStartDateInput);
         String regisEnd = getText(regisEndDateInput);
         String lotteryCriteria = BulletPointHelper.getPlainText(getText(lotteryCriteriaInput));
+        boolean geoEnabled = geoSwitch.isChecked();
 
         if (name.isEmpty()) {
             Toast.makeText(requireContext(), "Event name is required", Toast.LENGTH_SHORT).show();
@@ -397,10 +606,31 @@ public class ManageEventFragment extends HomeBar {
             Toast.makeText(requireContext(), "Description is required", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (location.isEmpty()) {
-            Toast.makeText(requireContext(), "Location is required", Toast.LENGTH_SHORT).show();
-            return;
+
+        // Location is only required when geolocation is enabled
+        if (geoEnabled) {
+            if (location.isEmpty()) {
+                Toast.makeText(requireContext(), "Location is required when geolocation is enabled", Toast.LENGTH_SHORT).show();
+                locationInput.requestFocus();
+                return;
+            }
+            if (citiesLoaded) {
+                boolean valid = false;
+                for (String c : allCities) {
+                    String cityName = c.split(",")[0].trim();
+                    if (cityName.equalsIgnoreCase(location)) {
+                        valid = true;
+                        break;
+                    }
+                }
+                if (!valid) {
+                    Toast.makeText(requireContext(), "Please select a valid city from the suggestions", Toast.LENGTH_SHORT).show();
+                    locationInput.requestFocus();
+                    return;
+                }
+            }
         }
+
         if (!isInteger(capacityStr) || Integer.parseInt(capacityStr) < 1) {
             Toast.makeText(requireContext(), "Valid capacity is required", Toast.LENGTH_SHORT).show();
             return;
@@ -409,13 +639,13 @@ public class ManageEventFragment extends HomeBar {
         Map<String, Object> updates = new HashMap<>();
         updates.put("name", name);
         updates.put("description", description);
-        updates.put("location", location);
+        updates.put("location", geoEnabled ? location : "");
         updates.put("capacity", Integer.parseInt(capacityStr));
         updates.put("startingEventDate", startDate);
         updates.put("endingEventDate", endDate);
         updates.put("startingRegistrationPeriod", regisStart);
         updates.put("endingRegistrationPeriod", regisEnd);
-        updates.put("geolocationRequired", geoSwitch.isChecked());
+        updates.put("geolocationRequired", geoEnabled);
         updates.put("lotteryCriteria", lotteryCriteria);
 
         db.collection("events").document(eventId)
@@ -501,8 +731,7 @@ public class ManageEventFragment extends HomeBar {
                 InputStream imageStream = resolver.openInputStream(selectedImageUri);
                 Bitmap imageBitmap = BitmapFactory.decodeStream(imageStream);
 
-
-                int maxDim = 512; // Resize to max 512px to reduce storage
+                int maxDim = 512;
                 int width = imageBitmap.getWidth();
                 int height = imageBitmap.getHeight();
                 if (width > maxDim || height > maxDim) {
@@ -515,9 +744,8 @@ public class ManageEventFragment extends HomeBar {
                     );
                 }
 
-
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                imageBitmap.compress(Bitmap.CompressFormat.JPEG, 60, baos); // Compress to JPEG 60% quality
+                imageBitmap.compress(Bitmap.CompressFormat.JPEG, 60, baos);
                 String base64Image = android.util.Base64.encodeToString(
                         baos.toByteArray(), android.util.Base64.DEFAULT);
 
