@@ -66,10 +66,14 @@ dependencies {
     implementation(libs.core.ktx)
     implementation(libs.cardview)
     implementation(libs.recyclerview)
-
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test:runner:1.5.2")
+    androidTestImplementation("androidx.test:rules:1.5.0")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     implementation("androidx.navigation:navigation-fragment-ktx:2.8.9")
     implementation("androidx.navigation:navigation-ui-ktx:2.8.9")
-
+    debugImplementation("androidx.fragment:fragment-testing:1.7.0")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
 
     implementation("com.github.bumptech.glide:glide:5.0.5")

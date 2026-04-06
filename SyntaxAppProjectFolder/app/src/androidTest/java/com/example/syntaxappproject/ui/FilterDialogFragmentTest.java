@@ -26,7 +26,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Instrumentation tests for {@link FilterDialogFragment}.
+ * Instrumentation tests for {@link ManageEventFragment.FilterDialogFragment}.
  *
  * <p>This test verifies that:
  * - The dialog is displayed correctly
@@ -50,7 +50,7 @@ public class FilterDialogFragmentTest {
         scenario = ActivityScenario.launch(MainActivity.class);
 
         scenario.onActivity(activity -> {
-            FilterDialogFragment dialog = new FilterDialogFragment();
+            ManageEventFragment.FilterDialogFragment dialog = new ManageEventFragment.FilterDialogFragment();
             dialog.show(activity.getSupportFragmentManager(), "filterDialog");
         });
     }

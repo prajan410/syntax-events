@@ -48,6 +48,7 @@
                 android:padding="16dp">
 
                 <!-- Send to card -->
+                <!-- Send to card -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/sendToCard"
                     android:layout_width="match_parent"
@@ -67,6 +68,7 @@
                         android:orientation="vertical"
                         android:padding="20dp">
 
+                        <!-- Label -->
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -76,72 +78,48 @@
                             android:letterSpacing="0.08"
                             android:layout_marginBottom="12dp" />
 
-                        <GridLayout
-                            android:layout_width="match_parent"
+                        <!-- Chip group -->
+                        <com.google.android.material.chip.ChipGroup
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:columnCount="2"
-                            android:rowCount="2"
-                            android:useDefaultMargins="false">
+                            app:singleLine="true"
+                            app:chipSpacingHorizontal="8dp">
 
                             <com.google.android.material.chip.Chip
                                 android:id="@+id/chipWaitlist"
-                                android:layout_width="0dp"
+                                android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginEnd="4dp"
-                                android:layout_marginBottom="8dp"
-                                android:layout_columnWeight="1"
                                 android:text="Waitlist"
                                 android:textSize="13sp"
                                 android:checkable="true"
                                 android:checked="true"
-
                                 app:chipStrokeWidth="1.5dp"
                                 app:checkedIconVisible="false" />
 
                             <com.google.android.material.chip.Chip
                                 android:id="@+id/chipSelected"
-                                android:layout_width="0dp"
+                                android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginStart="4dp"
-                                android:layout_marginBottom="8dp"
-                                android:layout_columnWeight="1"
                                 android:text="Selected"
                                 android:textSize="13sp"
                                 android:checkable="true"
                                 android:checked="false"
-
                                 app:chipStrokeWidth="1.5dp"
                                 app:checkedIconVisible="false" />
 
                             <com.google.android.material.chip.Chip
                                 android:id="@+id/chipCancelled"
-                                android:layout_width="0dp"
+                                android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginEnd="4dp"
-                                android:layout_columnWeight="1"
                                 android:text="Cancelled"
                                 android:textSize="13sp"
                                 android:checkable="true"
                                 android:checked="true"
-
                                 app:chipStrokeWidth="1.5dp"
                                 app:checkedIconVisible="false" />
 
-                            <com.google.android.material.chip.Chip
-                                android:id="@+id/chipAll"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="4dp"
-                                android:layout_columnWeight="1"
-                                android:text="All entrants"
-                                android:textSize="13sp"
-                                android:checkable="true"
-                                android:checked="false"
+                        </com.google.android.material.chip.ChipGroup>
 
-                                app:chipStrokeWidth="1.5dp"
-                                app:checkedIconVisible="false" />
-
-                        </GridLayout>
 
                         <TextView
                             android:id="@+id/recipientCount"
@@ -154,7 +132,6 @@
 
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
-
                 <!-- Message card -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/messageCard"
@@ -281,6 +258,19 @@
                     android:textSize="15sp"
                     android:textStyle="bold"
                     app:cornerRadius="16dp" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/doneButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="12dp"
+                    android:backgroundTint="#F5F5F5"
+                    android:text="Done"
+                    android:textColor="#1A1A1A"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="16dp"
+                    app:strokeColor="#E0E0E0"
+                    app:strokeWidth="1dp" />
 
 
 

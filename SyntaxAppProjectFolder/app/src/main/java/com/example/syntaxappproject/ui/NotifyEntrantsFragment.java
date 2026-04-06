@@ -44,7 +44,7 @@ public class NotifyEntrantsFragment extends Fragment {
     private Chip chipWaitlist;
     private Chip chipSelected;
     private Chip chipCancelled;
-    private Chip chipAll;
+
 
     private TextView recipientCount;
     private EditText messageInput;
@@ -79,7 +79,7 @@ public class NotifyEntrantsFragment extends Fragment {
         chipWaitlist   = view.findViewById(R.id.chipWaitlist);
         chipSelected   = view.findViewById(R.id.chipSelected);
         chipCancelled  = view.findViewById(R.id.chipCancelled);
-        chipAll        = view.findViewById(R.id.chipAll);
+
         recipientCount = view.findViewById(R.id.recipientCount);
         messageInput   = view.findViewById(R.id.messageInput);
         charCount      = view.findViewById(R.id.charCount);
@@ -94,7 +94,7 @@ public class NotifyEntrantsFragment extends Fragment {
         setupChip(chipWaitlist);
         setupChip(chipSelected);
         setupChip(chipCancelled);
-        setupChip(chipAll);
+
 
         // --- Char counter ---
         setupCharCounter();
@@ -109,6 +109,9 @@ public class NotifyEntrantsFragment extends Fragment {
             bundle.putString("eventName", eventName);
             NavHostFragment.findNavController(this).navigate(R.id.coOrganizerInviteFragment, bundle);
         });
+        view.findViewById(R.id.doneButton).setOnClickListener(v ->
+                NavHostFragment.findNavController(this).popBackStack()
+        );
 
         // --- Animations ---
         animateIn();
@@ -151,7 +154,7 @@ public class NotifyEntrantsFragment extends Fragment {
         if (chipWaitlist.isChecked())  count++;
         if (chipSelected.isChecked())  count++;
         if (chipCancelled.isChecked()) count++;
-        if (chipAll.isChecked())       count++;
+
 
         if (count == 0) {
             recipientCount.setText("No groups selected");
@@ -218,12 +221,16 @@ public class NotifyEntrantsFragment extends Fragment {
         if (chipWaitlist.isChecked())  selectedGroups.add("WAITLIST");
         if (chipSelected.isChecked())  selectedGroups.add("SELECTED");
         if (chipCancelled.isChecked()) selectedGroups.add("CANCELLED");
-        if (chipAll.isChecked())       selectedGroups.add("ALL");
+
 
         if (selectedGroups.isEmpty()) {
             Toast.makeText(getContext(), "Please select at least one group", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        //prevent double sending
+        sendButton.setEnabled(false);
+        sendButton.setText("Sending…");
 
         Notification notif = new Notification();
         notif.setEventId(eventId);
@@ -231,13 +238,15 @@ public class NotifyEntrantsFragment extends Fragment {
         notif.setTitle(title);
         notif.setEventName(eventName);
         notif.setSenderRole("ORGANIZER");
-        notif.setTargetGroup(String.join(",", selectedGroups)); // e.g. "WAITLIST,SELECTED"
+        notif.setTargetGroup(String.join(",", selectedGroups));
         notif.setBody(message);
         notif.setTimestamp(System.currentTimeMillis());
         notif.setStatus("SENT");
 
         notificationRepository.sendNotification(notif, eventId, selectedGroups, success ->
                 requireActivity().runOnUiThread(() -> {
+                    sendButton.setEnabled(true);
+                    sendButton.setText("Send");
                     if (success) {
                         messageInput.setText("");
                         titleInput.setText("");

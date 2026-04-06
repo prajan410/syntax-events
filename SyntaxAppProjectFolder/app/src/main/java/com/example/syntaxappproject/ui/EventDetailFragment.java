@@ -301,10 +301,16 @@ public class EventDetailFragment extends HomeBar {
      */
     private void animateViews(View... views) {
         for (View v : views) {
-            if (v != null) {
-                v.setAlpha(1f);
-                v.setTranslationY(0f);
+            if (v != null && v.getId() != R.id.notifyCard) {
+                v.setAlpha(0f);
+                v.setTranslationY(30f);
                 v.setVisibility(View.VISIBLE);
+                v.animate()
+                        .alpha(1f)
+                        .translationY(0f)
+                        .setDuration(400)
+                        .setInterpolator(new android.view.animation.DecelerateInterpolator())
+                        .start();
             }
         }
     }
@@ -586,6 +592,7 @@ public class EventDetailFragment extends HomeBar {
                 bundle.putString("eventId", eventId);
                 Navigation.findNavController(v).navigate(R.id.toEventSignupList, bundle);
             });
+            notifyCard.setAlpha(1f);
             notifyCard.setVisibility(View.VISIBLE);
             notifyButton.setOnClickListener(v -> navigateToNotifyEntrants());
             return;

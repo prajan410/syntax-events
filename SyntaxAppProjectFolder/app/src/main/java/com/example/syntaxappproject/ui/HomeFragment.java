@@ -8,11 +8,11 @@ import android.graphics.Paint;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -95,7 +95,7 @@ public class HomeFragment extends HomeBar {
         filterViewModel = new ViewModelProvider(requireActivity()).get(EventFilterViewModel.class);
 
         searchLayout.setEndIconOnClickListener(v -> {
-            FilterDialogFragment filter = new FilterDialogFragment();
+            ManageEventFragment.FilterDialogFragment filter = new ManageEventFragment.FilterDialogFragment();
             filter.show(getParentFragmentManager(), "FilterDialog");
         });
 
@@ -374,5 +374,6 @@ public class HomeFragment extends HomeBar {
             adapter.updateList(events);
         }
     }
+
 
 }

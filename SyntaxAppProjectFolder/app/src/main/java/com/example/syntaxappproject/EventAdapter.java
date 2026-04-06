@@ -10,9 +10,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.syntaxappproject.EventDetail;
-import com.example.syntaxappproject.ImageCacheManager;
-import com.example.syntaxappproject.R;
 
 import java.util.List;
 
