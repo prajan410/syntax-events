@@ -8,7 +8,6 @@ import android.graphics.Paint;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -95,7 +94,7 @@ public class HomeFragment extends HomeBar {
         filterViewModel = new ViewModelProvider(requireActivity()).get(EventFilterViewModel.class);
 
         searchLayout.setEndIconOnClickListener(v -> {
-            FilterDialogFragment filter = new FilterDialogFragment();
+            ManageEventFragment.FilterDialogFragment filter = new ManageEventFragment.FilterDialogFragment();
             filter.show(getParentFragmentManager(), "FilterDialog");
         });
 

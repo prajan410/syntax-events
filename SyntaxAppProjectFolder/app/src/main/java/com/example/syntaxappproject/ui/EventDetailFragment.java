@@ -301,7 +301,7 @@ public class EventDetailFragment extends HomeBar {
      */
     private void animateViews(View... views) {
         for (View v : views) {
-            if (v != null) {
+            if (v != null && v.getId() != R.id.notifyCard) {
                 v.setAlpha(1f);
                 v.setTranslationY(0f);
                 v.setVisibility(View.VISIBLE);
@@ -586,6 +586,7 @@ public class EventDetailFragment extends HomeBar {
                 bundle.putString("eventId", eventId);
                 Navigation.findNavController(v).navigate(R.id.toEventSignupList, bundle);
             });
+            notifyCard.setAlpha(1f);
             notifyCard.setVisibility(View.VISIBLE);
             notifyButton.setOnClickListener(v -> navigateToNotifyEntrants());
             return;
