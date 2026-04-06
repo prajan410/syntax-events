@@ -60,7 +60,9 @@ public class CoOrganizerInviteFragment extends Fragment {
         resultText = view.findViewById(R.id.resultText);
         inviteRecyclerView = view.findViewById(R.id.inviteRecyclerView);
 
-        repo = new CoOrganizerRepository();
+        if (repo == null) {
+            repo = new CoOrganizerRepository();
+        }
 
         if (getArguments() != null) {
             eventId = getArguments().getString("eventId");

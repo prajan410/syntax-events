@@ -1,3 +1,4 @@
+package com.example.syntaxappproject.ui;
 
 import com.example.syntaxappproject.AuthenticationService;
 import com.example.syntaxappproject.ProfileRepository;
@@ -6,7 +7,7 @@ import org.junit.Before;
 import org.junit.runner.RunWith;
 
 
-package com.example.syntaxappproject.ui;
+
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
