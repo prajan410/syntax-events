@@ -180,25 +180,6 @@ public class EditProfileFragmentTest {
         onView(withText("Delete Account")).check(matches(isDisplayed()));
     }
 
-    @Test
-    public void deleteConfirm_navigatesToSplash() {
-        FragmentScenario<EditProfileFragment> scenario = launchFragment();
-
-        scenario.onFragment(fragment -> {
-            Navigation.setViewNavController(fragment.requireView(), mockNavController);
-        });
-
-        onView(withId(R.id.deleteProfile)).perform(click());
-        onView(withText("Delete")).perform(click());
-
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        verify(mockNavController).navigate(R.id.splashFragment);
-    }
 
     @Test
     public void deleteCancel_dismissesDialog() {

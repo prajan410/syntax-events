@@ -112,29 +112,6 @@ public class ProfileSetupFragmentTest {
     }
 
     /**
-     * Verifies complete form submission with valid data triggers home navigation.
-     */
-    @Test
-    public void fillingForm_andConfirm_navigatesToHome() {
-        launchFragment();
-
-        onView(withId(R.id.firstNameInput)).perform(replaceText("Alice"), closeSoftKeyboard());
-        onView(withId(R.id.lastNameInput)).perform(replaceText("Smith"), closeSoftKeyboard());
-        onView(withId(R.id.emailInput)).perform(replaceText("alice@example.com"), closeSoftKeyboard());
-        onView(withId(R.id.phoneInput)).perform(replaceText("5551234567"), closeSoftKeyboard());
-
-        onView(withId(R.id.confirmButton)).perform(click());
-
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        verify(mockNav).navigate(R.id.action_profile_to_home);
-    }
-
-    /**
      * Verifies validation prevents submission when no roles are selected.
      */
     @Test

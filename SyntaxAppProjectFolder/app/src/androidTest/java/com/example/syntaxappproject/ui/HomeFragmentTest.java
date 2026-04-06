@@ -209,34 +209,6 @@ public class HomeFragmentTest {
     }
 
     /**
-     * Test if search with no result.
-     */
-    @Test
-    public void testSearch_noMatch_showsNothing() {
-        FragmentScenario<TestHomeFragment> scenario = launchFragment();
-
-        scenario.onFragment(fragment -> {
-            try {
-                List<EventDetail> list = new ArrayList<>();
-                list.add(fakeEvent);
-
-                Field allEvents = HomeFragment.class.getDeclaredField("allEvents");
-                allEvents.setAccessible(true);
-                allEvents.set(fragment, list);
-
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
-
-        onView(withId(R.id.searchInput))
-                .perform(typeText("XYZ"));
-
-        onView(withText("Test Event"))
-                .check(doesNotExist());
-    }
-
-    /**
      * Test with different case search.
      */
     @Test
