@@ -26,11 +26,25 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+/**
+ * Instrumented tests for {@link EventSignupListFragment}.
+ * This class uses a testable subclass of the fragment to inject mock data and verify UI behavior.
+ */
 @RunWith(AndroidJUnit4.class)
 public class SignupListTest {
 
+    /**
+     * A testable subclass of {@link EventSignupListFragment} that overrides {@code onViewCreated}
+     * to inject mock data using reflection.
+     */
     public static class TestableEventSignupListFragment extends EventSignupListFragment {
 
+        /**
+         * Overrides onViewCreated to manually populate lists and UI components with mock data
+         * for testing purposes.
+         * @param view The View returned by {@code onCreateView}.
+         * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state.
+         */
         @Override
         public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
             super.onViewCreated(view, savedInstanceState);
@@ -75,6 +89,12 @@ public class SignupListTest {
             });
         }
 
+        /**
+         * Injects a list of profiles into an adapter field using reflection.
+         * @param fieldName The name of the adapter field in {@link EventSignupListFragment}.
+         * @param profiles The list of mock profiles to set.
+         * @throws Exception if reflection fails.
+         */
         private void setAdapter(String fieldName, List<Profile> profiles) throws Exception {
             Field f = EventSignupListFragment.class.getDeclaredField(fieldName);
             f.setAccessible(true);
@@ -82,12 +102,24 @@ public class SignupListTest {
             adapter.setProfiles(profiles);
         }
 
+        /**
+         * Sets the text of a TextView field using reflection.
+         * @param fieldName The name of the TextView field in {@link EventSignupListFragment}.
+         * @param text The text to set.
+         * @throws Exception if reflection fails.
+         */
         private void setTextView(String fieldName, String text) throws Exception {
             Field f = EventSignupListFragment.class.getDeclaredField(fieldName);
             f.setAccessible(true);
             ((TextView) f.get(this)).setText(text);
         }
 
+        /**
+         * Sets the visibility of a View field using reflection.
+         * @param fieldName The name of the View field in {@link EventSignupListFragment}.
+         * @param visibility The visibility to set (e.g., View.GONE).
+         * @throws Exception if reflection fails.
+         */
         private void setViewVisibility(String fieldName, int visibility) throws Exception {
             Field f = EventSignupListFragment.class.getDeclaredField(fieldName);
             f.setAccessible(true);
@@ -95,6 +127,10 @@ public class SignupListTest {
         }
     }
 
+    /**
+     * Creates a {@link Bundle} with mock arguments for the fragment.
+     * @return A bundle containing a fake eventId and testingMode flag.
+     */
     private Bundle makeBundle() {
         Bundle bundle = new Bundle();
         bundle.putString("eventId", "fake_id");
@@ -102,6 +138,10 @@ public class SignupListTest {
         return bundle;
     }
 
+    /**
+     * Launches the {@link TestableEventSignupListFragment} in a {@link FragmentScenario}.
+     * @return The launched FragmentScenario.
+     */
     private FragmentScenario<TestableEventSignupListFragment> launchTestable() {
         return FragmentScenario.launchInContainer(
                 TestableEventSignupListFragment.class,
@@ -111,6 +151,9 @@ public class SignupListTest {
         );
     }
 
+    /**
+     * Tests that the badge counts on the UI correctly reflect the size of the lists.
+     */
     @Test
     public void testCountBadgesAreCorrect() {
         FragmentScenario<TestableEventSignupListFragment> scenario = launchTestable();
@@ -124,6 +167,9 @@ public class SignupListTest {
         });
     }
 
+    /**
+     * Tests that clicking on a section header toggles the visibility of its content.
+     */
     @Test
     public void testSectionsToggleVisibility() {
         FragmentScenario<TestableEventSignupListFragment> scenario = launchTestable();
@@ -143,6 +189,9 @@ public class SignupListTest {
         });
     }
 
+    /**
+     * Tests that the download final entrants button is present and clickable.
+     */
     @Test
     public void testDownloadButtonExistsAndIsClickable() {
         FragmentScenario<EventSignupListFragment> scenario = FragmentScenario.launchInContainer(
@@ -159,6 +208,9 @@ public class SignupListTest {
         });
     }
 
+    /**
+     * Tests that all list RecyclerViews are present in the layout.
+     */
     @Test
     public void testRecyclerViewsExist() {
         FragmentScenario<TestableEventSignupListFragment> scenario = launchTestable();
