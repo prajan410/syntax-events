@@ -57,7 +57,6 @@ public class CoOrganizerInviteFragmentTest {
         ArrayList<String> fakeUserIds = new ArrayList<>();
         @Override
         public void searchEntrants(String query, searchCallback callback) {
-            // 直接返回 fake 数据
             callback.onResult(fakeProfiles, fakeUserIds);
         }
 
