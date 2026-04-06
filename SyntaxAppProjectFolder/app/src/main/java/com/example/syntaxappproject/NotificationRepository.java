@@ -32,9 +32,6 @@ public class NotificationRepository {
 
     private FirebaseFirestore db;
 
-    private static final String COLLECTION_NOTIFICATIONS = "notifications";
-    private static final String COLLECTION_LOGS = "notificationLogs";
-
     public NotificationRepository() {
         db = FirebaseFirestore.getInstance();
     }
@@ -176,42 +173,24 @@ public class NotificationRepository {
         }
     }
 
-    /**
-     * Writes one {@link NotificationLog} record to Firestore.
-     * Call this once per recipient after a notification is sent.
-     * Fire-and-forget — failures are silent and don't block the UI.
-     *
-     * @param log the log record to store
-     */
-    public void writeLog(NotificationLog log) {
-        db.collection(COLLECTION_LOGS).add(log);
-    }
 
-    /**
-     * Retrieves all notifications sent for a given event,
-     * ordered by timestamp descending.
-     *
-     * @param eventId  the event to query
-     * @param callback list of notifications or null on failure
-     */
-    public void getNotificationsForEvent(String eventId, NotificationListCallback callback) {
-        db.collection(COLLECTION_NOTIFICATIONS)
-                .whereEqualTo("eventId", eventId)
-                .orderBy("timestamp", Query.Direction.DESCENDING)
-                .get()
-                .addOnSuccessListener(snapshot ->
-                        callback.onLoaded(snapshot.toObjects(Notification.class)))
-                .addOnFailureListener(e -> callback.onLoaded(null));
-    }
     public void getNotificationsForUser(String userId, NotificationListCallback callback) {
         db.collection("users")
                 .document(userId)
-                .collection("notifications")        // ← personal inbox subcollection
+                .collection("notifications")
                 .orderBy("timestamp", Query.Direction.DESCENDING)
                 .get()
                 .addOnSuccessListener(snapshot -> {
-                    Log.d("NotifDebug", "query success, docs=" + snapshot.size());
-                    callback.onLoaded(snapshot.toObjects(Notification.class));
+                    List<Notification> notifications = new ArrayList<>();
+                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                        Notification n = doc.toObject(Notification.class);
+                        if (n != null) {
+                            n.setNotificationId(doc.getId()); // ← set the Firestore doc ID
+                            notifications.add(n);
+                        }
+                    }
+                    Log.d("NotifDebug", "query success, docs=" + notifications.size());
+                    callback.onLoaded(notifications);
                 })
                 .addOnFailureListener(e -> {
                     Log.e("NotifDebug", "query failed: " + e.getMessage());
@@ -219,21 +198,7 @@ public class NotificationRepository {
                 });
     }
 
-    /**
-     * Retrieves all {@link NotificationLog} records for a given event.
-     * Used by the admin log fragment to audit sent notifications.
-     *
-     * @param eventId  the event to query logs for
-     * @param callback list of logs or null on failure
-     */
-    public void getLogsForEvent(String eventId, NotificationLogListCallback callback) {
-        db.collection(COLLECTION_LOGS)
-                .whereEqualTo("eventId", eventId)
-                .get()
-                .addOnSuccessListener(snapshot ->
-                        callback.onLoaded(snapshot.toObjects(NotificationLog.class)))
-                .addOnFailureListener(e -> callback.onLoaded(null));
-    }
+
     public void getAllNotifications(NotificationListCallback callback) {
         db.collection("notifications")
                 .orderBy("timestamp", Query.Direction.DESCENDING)
@@ -257,7 +222,5 @@ public class NotificationRepository {
         void onLoaded(List<Notification> notifications);
     }
 
-    public interface NotificationLogListCallback {
-        void onLoaded(List<NotificationLog> logs);
-    }
+
 }

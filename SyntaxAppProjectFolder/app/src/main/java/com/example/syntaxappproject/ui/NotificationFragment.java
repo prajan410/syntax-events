@@ -3,6 +3,8 @@ package com.example.syntaxappproject.ui;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.app.AlertDialog;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -36,9 +38,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -138,9 +142,23 @@ public class NotificationFragment extends HomeBar {
      */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        String userId = authService.getCurrentUserId();
+        if (userId != null) {
+            new NotificationRepository().getNotificationsForUser(userId, notifications -> {
+                if (notifications == null) return;
+                SharedPreferences prefs = requireContext().getSharedPreferences("seen_notifs", Context.MODE_PRIVATE);
+                Set<String> seen = new HashSet<>(prefs.getStringSet("seen_ids", new HashSet<>()));
+                for (Notification n : notifications) {
+                    if (n.getNotificationId() != null) seen.add(n.getNotificationId());
+                }
+                prefs.edit().putStringSet("seen_ids", seen).apply();
+            });
+        }
+
+
         super.onViewCreated(view, savedInstanceState);
         setupHotbar(view);
-
+        showNotificationBadge(0);
         organizerToggle = view.findViewById(R.id.organizerToggle);
         adminToggle = view.findViewById(R.id.adminToggle);
         notificationsRecyclerView = view.findViewById(R.id.notificationsRecyclerView);
@@ -153,7 +171,7 @@ public class NotificationFragment extends HomeBar {
         notificationsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         notificationsRecyclerView.setAdapter(adapter);
 
-        String userId = authService.getCurrentUserId();
+
         if (userId != null) {
             loadToggleStates(userId);
             loadAllItems(userId);
@@ -263,6 +281,7 @@ public class NotificationFragment extends HomeBar {
                 adapter.setItems(items, userId);
                 notificationsCard.setVisibility(View.VISIBLE);
             }
+            showNotificationBadge(0); // ← always clear when on this fragment
         });
     }
 

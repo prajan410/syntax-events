@@ -281,6 +281,19 @@
                     android:textSize="15sp"
                     android:textStyle="bold"
                     app:cornerRadius="16dp" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/doneButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="12dp"
+                    android:backgroundTint="#F5F5F5"
+                    android:text="Done"
+                    android:textColor="#1A1A1A"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="16dp"
+                    app:strokeColor="#E0E0E0"
+                    app:strokeWidth="1dp" />
 
 
 

@@ -109,6 +109,9 @@ public class NotifyEntrantsFragment extends Fragment {
             bundle.putString("eventName", eventName);
             NavHostFragment.findNavController(this).navigate(R.id.coOrganizerInviteFragment, bundle);
         });
+        view.findViewById(R.id.doneButton).setOnClickListener(v ->
+                NavHostFragment.findNavController(this).popBackStack()
+        );
 
         // --- Animations ---
         animateIn();
@@ -225,19 +228,25 @@ public class NotifyEntrantsFragment extends Fragment {
             return;
         }
 
+        //prevent double sending
+        sendButton.setEnabled(false);
+        sendButton.setText("Sending…");
+
         Notification notif = new Notification();
         notif.setEventId(eventId);
         notif.setSenderId(authService.getCurrentUserId());
         notif.setTitle(title);
         notif.setEventName(eventName);
         notif.setSenderRole("ORGANIZER");
-        notif.setTargetGroup(String.join(",", selectedGroups)); // e.g. "WAITLIST,SELECTED"
+        notif.setTargetGroup(String.join(",", selectedGroups));
         notif.setBody(message);
         notif.setTimestamp(System.currentTimeMillis());
         notif.setStatus("SENT");
 
         notificationRepository.sendNotification(notif, eventId, selectedGroups, success ->
                 requireActivity().runOnUiThread(() -> {
+                    sendButton.setEnabled(true);
+                    sendButton.setText("Send");
                     if (success) {
                         messageInput.setText("");
                         titleInput.setText("");
