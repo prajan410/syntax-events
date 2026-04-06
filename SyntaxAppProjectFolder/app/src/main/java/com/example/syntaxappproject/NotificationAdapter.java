@@ -37,16 +37,25 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
     @Override
     public void onBindViewHolder(@NonNull NotificationViewHolder holder, int position) {
-        Notification notification = notifications.get(position);
 
+        Notification notification = notifications.get(position);
+        if ("ADMIN".equals(notification.getSenderRole())) {
+            holder.senderEvent.setText("From: ADMINISTRATION");
+        }
+        else{
+            String eventName = notification.getEventName();
+            holder.senderEvent.setText(
+                    eventName != null && !eventName.isEmpty()
+                            ? "From: " + eventName
+                            : "From: Unknown Event"
+            );
+        }
         holder.notifTitle.setText(notification.getTitle());
-        holder.senderRole.setText(notification.getSenderRole());
+
         holder.body.setText(notification.getBody());
         holder.timestamp.setText(formatTimestamp(notification.getTimestamp()));
 
-        // Unread dot — always visible for now
-        // TODO: track read/unread state on the Notification object
-        // and toggle dot visibility: holder.unreadDot.setVisibility(isRead ? View.GONE : View.VISIBLE)
+
         holder.unreadDot.setVisibility(View.VISIBLE);
     }
 
@@ -94,7 +103,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
         //Init displays
         TextView notifTitle;
-        TextView senderRole;
+        TextView senderEvent;
         TextView body;
         TextView timestamp;
         View unreadDot;
@@ -102,7 +111,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         public NotificationViewHolder(@NonNull View itemView) {
             super(itemView);
             notifTitle  = itemView.findViewById(R.id.notifTitle);
-            senderRole = itemView.findViewById(R.id.notifSender);
+            senderEvent = itemView.findViewById(R.id.notifSender);
             body       = itemView.findViewById(R.id.notifBody);
             timestamp  = itemView.findViewById(R.id.notifTimestamp);
             unreadDot  = itemView.findViewById(R.id.unreadDot);

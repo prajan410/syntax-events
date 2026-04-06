@@ -376,6 +376,9 @@
             android:id="@+id/action_adminFragment_to_adminBrowseComments"
             app:destination="@id/adminBrowseComments" />
         <action
+            android:id="@+id/action_adminFragment_to_adminBrowseNotifications"
+            app:destination="@id/adminBrowseNotification" />
+        <action
             android:id="@+id/action_adminFragment_to_adminBrowseEvents"
             app:destination="@id/adminBrowseEvents" />
         <action
@@ -385,7 +388,23 @@
             android:id="@+id/action_adminFragment_to_adminBrowseImages"
             app:destination="@id/adminBrowseImages" />
     </fragment>
-
+    <fragment
+        android:id="@+id/adminBrowseNotification"
+        android:name="com.example.syntaxappproject.ui.AdminBrowseNotificationsFragment"
+        android:label="Manage Comments"
+        tools:layout="@layout/fragment_admin_browse_notifications">
+        <action
+            android:id="@+id/action_adminBrowseComments_to_adminEventDetails"
+            app:destination="@id/adminEventDetails" />
+        <action
+            android:id="@+id/action_adminBrowseComments_to_adminProfileDetails"
+            app:destination="@id/adminProfileDetails" />
+        <action
+            android:id="@+id/action_adminBrowseComments_to_adminFragment"
+            app:destination="@id/adminFragment"
+            app:popUpTo="@id/adminFragment"
+            app:popUpToInclusive="false" />
+    </fragment>
     <fragment
         android:id="@+id/adminBrowseComments"
         android:name="com.example.syntaxappproject.ui.AdminBrowseCommentsFragment"

@@ -176,6 +176,7 @@ public class EventDetailFragment extends HomeBar {
      *
      * @param savedInstanceState previously saved instance state, if any
      */
+    private String loadedEventName;
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -628,6 +629,7 @@ public class EventDetailFragment extends HomeBar {
     private void navigateToNotifyEntrants() {
         Bundle bundle = new Bundle();
         bundle.putString("eventId", eventId);
+        bundle.putString("eventName", loadedEventName);
         Navigation.findNavController(requireView()).navigate(R.id.notifyEntrantsFragment, bundle);
     }
 
@@ -805,6 +807,7 @@ public class EventDetailFragment extends HomeBar {
             if (!isAdded()) return;
             requireActivity().runOnUiThread(() -> {
                 eventName.setText(event.getName());
+                loadedEventName = event.getName();
                 description.setText(event.getDescription());
                 date.setText(event.getStartingEventDate());
                 locationText.setText(event.getLocation());

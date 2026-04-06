@@ -50,8 +50,31 @@ public class NotificationRepository {
      */
     public void sendNotification(Notification notification, String eventId, List<String> targetGroups, NotificationCallback callback) {
         Log.d("NotifDebug", "sendNotification called, eventId=" + eventId + " groups=" + targetGroups);
-
+        db.collection("notifications").add(notification);
         // Map each targetGroup to its Firestore subcollection
+        if ("ADMINISTRATION".equals(eventId)) {
+            db.collection("profiles").get()
+                    .addOnSuccessListener(snapshot -> {
+                        List<Task<Void>> writeTasks = Collections.synchronizedList(new ArrayList<>());
+                        for (DocumentSnapshot userDoc : snapshot.getDocuments()) {
+                            boolean wantsAdmin = !Boolean.FALSE.equals(userDoc.getBoolean("adminNotificationEnabled"));
+                            if (!wantsAdmin) continue;
+
+                            Task<Void> writeTask = db.collection("users")
+                                    .document(userDoc.getId())
+                                    .collection("notifications")
+                                    .add(notification)
+                                    .continueWith(task -> null);
+                            writeTasks.add(writeTask);
+                        }
+                        Tasks.whenAll(writeTasks)
+                                .addOnSuccessListener(v -> callback.onComplete(true))
+                                .addOnFailureListener(e -> callback.onComplete(false));
+                    })
+                    .addOnFailureListener(e -> callback.onComplete(false));
+            return; // ← don't fall through to the event-based logic
+        }
+
         List<String> subcollections = new ArrayList<>();
         for (String group : targetGroups) {
             switch (group) {
@@ -211,7 +234,19 @@ public class NotificationRepository {
                         callback.onLoaded(snapshot.toObjects(NotificationLog.class)))
                 .addOnFailureListener(e -> callback.onLoaded(null));
     }
-
+    public void getAllNotifications(NotificationListCallback callback) {
+        db.collection("notifications")
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    Log.d("NotifDebug", "getAllNotifications docs=" + snapshot.size());
+                    callback.onLoaded(snapshot.toObjects(Notification.class));
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("NotifDebug", "getAllNotifications failed: " + e.getMessage());
+                    callback.onLoaded(null);
+                });
+    }
     // ─── Callbacks ─────────────────────────────────────────────────────────
 
     public interface NotificationCallback {
