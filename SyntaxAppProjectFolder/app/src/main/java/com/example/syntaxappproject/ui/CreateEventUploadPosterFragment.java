@@ -243,6 +243,11 @@ public class CreateEventUploadPosterFragment extends Fragment {
         }).start();
     }
 
+    /**
+     * Navigation to privateEventInviteFragment.
+     * @param eventId the id of the event
+     * @param isPrivate true if it is a private event
+     */
     private void afterEventSaved(String eventId, boolean isPrivate) {
         if (isPrivate) {
             Bundle bundle = new Bundle();
@@ -256,6 +261,10 @@ public class CreateEventUploadPosterFragment extends Fragment {
         }
     }
 
+    /**
+     * Navigation to toCreateEventQRFragment
+     * @param eventId the id of the event
+     */
     private void navigateToQRFragment(String eventId) {
         Bundle bundle = new Bundle();
         bundle.putString("eventId", eventId);

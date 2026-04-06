@@ -142,6 +142,9 @@ public class CreateEventFragmentTest {
     // Validation tests — navigation should NOT be triggered
     // -------------------------------------------------------------------------
 
+    /**
+     * Test no navigate with empty name
+     */
     @Test
     public void testContinue_emptyName_doesNotNavigate() {
         launchFragment();
@@ -153,6 +156,9 @@ public class CreateEventFragmentTest {
         verify(mockNavController, never()).navigate(anyInt());
     }
 
+    /**
+     * Test no navigate with empty description
+     */
     @Test
     public void testContinue_emptyDescription_doesNotNavigate() {
         launchFragment();
@@ -164,6 +170,9 @@ public class CreateEventFragmentTest {
         verify(mockNavController, never()).navigate(anyInt());
     }
 
+    /**
+     * Test no navigate with invalid capacity
+     */
     @Test
     public void testContinue_invalidCapacity_doesNotNavigate() {
         launchFragment();
@@ -176,6 +185,9 @@ public class CreateEventFragmentTest {
         verify(mockNavController, never()).navigate(anyInt());
     }
 
+    /**
+     * Test no navigate with zero capacity
+     */
     @Test
     public void testContinue_zeroCapacity_doesNotNavigate() {
         launchFragment();
@@ -188,6 +200,9 @@ public class CreateEventFragmentTest {
         verify(mockNavController, never()).navigate(anyInt());
     }
 
+    /**
+     * Test no navigate with negative capacity
+     */
     @Test
     public void testContinue_negativeCapacity_doesNotNavigate() {
         launchFragment();
@@ -200,6 +215,9 @@ public class CreateEventFragmentTest {
         verify(mockNavController, never()).navigate(anyInt());
     }
 
+    /**
+     * Test no navigate with empty location when geo required
+     */
     @Test
     public void testContinue_geoEnabledButEmptyLocation_doesNotNavigate() {
         launchFragment();
@@ -221,6 +239,9 @@ public class CreateEventFragmentTest {
     // Valid input tests — navigation SHOULD be triggered
     // -------------------------------------------------------------------------
 
+    /**
+     * Test valid input no geo
+     */
     @Test
     public void testContinue_validInputsNoGeo_navigatesToUploadImage() {
         launchFragment();
@@ -233,6 +254,9 @@ public class CreateEventFragmentTest {
         verify(mockNavController).navigate(R.id.toUploadImageFragment);
     }
 
+    /**
+     * Test valid input with one capacity
+     */
     @Test
     public void testContinue_validInputsWithCapacityOne_navigates() {
         launchFragment();
@@ -249,6 +273,9 @@ public class CreateEventFragmentTest {
     // Geo toggle UI tests
     // -------------------------------------------------------------------------
 
+    /**
+     * Test geo require switch off
+     */
     @Test
     public void testGeoToggleOff_locationFieldIsDisabled() {
         launchFragment();
@@ -258,6 +285,9 @@ public class CreateEventFragmentTest {
                 .check(matches(androidx.test.espresso.matcher.ViewMatchers.isNotEnabled()));
     }
 
+    /**
+     * Test geo require switch on
+     */
     @Test
     public void testGeoToggleOn_locationFieldIsEnabled() {
         launchFragment();
@@ -268,6 +298,9 @@ public class CreateEventFragmentTest {
                 .check(matches(isEnabled()));
     }
 
+    /**
+     * Test geo require switch off again
+     */
     @Test
     public void testGeoToggleOnThenOff_locationFieldIsDisabledAgain() {
         launchFragment();
@@ -283,6 +316,9 @@ public class CreateEventFragmentTest {
     // Initial UI state tests
     // -------------------------------------------------------------------------
 
+    /**
+     * Test continue button displayed
+     */
     @Test
     public void testInitialState_continueButtonIsDisplayed() {
         launchFragment();
@@ -292,6 +328,9 @@ public class CreateEventFragmentTest {
                 .check(matches(isDisplayed()));
     }
 
+    /**
+     * Test input fields displayed
+     */
     @Test
     public void testInitialState_allInputFieldsVisible() {
         launchFragment();

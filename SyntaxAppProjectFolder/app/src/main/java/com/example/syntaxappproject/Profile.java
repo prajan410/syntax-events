@@ -184,18 +184,34 @@ public class Profile {
     public void setNotificationsOptedOut(boolean notificationsOptedOut) {
         this.notificationsOptedOut = notificationsOptedOut;
     }
+
+    /**
+     * Return whether a entrant allow organizer send notification
+     * @return true if a entrant allow organizer send notification
+     */
     public boolean isOrganizerNotificationEnabled() {
         return organizerNotificationEnabled;
     }
 
+    /**
+     * Set the enable of organizer notification
+     * @param organizerNotificationEnabled true or false of organizer notification enable
+     */
     public void setOrganizerNotificationEnabled(boolean organizerNotificationEnabled) {
         this.organizerNotificationEnabled = organizerNotificationEnabled;
     }
-
+    /**
+     * Return whether a entrant allow admin send notification
+     * @return true if a entrant allow admin send notification
+     */
     public boolean isAdminNotificationEnabled() {
         return adminNotificationEnabled;
     }
 
+    /**
+     * Set the enable of admin notification
+     * @param adminNotificationEnabled true or false of admin notification enable
+     */
     public void setAdminNotificationEnabled(boolean adminNotificationEnabled) {
         this.adminNotificationEnabled = adminNotificationEnabled;
     }

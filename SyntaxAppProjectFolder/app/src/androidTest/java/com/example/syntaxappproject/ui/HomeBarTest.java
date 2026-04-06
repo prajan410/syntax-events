@@ -148,6 +148,9 @@ public class HomeBarTest {
     // Navigation tests
     // -------------------------------------------------------------------------
 
+    /**
+     * Test navigation of home button to home page
+     */
     @Test
     public void testHomeButton_navigatesToHome() {
         FragmentScenario<TestHomeBarFragment> scenario = launchFragment();
@@ -158,6 +161,9 @@ public class HomeBarTest {
         verify(mockNavController).navigate(R.id.toHomeFragment);
     }
 
+    /**
+     * Test navigation of user button to user profile page
+     */
     @Test
     public void testUserButton_navigatesToUser() {
         FragmentScenario<TestHomeBarFragment> scenario = launchFragment();
@@ -168,6 +174,9 @@ public class HomeBarTest {
         verify(mockNavController).navigate(R.id.toUserFragment);
     }
 
+    /**
+     * Test navigation of qr button to qr code scanner
+     */
     @Test
     public void testQrButton_navigatesToQrScanner() {
         FragmentScenario<TestHomeBarFragment> scenario = launchFragment();
@@ -178,6 +187,9 @@ public class HomeBarTest {
         verify(mockNavController).navigate(R.id.toQrCodeScannerFragment);
     }
 
+    /**
+     * Test navigation of notification button to notification page
+     */
     @Test
     public void testNotificationButton_navigatesToNotifications() {
         FragmentScenario<TestHomeBarFragment> scenario = launchFragment();
@@ -192,6 +204,9 @@ public class HomeBarTest {
     // Badge tests — driven through showNotificationBadge() directly
     // -------------------------------------------------------------------------
 
+    /**
+     * Test notification badge no display when no notification
+     */
     @Test
     public void testBadge_hiddenWhenCountIsZero() {
         FragmentScenario<TestHomeBarFragment> scenario = launchFragment();
@@ -205,6 +220,9 @@ public class HomeBarTest {
                 .check(matches(not(isDisplayed())));
     }
 
+    /**
+     * Test notification display with small amount
+     */
     @Test
     public void testBadge_showsExactCountForSmallNumber() {
         FragmentScenario<TestHomeBarFragment> scenario = launchFragment();
@@ -219,6 +237,9 @@ public class HomeBarTest {
                 .check(matches(withText("3")));
     }
 
+    /**
+     * Test notification display with big amount
+     */
     @Test
     public void testBadge_showsNinePlusForLargeCount() {
         FragmentScenario<TestHomeBarFragment> scenario = launchFragment();
@@ -232,7 +253,9 @@ public class HomeBarTest {
                 .check(matches(isDisplayed()))
                 .check(matches(withText("9+")));
     }
-
+    /**
+     * Test notification display with big amount at boundary
+     */
     @Test
     public void testBadge_showsNinePlusAtBoundary() {
         FragmentScenario<TestHomeBarFragment> scenario = launchFragment();
@@ -251,6 +274,9 @@ public class HomeBarTest {
     // Unseen-count logic tests — driven via SharedPreferences + badge result
     // -------------------------------------------------------------------------
 
+    /**
+     * Test notification badge update
+     */
     @Test
     public void testUnseenCount_excludesAlreadySeenNotifications() {
         FragmentScenario<TestHomeBarFragment> scenario = launchFragment();
@@ -293,6 +319,9 @@ public class HomeBarTest {
                 .check(matches(withText("1")));
     }
 
+    /**
+     * Test hide badge
+     */
     @Test
     public void testUnseenCount_allSeenHidesBadge() {
         FragmentScenario<TestHomeBarFragment> scenario = launchFragment();

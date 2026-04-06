@@ -57,6 +57,9 @@ public class AdminBrowseImagesTest {
         return scenario;
     }
 
+    /**
+     * Test display of screen
+     */
     @Test
     public void testScreenDisplays() {
         FragmentScenario<AdminBrowseImages> scenario = launchFragment();
@@ -72,6 +75,9 @@ public class AdminBrowseImagesTest {
         });
     }
 
+    /**
+     * Test empty state display
+     */
     @Test
     public void testEmptyCacheShowsEmptyState() {
         FragmentScenario<AdminBrowseImages> scenario = launchFragment();
@@ -89,6 +95,9 @@ public class AdminBrowseImagesTest {
         });
     }
 
+    /**
+     * Test display of image recycler
+     */
     @Test
     public void testCachedImagesShowRecyclerAndCount() {
         Bitmap bitmap = Bitmap.createBitmap(20, 20, Bitmap.Config.ARGB_8888);
@@ -109,6 +118,9 @@ public class AdminBrowseImagesTest {
         });
     }
 
+    /**
+     * Test navigate back with done button
+     */
     @Test
     public void testDoneButtonNavigatesBack() {
         FragmentScenario<AdminBrowseImages> scenario = launchFragment();

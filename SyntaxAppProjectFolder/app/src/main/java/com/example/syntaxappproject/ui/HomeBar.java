@@ -27,7 +27,10 @@ import java.util.Set;
  * create an instance of this fragment.
  */
 public abstract class HomeBar extends Fragment {
-
+    /**
+     * Navigation function of homwbar to other fragments
+     * @param view the view of current fragment
+     */
     protected void setupHotbar(View view) {
         NavController navController = NavHostFragment.findNavController(this);
         View hotbar = view.findViewById(R.id.homebarFragment);

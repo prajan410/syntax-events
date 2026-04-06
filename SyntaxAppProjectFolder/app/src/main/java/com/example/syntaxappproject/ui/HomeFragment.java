@@ -367,6 +367,10 @@ public class HomeFragment extends HomeBar {
         NavHostFragment.findNavController(this).navigate(R.id.toEventDetailFragment, bundle);
     }
 
+    /**
+     * A set up events list function help for test.
+     * @param events the list of all events
+     */
     void setEventsForTest(List<EventDetail> events) {
         this.allEvents = events;
         this.displayEvents = events;

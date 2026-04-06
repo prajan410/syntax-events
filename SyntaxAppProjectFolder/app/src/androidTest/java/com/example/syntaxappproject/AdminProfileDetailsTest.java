@@ -96,6 +96,9 @@ public class AdminProfileDetailsTest {
         return scenario;
     }
 
+    /**
+     * Test the display details of profile
+     */
     @Test
     public void testActiveProfileDisplaysDetails() {
         FragmentScenario<AdminProfileDetails> scenario = launchFragment(createActiveBundle());
@@ -135,6 +138,9 @@ public class AdminProfileDetailsTest {
         });
     }
 
+    /**
+     * Test delete profile
+     */
     @Test
     public void testDeletedProfileHidesManagement() {
         FragmentScenario<AdminProfileDetails> scenario = launchFragment(createDeletedBundle());
@@ -154,6 +160,9 @@ public class AdminProfileDetailsTest {
         });
     }
 
+    /**
+     * Test remove single role disables last role
+     */
     @Test
     public void testSingleRoleDisablesLastRoleRemoval() {
         FragmentScenario<AdminProfileDetails> scenario = launchFragment(createSingleRoleBundle());
@@ -178,6 +187,9 @@ public class AdminProfileDetailsTest {
         });
     }
 
+    /**
+     * Test navigation of done button
+     */
     @Test
     public void testDoneButtonNavigatesBack() {
         FragmentScenario<AdminProfileDetails> scenario = launchFragment(createActiveBundle());

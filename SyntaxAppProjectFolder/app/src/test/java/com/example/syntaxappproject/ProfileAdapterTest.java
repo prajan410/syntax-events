@@ -9,7 +9,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.*;
-
+/**
+ * Unit tests for {@link ProfileAdapter}.
+ *
+ * <p>This test class verifies the correctness of data handling and helper logic
+ * used by the ProfileAdapter
+ */
 public class ProfileAdapterTest {
 
     private ProfileAdapter adapter;
@@ -18,7 +23,17 @@ public class ProfileAdapterTest {
     private ArrayList<Boolean> deletedFlags;
 
     // ─── Helpers ───────────────────────────────────────────────────
-
+    /**
+     * Creates a test {@link Profile} instance with specified attributes.
+     *
+     * @param name         profile name
+     * @param email        profile email
+     * @param phone        profile phone number
+     * @param isAdmin      whether the profile has admin role
+     * @param isOrganizer  whether the profile has organizer role
+     * @param isEntrant    whether the profile has entrant role
+     * @return a configured Profile object
+     */
     private Profile makeProfile(String name, String email, String phone,
                                 boolean isAdmin, boolean isOrganizer, boolean isEntrant) {
         Profile p = new Profile();
@@ -30,7 +45,9 @@ public class ProfileAdapterTest {
         p.setEntrant(isEntrant);
         return p;
     }
-
+    /**
+     * Initializes a fresh adapter and backing lists before each test.
+     */
     @Before
     public void setUp() {
         profileList  = new ArrayList<>();
@@ -40,12 +57,14 @@ public class ProfileAdapterTest {
     }
 
     // ─── getItemCount ──────────────────────────────────────────────
+    /** Verifies that an empty adapter returns item count of 0. */
 
     @Test
     public void getItemCount_emptyList_isZero() {
         assertEquals(0, adapter.getItemCount());
     }
 
+    /** Verifies that adapter returns correct count for one profile. */
     @Test
     public void getItemCount_oneProfile_isOne() {
         profileList.add(makeProfile("Alice", "a@a.com", "123", false, false, true));
@@ -53,6 +72,7 @@ public class ProfileAdapterTest {
         deletedFlags.add(false);
         assertEquals(1, adapter.getItemCount());
     }
+    /** Verifies that adapter returns correct count for multiple profiles. */
 
     @Test
     public void getItemCount_threeProfiles_isThree() {
@@ -65,6 +85,7 @@ public class ProfileAdapterTest {
     }
 
     // ─── updateData ────────────────────────────────────────────────
+    /** Verifies that updateData replaces existing data correctly. */
 
     @Test
     public void updateData_replacesExistingList() {
@@ -80,6 +101,7 @@ public class ProfileAdapterTest {
 
         assertEquals(2, adapter.getItemCount());
     }
+    /** Verifies that updateData clears adapter when given empty lists. */
 
     @Test
     public void updateData_withEmptyList_clearsAdapter() {
@@ -91,6 +113,7 @@ public class ProfileAdapterTest {
 
         assertEquals(0, adapter.getItemCount());
     }
+    /** Verifies adapter handles large datasets correctly. */
 
     @Test
     public void updateData_largeList_countIsCorrect() {
@@ -105,6 +128,7 @@ public class ProfileAdapterTest {
         adapter.updateData(newProfiles, newIds, newFlags);
         assertEquals(50, adapter.getItemCount());
     }
+    /** Verifies that the second call to updateData overrides the first. */
 
     @Test
     public void updateData_calledTwice_secondUpdateWins() {
@@ -125,12 +149,14 @@ public class ProfileAdapterTest {
     }
 
     // ─── getRoleLabel logic ────────────────────────────────────────
+    /** Verifies that admin role takes precedence over all others. */
 
     @Test
     public void roleLabel_adminOnly_returnsAdmin() {
         Profile p = makeProfile("Alice", "a@a.com", "123", true, false, false);
         assertEquals("Admin", getRoleLabel(p));
     }
+    /** Verifies admin overrides other roles. */
 
     @Test
     public void roleLabel_adminAndOrganizer_returnsAdminOnly() {
@@ -138,24 +164,28 @@ public class ProfileAdapterTest {
         Profile p = makeProfile("Alice", "a@a.com", "123", true, true, true);
         assertEquals("Admin", getRoleLabel(p));
     }
+    /** Verifies organizer role labeling. */
 
     @Test
     public void roleLabel_organizerOnly_returnsOrganizer() {
         Profile p = makeProfile("Bob", "b@b.com", "456", false, true, false);
         assertEquals("Organizer", getRoleLabel(p));
     }
+    /** Verifies entrant role labeling. */
 
     @Test
     public void roleLabel_entrantOnly_returnsEntrant() {
         Profile p = makeProfile("Carol", "c@c.com", "789", false, false, true);
         assertEquals("Entrant", getRoleLabel(p));
     }
+    /** Verifies multiple roles are combined correctly. */
 
     @Test
     public void roleLabel_organizerAndEntrant_returnsBoth() {
         Profile p = makeProfile("Dave", "d@d.com", "000", false, true, true);
         assertEquals("Organizer, Entrant", getRoleLabel(p));
     }
+    /** Verifies that no roles results in "None". */
 
     @Test
     public void roleLabel_noRoles_returnsNone() {
@@ -164,11 +194,13 @@ public class ProfileAdapterTest {
     }
 
     // ─── Status label logic ────────────────────────────────────────
+    /** Verifies active status when profile is not deleted. */
 
     @Test
     public void statusLabel_notDeleted_isActive() {
         assertEquals("Active", resolveStatus(false));
     }
+    /** Verifies inactive status when profile is deleted. */
 
     @Test
     public void statusLabel_deleted_isInactive() {
@@ -176,12 +208,14 @@ public class ProfileAdapterTest {
     }
 
     // ─── Name display logic ────────────────────────────────────────
+    /** Verifies valid name is displayed correctly. */
 
     @Test
     public void nameDisplay_validName_showsName() {
         Profile p = makeProfile("Alice", "a@a.com", "123", false, false, true);
         assertEquals("Alice", p.getName() != null ? p.getName() : "Unknown");
     }
+    /** Verifies null name defaults to "Unknown". */
 
     @Test
     public void nameDisplay_nullName_showsUnknown() {
@@ -190,6 +224,7 @@ public class ProfileAdapterTest {
     }
 
     // ─── Bundle data integrity ─────────────────────────────────────
+    /** Verifies all profile fields are stored correctly. */
 
     @Test
     public void bundleData_profileFieldsAreCorrect() {
@@ -204,6 +239,7 @@ public class ProfileAdapterTest {
         assertTrue(p.isOrganizer());
         assertTrue(p.isEntrant());
     }
+    /** Verifies admin profile flags are correct. */
 
     @Test
     public void bundleData_adminProfile_flagsCorrect() {
@@ -212,6 +248,7 @@ public class ProfileAdapterTest {
         assertFalse(p.isOrganizer());
         assertFalse(p.isEntrant());
     }
+    /** Verifies deleted flag is preserved. */
 
     @Test
     public void bundleData_deletedFlag_isPreserved() {
@@ -221,6 +258,7 @@ public class ProfileAdapterTest {
 
         assertTrue(deletedFlags.get(0));
     }
+    /** Verifies profile ID is stored correctly. */
 
     @Test
     public void bundleData_profileIdIsCorrect() {
@@ -232,6 +270,7 @@ public class ProfileAdapterTest {
     }
 
     // ─── List independence ─────────────────────────────────────────
+    /** Verifies that multiple adapters do not share state. */
 
     @Test
     public void twoAdapters_areIndependent() {

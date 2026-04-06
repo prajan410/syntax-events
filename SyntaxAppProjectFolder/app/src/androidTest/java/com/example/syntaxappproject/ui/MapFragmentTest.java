@@ -51,6 +51,10 @@ public class MapFragmentTest {
 
     }
 
+    /**
+     * Test add pin on map
+     * @throws InterruptedException exception
+     */
     @Test
     public void testAddPinToMap() throws InterruptedException {
         // 1. Create a fake event ID and put it in a bundle

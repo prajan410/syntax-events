@@ -20,7 +20,9 @@ import org.junit.runner.RunWith;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
+/**
+ * Instrument test of Invite entrant adapter
+ */
 @RunWith(AndroidJUnit4.class)
 public class InviteEntrantAdapterTest {
 

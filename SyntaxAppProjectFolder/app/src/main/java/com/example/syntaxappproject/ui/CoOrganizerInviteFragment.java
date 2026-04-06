@@ -26,6 +26,13 @@ import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
 
+/**
+ * Fragment displaying of invite entrant to be co-organizer.
+ *
+ * <p>a page for invite selected entrant to be co-organizer
+ * organizer can select entrant in notify entrants page.
+ * </p>
+ */
 public class CoOrganizerInviteFragment extends Fragment {
 
     private TextInputEditText searchInput;
@@ -84,6 +91,9 @@ public class CoOrganizerInviteFragment extends Fragment {
         );
     }
 
+    /**
+     * Search for the entrant matched to the search text.
+     */
     private void doSearch() {
         String query = "";
         if (searchInput.getText() != null) {
@@ -112,6 +122,10 @@ public class CoOrganizerInviteFragment extends Fragment {
         });
     }
 
+    /**
+     * Send a notification and invitation to selected entrant.
+     * @param userId the id of entrant
+     */
     private void inviteUser(String userId) {
 
         new EventDetailRepository().getEventDetail(eventId, event -> {

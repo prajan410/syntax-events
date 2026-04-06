@@ -22,12 +22,23 @@ import java.util.List;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-
+/**
+ * Unit tests for {@link NotificationRepository}.
+ *
+ * This test suite verifies the behavior of the repository layer responsible
+ * for retrieving notifications from Firestore.
+ */
 public class NotificationRepositoryTest {
 
     // ─── Testable subclass ─────────────────────────────────────────
     // Injects our mock Firestore instead of calling getInstance()
-
+    /**
+     * Testable subclass of {@link NotificationRepository} that injects
+     * a mocked {@link FirebaseFirestore} instance.
+     *
+     * <p>This avoids calling {@code FirebaseFirestore.getInstance()} and allows
+     * controlled testing of Firestore interactions.
+     */
     private static class TestableRepository extends NotificationRepository {
         private final FirebaseFirestore mockDb;
 
@@ -76,7 +87,9 @@ public class NotificationRepositoryTest {
     private TestableRepository repository;
 
     // ─── Setup ─────────────────────────────────────────────────────
-
+    /**
+     * Initializes mocks and sets up Firestore method chaining before each test.
+     */
     @Before
     public void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -114,6 +127,7 @@ public class NotificationRepositoryTest {
     }
 
     // ─── NotificationCallback interface ────────────────────────────
+    /** Verifies NotificationCallback receives true result. */
 
     @Test
     public void notificationCallback_onComplete_true() {
@@ -122,6 +136,7 @@ public class NotificationRepositoryTest {
         cb.onComplete(true);
         verify(cb).onComplete(true);
     }
+    /** Verifies NotificationCallback receives false result. */
 
     @Test
     public void notificationCallback_onComplete_false() {
@@ -132,6 +147,7 @@ public class NotificationRepositoryTest {
     }
 
     // ─── NotificationListCallback interface ────────────────────────
+    /** Verifies NotificationListCallback receives a list. */
 
     @Test
     public void notificationListCallback_onLoaded_withList() {
@@ -141,7 +157,7 @@ public class NotificationRepositoryTest {
         cb.onLoaded(list);
         verify(cb).onLoaded(list);
     }
-
+    /** Verifies NotificationListCallback receives null on failure. */
     @Test
     public void notificationListCallback_onLoaded_withNull() {
         NotificationRepository.NotificationListCallback cb =
@@ -151,6 +167,7 @@ public class NotificationRepositoryTest {
     }
 
     // ─── getNotificationsForUser — success ─────────────────────────
+    /** Verifies successful query returns a populated notification list. */
 
     @Test
     public void getNotificationsForUser_success_returnsNotifications() {
@@ -170,6 +187,7 @@ public class NotificationRepositoryTest {
         assertEquals(1, result[0].size());
         assertEquals("doc-id-1", result[0].get(0).getNotificationId());
     }
+    /** Verifies document ID is correctly assigned to Notification object. */
 
     @Test
     public void getNotificationsForUser_success_setsNotificationId() {
@@ -185,6 +203,7 @@ public class NotificationRepositoryTest {
 
         assertEquals("notif-abc", result[0].get(0).getNotificationId());
     }
+    /** Verifies multiple documents are correctly converted. */
 
     @Test
     public void getNotificationsForUser_success_multipleDocuments() {
@@ -205,6 +224,7 @@ public class NotificationRepositoryTest {
 
         assertEquals(2, result[0].size());
     }
+    /** Verifies empty query result returns an empty list. */
 
     @Test
     public void getNotificationsForUser_success_emptySnapshot_returnsEmptyList() {
@@ -217,6 +237,7 @@ public class NotificationRepositoryTest {
         assertNotNull(result[0]);
         assertEquals(0, result[0].size());
     }
+    /** Verifies null objects from Firestore are safely ignored. */
 
     @Test
     public void getNotificationsForUser_nullDocumentObject_isSkipped() {
@@ -233,6 +254,7 @@ public class NotificationRepositoryTest {
     }
 
     // ─── getNotificationsForUser — failure ─────────────────────────
+    /** Verifies failure triggers callback with null result. */
 
     @Test
     public void getNotificationsForUser_failure_callbackReceivesNull() {
@@ -245,6 +267,7 @@ public class NotificationRepositoryTest {
     }
 
     // ─── Firestore chain is called correctly ───────────────────────
+    /** Verifies correct Firestore query chain is executed. */
 
     @Test
     public void getNotificationsForUser_queriesCorrectUserSubcollection() {
@@ -260,6 +283,7 @@ public class NotificationRepositoryTest {
     }
 
     // ─── Notification model integrity ──────────────────────────────
+    /** Verifies default Notification object state. */
 
     @Test
     public void notification_defaultConstructor_allFieldsNull() {
@@ -271,6 +295,7 @@ public class NotificationRepositoryTest {
         assertNull(n.getEventId());
         assertEquals(0L, n.getTimestamp());
     }
+    /** Verifies title setter and getter. */
 
     @Test
     public void notification_setAndGetTitle() {
@@ -278,6 +303,7 @@ public class NotificationRepositoryTest {
         n.setTitle("Test Title");
         assertEquals("Test Title", n.getTitle());
     }
+    /** Verifies Firestore ID assignment behavior. */
 
     @Test
     public void notification_setNotificationId_afterFirestoreWrite() {

@@ -118,6 +118,9 @@ public class AdminBrowseNotificationsFragmentTest {
     // Loading / empty state tests
     // -------------------------------------------------------------------------
 
+    /**
+     * Test with empty state show nothing
+     */
     @Test
     public void testEmptyState_showsZeroBadge() {
         // setUp() already stubs getAllNotifications → empty list
@@ -127,6 +130,9 @@ public class AdminBrowseNotificationsFragmentTest {
                 .check(matches(withText("0 notifications")));
     }
 
+    /**
+     * Test empty state with empty text show
+     */
     @Test
     public void testEmptyState_emptyTextIsDisplayed() {
         launchFragment();
@@ -135,6 +141,9 @@ public class AdminBrowseNotificationsFragmentTest {
                 .check(matches(isDisplayed()));
     }
 
+    /**
+     * Test correct display of notification
+     */
     @Test
     public void testNotificationsLoaded_showsCorrectBadgeCount() {
         // Stub two notifications coming back
@@ -159,6 +168,9 @@ public class AdminBrowseNotificationsFragmentTest {
                 .check(matches(withText("2 notifications")));
     }
 
+    /**
+     * Test single notification
+     */
     @Test
     public void testSingleNotification_badgeUseSingular() {
         Notification n = new Notification();
@@ -183,6 +195,10 @@ public class AdminBrowseNotificationsFragmentTest {
     // Send validation tests — repo should NOT be called
     // -------------------------------------------------------------------------
 
+    /**
+     * Test send notification with empty title
+     */
+
     @Test
     public void testSend_emptyTitle_doesNotCallRepo() {
         launchFragment();
@@ -195,6 +211,9 @@ public class AdminBrowseNotificationsFragmentTest {
                 .sendNotification(any(Notification.class), anyString(), anyList(), any());
     }
 
+    /**
+     * Test send notification with empty body
+     */
     @Test
     public void testSend_emptyMessage_doesNotCallRepo() {
         launchFragment();
@@ -210,6 +229,10 @@ public class AdminBrowseNotificationsFragmentTest {
     // -------------------------------------------------------------------------
     // Send success tests
     // -------------------------------------------------------------------------
+
+    /**
+     * Test success send notification and call repo
+     */
 
     @Test
     public void testSend_validInputs_callsRepo() {
@@ -233,6 +256,9 @@ public class AdminBrowseNotificationsFragmentTest {
                 any(Notification.class), anyString(), anyList(), any());
     }
 
+    /**
+     * Test success send notification with clear field
+     */
     @Test
     public void testSend_onSuccess_clearsInputFields() {
         org.mockito.Mockito.doAnswer(invocation -> {
@@ -255,6 +281,9 @@ public class AdminBrowseNotificationsFragmentTest {
         onView(withId(R.id.notifMessageInput)).check(matches(withText("")));
     }
 
+    /**
+     * Test button enable after success send notification
+     */
     @Test
     public void testSend_onSuccess_buttonIsReEnabled() {
         org.mockito.Mockito.doAnswer(invocation -> {
@@ -277,6 +306,9 @@ public class AdminBrowseNotificationsFragmentTest {
                 .check(matches(isEnabled()));
     }
 
+    /**
+     * Test button restore
+     */
     @Test
     public void testSend_onSuccess_buttonTextRestored() {
         org.mockito.Mockito.doAnswer(invocation -> {
@@ -299,6 +331,9 @@ public class AdminBrowseNotificationsFragmentTest {
                 .check(matches(withText("Send to All Entrants")));
     }
 
+    /**
+     * Test button enable when send notification fail
+     */
     @Test
     public void testSend_onFailure_buttonIsReEnabled() {
         org.mockito.Mockito.doAnswer(invocation -> {
@@ -321,6 +356,9 @@ public class AdminBrowseNotificationsFragmentTest {
                 .check(matches(isEnabled()));
     }
 
+    /**
+     * Test the field clear when sent notification fail
+     */
     @Test
     public void testSend_onFailure_fieldsNotCleared() {
         org.mockito.Mockito.doAnswer(invocation -> {

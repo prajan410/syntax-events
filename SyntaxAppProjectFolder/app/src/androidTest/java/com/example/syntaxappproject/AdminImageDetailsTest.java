@@ -14,6 +14,13 @@ import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import com.example.syntaxappproject.ui.AdminFragment;
+
+/**
+ * Instrumented UI tests for {@link AdminImageDetails}.
+ *
+ * <p>Verifies that the display of admin image details</p>
+ */
 @RunWith(AndroidJUnit4.class)
 public class AdminImageDetailsTest {
 
