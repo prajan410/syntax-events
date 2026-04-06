@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"com.example.syntaxappproject"},{"l":"com.example.syntaxappproject.ui"},{"l":"所有程序包","u":"allpackages-index.html"}];updateSearchResults();
