@@ -20,11 +20,8 @@ public class Profile {
     private boolean isOrganizer;
     private boolean isAdmin;
 
-
-
     private boolean organizerNotificationEnabled;
     private boolean adminNotificationEnabled;
-
 
     private boolean notificationsOptedOut;
 
@@ -36,15 +33,15 @@ public class Profile {
     /**
      * Constructs a fully initialized Profile.
      *
-     * @param name                 the full name of the user
-     * @param email                the email address of the user
-     * @param phone                the phone number of the user, or {@code null} if not provided
-     * @param isEntrant            {@code true} if the user has the entrant role
-     * @param isOrganizer          {@code true} if the user has the organizer role
-     * @param isAdmin              {@code true} if the user has admin privileges; always {@code false} on registration
-     * @param organizerNotificationsEnabled {@code true} if the user has notifications from organizersenabled
-     * @param deviceId             the unique device identifier for the user
-     * @param adminNotificationEnabled {@code true} if the usaer has notifications from admins enabled
+     * @param name                          the full name of the user
+     * @param email                         the email address of the user
+     * @param phone                         the phone number of the user, or {@code null} if not provided
+     * @param isEntrant                     {@code true} if the user has the entrant role
+     * @param isOrganizer                   {@code true} if the user has the organizer role
+     * @param isAdmin                       {@code true} if the user has admin privileges; always {@code false} on registration
+     * @param organizerNotificationsEnabled {@code true} if the user has enabled notifications from organizers
+     * @param adminNotificationEnabled      {@code true} if the user has enabled notifications from admins
+     * @param deviceId                      the unique device identifier for the user
      */
     public Profile(String name, String email, String phone,
                    boolean isEntrant, boolean isOrganizer, boolean isAdmin,
@@ -176,11 +173,10 @@ public class Profile {
     public void setDeviceId(String deviceId) { this.deviceId = deviceId; }
 
     /**
-     * Checks if user has notifications on
+     * Sets whether the user has opted out of notifications.
      *
-     * @return notificationSettings, true or false
+     * @param notificationsOptedOut {@code true} if the user has opted out
      */
-
     public void setNotificationsOptedOut(boolean notificationsOptedOut) {
         this.notificationsOptedOut = notificationsOptedOut;
     }
