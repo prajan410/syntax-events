@@ -1,5 +1,7 @@
 package com.example.syntaxappproject;
 
+import com.google.firebase.Timestamp;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -23,8 +25,10 @@ public class InvitationRepositoryTest {
     static class FakeInvitationRepository extends InvitationRepository {
 
         private Invitation invitationToReturn;
+        private Invitation latestInvitationToReturn;
         private boolean acceptResult;
         private boolean declineResult;
+        private boolean declineWithEventUpdateResult;
 
         /**
          * Constructs the fake repository using the test-mode constructor
@@ -40,6 +44,11 @@ public class InvitationRepositoryTest {
         }
 
         @Override
+        public void getLatestRelevantInvitationForUser(String userId, InvitationCallback callback) {
+            callback.onResult(latestInvitationToReturn);
+        }
+
+        @Override
         public void acceptInvitation(String invitationId, ActionCallback callback) {
             callback.onComplete(acceptResult);
         }
@@ -47,6 +56,11 @@ public class InvitationRepositoryTest {
         @Override
         public void declineInvitation(String invitationId, ActionCallback callback) {
             callback.onComplete(declineResult);
+        }
+
+        @Override
+        public void declineInvitation(String invitationId, String eventId, String userId, ActionCallback callback) {
+            callback.onComplete(declineWithEventUpdateResult);
         }
     }
 
@@ -158,6 +172,105 @@ public class InvitationRepositoryTest {
         final boolean[] result = new boolean[1];
 
         repo.declineInvitation("inv1", success -> result[0] = success);
+
+        assertFalse(result[0]);
+    }
+
+    /**
+     * Verifies that {@link InvitationRepository#getLatestRelevantInvitationForUser(String, InvitationRepository.InvitationCallback)}
+     * returns the latest relevant invitation when one exists.
+     */
+    @Test
+    public void testGetLatestRelevantInvitationForUserReturnsInvitation() {
+        Invitation latestInvitation = new Invitation();
+        latestInvitation.setInvitationId("inv2");
+        latestInvitation.setEventId("event2");
+        latestInvitation.setEventName("Basketball Event");
+        latestInvitation.setUserId("user1");
+        latestInvitation.setStatus("pending");
+        latestInvitation.setInvitedAt(Timestamp.now());
+
+        repo.latestInvitationToReturn = latestInvitation;
+
+        final Invitation[] result = new Invitation[1];
+
+        repo.getLatestRelevantInvitationForUser("user1", returnedInvitation -> result[0] = returnedInvitation);
+
+        assertEquals("inv2", result[0].getInvitationId());
+        assertEquals("event2", result[0].getEventId());
+        assertEquals("Basketball Event", result[0].getEventName());
+        assertEquals("user1", result[0].getUserId());
+        assertEquals("pending", result[0].getStatus());
+    }
+
+    /**
+     * Verifies that {@link InvitationRepository#getLatestRelevantInvitationForUser(String, InvitationRepository.InvitationCallback)}
+     * returns a not-chosen invitation when that is the latest relevant notification.
+     */
+    @Test
+    public void testGetLatestRelevantInvitationForUserReturnsNotChosenInvitation() {
+        Invitation latestInvitation = new Invitation();
+        latestInvitation.setInvitationId("inv3");
+        latestInvitation.setEventId("event3");
+        latestInvitation.setEventName("Soccer Event");
+        latestInvitation.setUserId("user1");
+        latestInvitation.setStatus("not_chosen");
+        latestInvitation.setInvitedAt(Timestamp.now());
+
+        repo.latestInvitationToReturn = latestInvitation;
+
+        final Invitation[] result = new Invitation[1];
+
+        repo.getLatestRelevantInvitationForUser("user1", returnedInvitation -> result[0] = returnedInvitation);
+
+        assertEquals("inv3", result[0].getInvitationId());
+        assertEquals("event3", result[0].getEventId());
+        assertEquals("Soccer Event", result[0].getEventName());
+        assertEquals("user1", result[0].getUserId());
+        assertEquals("not_chosen", result[0].getStatus());
+    }
+
+    /**
+     * Verifies that {@link InvitationRepository#getLatestRelevantInvitationForUser(String, InvitationRepository.InvitationCallback)}
+     * returns {@code null} when no relevant invitation exists.
+     */
+    @Test
+    public void testGetLatestRelevantInvitationForUserReturnsNull() {
+        repo.latestInvitationToReturn = null;
+
+        final Invitation[] result = new Invitation[1];
+
+        repo.getLatestRelevantInvitationForUser("user1", returnedInvitation -> result[0] = returnedInvitation);
+
+        assertNull(result[0]);
+    }
+
+    /**
+     * Verifies that {@link InvitationRepository#declineInvitation(String, String, String, InvitationRepository.ActionCallback)}
+     * returns {@code true} when the decline operation and event update both succeed.
+     */
+    @Test
+    public void testDeclineInvitationWithEventUpdateSuccess() {
+        repo.declineWithEventUpdateResult = true;
+
+        final boolean[] result = new boolean[1];
+
+        repo.declineInvitation("inv1", "event1", "user1", success -> result[0] = success);
+
+        assertTrue(result[0]);
+    }
+
+    /**
+     * Verifies that {@link InvitationRepository#declineInvitation(String, String, String, InvitationRepository.ActionCallback)}
+     * returns {@code false} when the decline operation or event update fails.
+     */
+    @Test
+    public void testDeclineInvitationWithEventUpdateFailure() {
+        repo.declineWithEventUpdateResult = false;
+
+        final boolean[] result = new boolean[1];
+
+        repo.declineInvitation("inv1", "event1", "user1", success -> result[0] = success);
 
         assertFalse(result[0]);
     }
