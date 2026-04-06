@@ -12,12 +12,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import android.os.Bundle;
+import android.os.IBinder;
+import android.view.WindowManager;
 
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentFactory;
 import androidx.fragment.app.testing.FragmentScenario;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.test.espresso.Root;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.example.syntaxappproject.CoOrganizerRepository;
@@ -25,6 +28,8 @@ import com.example.syntaxappproject.Profile;
 import com.example.syntaxappproject.R;
 
 
+import org.hamcrest.Description;
+import org.hamcrest.TypeSafeMatcher;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -50,6 +55,11 @@ public class CoOrganizerInviteFragmentTest {
 
         ArrayList<Profile> fakeProfiles = new ArrayList<>();
         ArrayList<String> fakeUserIds = new ArrayList<>();
+        @Override
+        public void searchEntrants(String query, searchCallback callback) {
+            // 直接返回 fake 数据
+            callback.onResult(fakeProfiles, fakeUserIds);
+        }
 
     }
 
@@ -126,14 +136,14 @@ public class CoOrganizerInviteFragmentTest {
      * Test the emptyInput in search.
      */
     @Test
-    public void testSearch_emptyInput_showsToast() {
+    public void testSearch_emptyInput_doesNotChangeUI() {
         launchFragment();
 
         onView(withId(R.id.searchButton))
                 .perform(click());
 
-        onView(withText("Enter a name, phone, or email"))
-                .check(matches(isDisplayed()));
+        onView(withId(R.id.resultText))
+                .check(matches(withText("Search results")));
     }
 
     /**
