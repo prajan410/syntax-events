@@ -44,7 +44,7 @@ public class NotifyEntrantsFragment extends Fragment {
     private Chip chipWaitlist;
     private Chip chipSelected;
     private Chip chipCancelled;
-    private Chip chipAll;
+
 
     private TextView recipientCount;
     private EditText messageInput;
@@ -79,7 +79,7 @@ public class NotifyEntrantsFragment extends Fragment {
         chipWaitlist   = view.findViewById(R.id.chipWaitlist);
         chipSelected   = view.findViewById(R.id.chipSelected);
         chipCancelled  = view.findViewById(R.id.chipCancelled);
-        chipAll        = view.findViewById(R.id.chipAll);
+
         recipientCount = view.findViewById(R.id.recipientCount);
         messageInput   = view.findViewById(R.id.messageInput);
         charCount      = view.findViewById(R.id.charCount);
@@ -94,7 +94,7 @@ public class NotifyEntrantsFragment extends Fragment {
         setupChip(chipWaitlist);
         setupChip(chipSelected);
         setupChip(chipCancelled);
-        setupChip(chipAll);
+
 
         // --- Char counter ---
         setupCharCounter();
@@ -154,7 +154,7 @@ public class NotifyEntrantsFragment extends Fragment {
         if (chipWaitlist.isChecked())  count++;
         if (chipSelected.isChecked())  count++;
         if (chipCancelled.isChecked()) count++;
-        if (chipAll.isChecked())       count++;
+
 
         if (count == 0) {
             recipientCount.setText("No groups selected");
@@ -221,7 +221,7 @@ public class NotifyEntrantsFragment extends Fragment {
         if (chipWaitlist.isChecked())  selectedGroups.add("WAITLIST");
         if (chipSelected.isChecked())  selectedGroups.add("SELECTED");
         if (chipCancelled.isChecked()) selectedGroups.add("CANCELLED");
-        if (chipAll.isChecked())       selectedGroups.add("ALL");
+
 
         if (selectedGroups.isEmpty()) {
             Toast.makeText(getContext(), "Please select at least one group", Toast.LENGTH_SHORT).show();

@@ -69,7 +69,7 @@ public class NotificationRepository {
                                 .addOnFailureListener(e -> callback.onComplete(false));
                     })
                     .addOnFailureListener(e -> callback.onComplete(false));
-            return; // ← don't fall through to the event-based logic
+            return;
         }
 
         List<String> subcollections = new ArrayList<>();

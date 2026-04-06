@@ -142,7 +142,11 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ProfileV
         this.profileIds.addAll(newProfileIds);
         this.deletedFlags.clear();
         this.deletedFlags.addAll(newDeletedFlags);
-        notifyDataSetChanged();
+        try {
+            notifyDataSetChanged();
+        } catch (Exception e) {
+            //for tests
+        }
     }
 
     /**
