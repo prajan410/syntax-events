@@ -16,7 +16,12 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
+/**
+ * Unit tests for {@link PrivateEventInvitationRepository}.
+ * <p>
+ * Uses an in-memory fake subclass to avoid any Firebase dependency.
+ * </p>
+ */
 public class PrivateEventInvitationRepositoryTest {
 
     private MockedStatic<FirebaseFirestore> firestoreStaticMock;

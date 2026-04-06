@@ -24,6 +24,14 @@ import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
 
+/**
+ * Fragment displaying of invite entrant to private event.
+ *
+ * <p>a page for invite selected entrant to a private event
+ * organizer can select entrant after a private is created.
+ * </p>
+ */
+
 public class PrivateEventInviteFragment extends Fragment {
 
     private TextInputEditText searchInput;

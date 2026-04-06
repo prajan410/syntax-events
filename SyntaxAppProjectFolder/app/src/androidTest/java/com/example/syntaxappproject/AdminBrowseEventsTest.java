@@ -49,6 +49,9 @@ public class AdminBrowseEventsTest {
         return scenario;
     }
 
+    /**
+     * Test the display of screen
+     */
     @Test
     public void testScreenDisplays() {
         FragmentScenario<AdminBrowseEvents> scenario = launchFragment();
@@ -66,6 +69,9 @@ public class AdminBrowseEventsTest {
         });
     }
 
+    /**
+     * Test navigate back of done button
+     */
     @Test
     public void testDoneButtonNavigatesBack() {
         FragmentScenario<AdminBrowseEvents> scenario = launchFragment();
@@ -78,6 +84,9 @@ public class AdminBrowseEventsTest {
         verify(mockNavController).navigate(R.id.adminFragment);
     }
 
+    /**
+     * Test empty state of search
+     */
     @Test
     public void testSearchWithNoMatchesShowsEmptyState() {
         FragmentScenario<AdminBrowseEvents> scenario = launchFragment();

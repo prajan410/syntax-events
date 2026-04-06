@@ -206,6 +206,9 @@ public class NotificationFragmentTest {
     // Tests
     // -------------------------------------------------------------------------
 
+    /**
+     * Test title display
+     */
     @Test
     public void testNotificationTitle_isDisplayed() {
         launchFragment();
@@ -214,6 +217,9 @@ public class NotificationFragmentTest {
                 .check(matches(isDisplayed()));
     }
 
+    /**
+     * Test body display
+     */
     @Test
     public void testNotificationBody_isDisplayed() {
         launchFragment();
@@ -222,6 +228,9 @@ public class NotificationFragmentTest {
                 .check(matches(isDisplayed()));
     }
 
+    /**
+     * Test admin notification display
+     */
     @Test
     public void testAdminNotification_showsFromAdministration() {
         launchFragment();
@@ -230,6 +239,9 @@ public class NotificationFragmentTest {
                 .check(matches(isDisplayed()));
     }
 
+    /**
+     * Test click notification
+     */
     @Test
     public void testClickNotification_doesNotNavigate() {
         launchFragment();
@@ -241,6 +253,9 @@ public class NotificationFragmentTest {
         verify(mockNavController, never()).navigate(anyInt(), any(Bundle.class));
     }
 
+    /**
+     * Test multiple notification display
+     */
     @Test
     public void testMultipleNotifications_allDisplayed() {
         FragmentScenario<TestNotificationFragment> scenario =

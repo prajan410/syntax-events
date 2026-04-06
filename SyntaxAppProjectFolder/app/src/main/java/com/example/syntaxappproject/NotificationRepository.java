@@ -173,7 +173,11 @@ public class NotificationRepository {
         }
     }
 
-
+    /**
+     * Get the notification of a user from the firebase
+     * @param userId the id of user
+     * @param callback the callback of notifications
+     */
     public void getNotificationsForUser(String userId, NotificationListCallback callback) {
         db.collection("users")
                 .document(userId)
@@ -198,7 +202,10 @@ public class NotificationRepository {
                 });
     }
 
-
+    /**
+     * Get all the notifications in firebase
+     * @param callback callback of all notifications
+     */
     public void getAllNotifications(NotificationListCallback callback) {
         db.collection("notifications")
                 .orderBy("timestamp", Query.Direction.DESCENDING)
@@ -214,11 +221,25 @@ public class NotificationRepository {
     }
     // ─── Callbacks ─────────────────────────────────────────────────────────
 
+    /**
+     * Callback interface for success notification
+     */
     public interface NotificationCallback {
+        /**
+         * Called with the result of notifications send.
+         * @param success {@code true} if the notification is sent
+         */
         void onComplete(boolean success);
     }
 
+    /**
+     * Callback interface for notification list
+     */
     public interface NotificationListCallback {
+        /**
+         * Called with the result of notifications list.
+         * @param notifications the list of notification
+         */
         void onLoaded(List<Notification> notifications);
     }
 

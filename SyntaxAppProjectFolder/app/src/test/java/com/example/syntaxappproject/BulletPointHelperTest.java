@@ -18,7 +18,9 @@ import static org.junit.Assert.*;
  */
 @RunWith(JUnit4.class)
 public class BulletPointHelperTest {
-
+    /**
+     * Test remove the bullet symbols
+     */
     @Test
     public void getPlainText_removesBulletSymbols() {
         String bulletText = "• Item 1\n• Item 2\n• Item 3";
@@ -29,12 +31,18 @@ public class BulletPointHelperTest {
         assertEquals(expected, result);
     }
 
+    /**
+     * Test empty input
+     */
     @Test
     public void getPlainText_handlesEmptyInput() {
         assertEquals("", BulletPointHelper.getPlainText(null));
         assertEquals("", BulletPointHelper.getPlainText(""));
     }
 
+    /**
+     * Test trims white space
+     */
     @Test
     public void getPlainText_trimsWhitespace() {
         String bulletText = "•   Item 1  \n•  Item 2  \n•  Item 3  ";
@@ -45,6 +53,9 @@ public class BulletPointHelperTest {
         assertEquals(expected, result);
     }
 
+    /**
+     * Test input single bullet point
+     */
     @Test
     public void getPlainText_withSingleBullet() {
         String bulletText = "• Single item";
@@ -55,6 +66,9 @@ public class BulletPointHelperTest {
         assertEquals(expected, result);
     }
 
+    /**
+     * Test add bullet symbols
+     */
     @Test
     public void formatWithBullets_addsBulletSymbols() {
         String plainText = "Item 1\nItem 2\nItem 3";
@@ -65,12 +79,18 @@ public class BulletPointHelperTest {
         assertEquals(expected, result);
     }
 
+    /**
+     * Test empty input in bullet format
+     */
     @Test
     public void formatWithBullets_handlesEmptyInput() {
         assertEquals("", BulletPointHelper.formatWithBullets(null));
         assertEquals("", BulletPointHelper.formatWithBullets(""));
     }
 
+    /**
+     * Test empty lines ignore in bullets format
+     */
     @Test
     public void formatWithBullets_ignoresEmptyLines() {
         String plainText = "Item 1\n\nItem 2\n\nItem 3";
@@ -81,6 +101,9 @@ public class BulletPointHelperTest {
         assertEquals(expected, result);
     }
 
+    /**
+     * Test single item in bullet format
+     */
     @Test
     public void formatWithBullets_withSingleItem() {
         String plainText = "Single item";
@@ -91,6 +114,9 @@ public class BulletPointHelperTest {
         assertEquals(expected, result);
     }
 
+    /**
+     * Test return list of point
+     */
     @Test
     public void parseBulletPoints_returnsListOfPoints() {
         String bulletText = "• First criteria\n• Second criteria\n• Third criteria";
@@ -101,12 +127,18 @@ public class BulletPointHelperTest {
         assertEquals(expected, result);
     }
 
+    /**
+     * Test empty input in display
+     */
     @Test
     public void parseBulletPoints_handlesEmptyInput() {
         assertTrue(BulletPointHelper.parseBulletPoints(null).isEmpty());
         assertTrue(BulletPointHelper.parseBulletPoints("").isEmpty());
     }
 
+    /**
+     * test white space display
+     */
     @Test
     public void parseBulletPoints_withWhitespace() {
         String bulletText = "•   First\n•  Second with spaces  \n• Third\n";
@@ -117,6 +149,9 @@ public class BulletPointHelperTest {
         assertEquals(expected, result);
     }
 
+    /**
+     * Test display without bullet symbols
+     */
     @Test
     public void parseBulletPoints_withoutBulletSymbols() {
         String plainText = "First\nSecond\nThird";
@@ -127,6 +162,9 @@ public class BulletPointHelperTest {
         assertEquals(expected, result);
     }
 
+    /**
+     * Test preserves content in round trip conversion
+     */
     @Test
     public void roundTripConversion_preservesContent() {
         String originalPlain = "Criteria 1\nCriteria 2\nCriteria 3";
@@ -137,6 +175,9 @@ public class BulletPointHelperTest {
         assertEquals(originalPlain, backToPlain);
     }
 
+    /**
+     * Test the order of plain text
+     */
     @Test
     public void getPlainText_preservesOrder() {
         String bulletText = "• Third\n• Second\n• First";
@@ -147,6 +188,9 @@ public class BulletPointHelperTest {
         assertEquals(expected, result);
     }
 
+    /**
+     * Test order
+     */
     @Test
     public void formatWithBullets_preservesOrder() {
         String plainText = "Third\nSecond\nFirst";
@@ -157,6 +201,9 @@ public class BulletPointHelperTest {
         assertEquals(expected, result);
     }
 
+    /**
+     * Test oder
+     */
     @Test
     public void parseBulletPoints_preservesOrder() {
         String bulletText = "• Third\n• Second\n• First";
@@ -167,6 +214,9 @@ public class BulletPointHelperTest {
         assertEquals(expected, result);
     }
 
+    /**
+     * Test new line
+     */
     @Test
     public void getPlainText_withTrailingNewline() {
         String bulletText = "• Item 1\n• Item 2\n";
@@ -177,6 +227,9 @@ public class BulletPointHelperTest {
         assertEquals(expected, result);
     }
 
+    /**
+     * TEst new line
+     */
     @Test
     public void formatWithBullets_withTrailingNewline() {
         String plainText = "Item 1\nItem 2\n";

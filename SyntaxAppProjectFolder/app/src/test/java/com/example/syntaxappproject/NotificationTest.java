@@ -7,18 +7,28 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.*;
-
+/**
+ * Unit tests for {@link Notification}.
+ *
+ * <p>This test suite verifies the correctness of the Notification data model,
+ * ensuring all getters and setters behave as expected.<p/>
+ */
 public class NotificationTest {
 
     private Notification notification;
-
+    /**
+     * Initializes a fresh {@link Notification} instance before each test.
+     */
     @Before
     public void setUp() {
         notification = new Notification();
     }
 
     // ─── Constructor ───────────────────────────────────────────────
-
+    /**
+     * Verifies that all fields are null (or default values) after using
+     * the no-argument constructor.
+     */
     @Test
     public void noArgConstructor_allFieldsAreNull() {
         assertNull(notification.getNotificationId());
@@ -35,12 +45,14 @@ public class NotificationTest {
     }
 
     // ─── notificationId ────────────────────────────────────────────
+    /** Verifies that notificationId is stored and retrieved correctly. */
 
     @Test
     public void setNotificationId_getReturnsValue() {
         notification.setNotificationId("notif-001");
         assertEquals("notif-001", notification.getNotificationId());
     }
+    /** Verifies that notificationId can be reset to null. */
 
     @Test
     public void setNotificationId_null_getReturnsNull() {
@@ -50,12 +62,14 @@ public class NotificationTest {
     }
 
     // ─── eventId ───────────────────────────────────────────────────
+    /** Verifies eventId is stored correctly. */
 
     @Test
     public void setEventId_getReturnsValue() {
         notification.setEventId("event-abc");
         assertEquals("event-abc", notification.getEventId());
     }
+    /** Verifies special constant values (e.g., ADMINISTRATION) are accepted. */
 
     @Test
     public void setEventId_administrationConstant() {
@@ -64,6 +78,7 @@ public class NotificationTest {
     }
 
     // ─── senderId ──────────────────────────────────────────────────
+    /** Verifies senderId is stored correctly. */
 
     @Test
     public void setSenderId_getReturnsValue() {
@@ -72,19 +87,23 @@ public class NotificationTest {
     }
 
     // ─── senderRole ────────────────────────────────────────────────
+    /** Verifies organizer role is stored correctly. */
 
     @Test
     public void setSenderRole_organizer() {
         notification.setSenderRole("ORGANIZER");
         assertEquals("ORGANIZER", notification.getSenderRole());
     }
-
+    /** Verifies admin role is stored correctly. */
     @Test
     public void setSenderRole_admin() {
         notification.setSenderRole("ADMIN");
         assertEquals("ADMIN", notification.getSenderRole());
     }
-
+    /**
+     * Verifies that invalid or unexpected role values are still stored.
+     * (No validation is enforced in the model.)
+     */
     @Test
     public void setSenderRole_invalidValue_stillStored() {
         // Model does not validate — this documents that behaviour
@@ -93,12 +112,14 @@ public class NotificationTest {
     }
 
     // ─── eventName ─────────────────────────────────────────────────
+    /** Verifies eventName is stored correctly. */
 
     @Test
     public void setEventName_getReturnsValue() {
         notification.setEventName("Spring Hackathon");
         assertEquals("Spring Hackathon", notification.getEventName());
     }
+    /** Verifies eventName can be overwritten. */
 
     @Test
     public void setEventName_overwrite() {
@@ -108,12 +129,13 @@ public class NotificationTest {
     }
 
     // ─── title ─────────────────────────────────────────────────────
-
+    /** Verifies title is stored correctly. */
     @Test
     public void setTitle_getReturnsValue() {
         notification.setTitle("You have been selected!");
         assertEquals("You have been selected!", notification.getTitle());
     }
+    /** Verifies empty string title is handled correctly. */
 
     @Test
     public void setTitle_emptyString() {
@@ -122,12 +144,14 @@ public class NotificationTest {
     }
 
     // ─── body ──────────────────────────────────────────────────────
+    /** Verifies body message is stored correctly. */
 
     @Test
     public void setBody_getReturnsValue() {
         notification.setBody("Please confirm your registration by Friday.");
         assertEquals("Please confirm your registration by Friday.", notification.getBody());
     }
+    /** Verifies very large message bodies are handled correctly. */
 
     @Test
     public void setBody_longMessage() {
@@ -137,6 +161,7 @@ public class NotificationTest {
     }
 
     // ─── timestamp ─────────────────────────────────────────────────
+    /** Verifies timestamp is stored correctly. */
 
     @Test
     public void setTimestamp_getReturnsValue() {
@@ -144,12 +169,14 @@ public class NotificationTest {
         notification.setTimestamp(now);
         assertEquals(now, notification.getTimestamp());
     }
+    /** Verifies timestamp supports zero value. */
 
     @Test
     public void setTimestamp_zero() {
         notification.setTimestamp(0L);
         assertEquals(0L, notification.getTimestamp());
     }
+    /** Verifies timestamp supports maximum long value. */
 
     @Test
     public void setTimestamp_maxLong() {
@@ -158,24 +185,28 @@ public class NotificationTest {
     }
 
     // ─── targetGroup ───────────────────────────────────────────────
+    /** Verifies "ALL" target group. */
 
     @Test
     public void setTargetGroup_all() {
         notification.setTargetGroup("ALL");
         assertEquals("ALL", notification.getTargetGroup());
     }
+    /** Verifies "WAITLIST" target group. */
 
     @Test
     public void setTargetGroup_waitlist() {
         notification.setTargetGroup("WAITLIST");
         assertEquals("WAITLIST", notification.getTargetGroup());
     }
+    /** Verifies "SELECTED" target group. */
 
     @Test
     public void setTargetGroup_selected() {
         notification.setTargetGroup("SELECTED");
         assertEquals("SELECTED", notification.getTargetGroup());
     }
+    /** Verifies "CANCELLED" target group. */
 
     @Test
     public void setTargetGroup_cancelled() {
@@ -184,6 +215,7 @@ public class NotificationTest {
     }
 
     // ─── targetEntrantIds ──────────────────────────────────────────
+    /** Verifies list of entrant IDs is stored correctly. */
 
     @Test
     public void setTargetEntrantIds_getReturnsSameList() {
@@ -191,6 +223,7 @@ public class NotificationTest {
         notification.setTargetEntrantIds(ids);
         assertEquals(ids, notification.getTargetEntrantIds());
     }
+    /** Verifies empty list is handled correctly. */
 
     @Test
     public void setTargetEntrantIds_emptyList() {
@@ -198,13 +231,14 @@ public class NotificationTest {
         assertNotNull(notification.getTargetEntrantIds());
         assertTrue(notification.getTargetEntrantIds().isEmpty());
     }
-
+    /** Verifies list can be reset to null. */
     @Test
     public void setTargetEntrantIds_null() {
         notification.setTargetEntrantIds(Arrays.asList("user-1"));
         notification.setTargetEntrantIds(null);
         assertNull(notification.getTargetEntrantIds());
     }
+    /** Verifies list size is preserved after setting. */
 
     @Test
     public void setTargetEntrantIds_listSizePreserved() {
@@ -214,18 +248,21 @@ public class NotificationTest {
     }
 
     // ─── status ────────────────────────────────────────────────────
+    /** Verifies SENT status. */
 
     @Test
     public void setStatus_sent() {
         notification.setStatus("SENT");
         assertEquals("SENT", notification.getStatus());
     }
+    /** Verifies FAILED status. */
 
     @Test
     public void setStatus_failed() {
         notification.setStatus("FAILED");
         assertEquals("FAILED", notification.getStatus());
     }
+    /** Verifies PENDING status. */
 
     @Test
     public void setStatus_pending() {
@@ -234,6 +271,7 @@ public class NotificationTest {
     }
 
     // ─── Independence between instances ────────────────────────────
+    /** Verifies that multiple Notification instances do not share state. */
 
     @Test
     public void twoInstances_areIndependent() {
@@ -248,6 +286,7 @@ public class NotificationTest {
     }
 
     // ─── Full object population ─────────────────────────────────────
+    /** Verifies all fields are correctly stored and retrieved when fully populated. */
 
     @Test
     public void fullyPopulatedNotification_allGettersCorrect() {

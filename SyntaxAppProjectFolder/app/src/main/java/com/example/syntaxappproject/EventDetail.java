@@ -263,9 +263,18 @@ get     * Sets the count of people in the event wait list
     //Private Event
     public void setPoster(String poster) { this.poster = poster; }
 
+    /**
+     * Return if the event is a private events.
+     * @return true if the event is a private events
+     */
     public boolean isPrivateEvent() {
         return privateEvent;
     }
+
+    /**
+     * Set the event as private event
+     * @param privateEvent
+     */
 
     public void setPrivateEvent(boolean privateEvent) {
         this.privateEvent = privateEvent;

@@ -29,6 +29,16 @@ import com.google.android.material.chip.Chip;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Fragment displaying of notify entrants
+ *
+ * <p>a page for notify entrant from wait list,
+ * invited list, canceled list, or all entrant.
+ * organizer can select entrant's group and send
+ * out notification.
+ * </p>
+ */
+
 public class NotifyEntrantsFragment extends Fragment {
 
     // --- Repos ---

@@ -136,6 +136,9 @@ public class EditProfileFragmentTest {
         }
     }
 
+    /**
+     * Test display of profile fields
+     */
     @Test
     public void profileFields_arePopulatedOnLoad() {
         launchFragment();
@@ -145,6 +148,9 @@ public class EditProfileFragmentTest {
         onView(withId(R.id.editPhone)).check(matches(withText("5551234567")));
     }
 
+    /**
+     * Test navigate with valid input
+     */
     @Test
     public void saveEdit_withValidInput_navigatesUp() {
         launchFragment();
@@ -155,6 +161,9 @@ public class EditProfileFragmentTest {
         verify(mockNavController).navigateUp();
     }
 
+    /**
+     * Test empty first name input
+     */
     @Test
     public void saveEdit_emptyFirstName_showsToastAndStays() {
         launchFragment();
@@ -164,6 +173,9 @@ public class EditProfileFragmentTest {
         onView(withId(R.id.saveEdit)).check(matches(isDisplayed()));
     }
 
+    /**
+     * Test empty email input
+     */
     @Test
     public void saveEdit_emptyEmail_showsToastAndStays() {
         launchFragment();
@@ -173,6 +185,9 @@ public class EditProfileFragmentTest {
         onView(withId(R.id.saveEdit)).check(matches(isDisplayed()));
     }
 
+    /**
+     * Test delete button display
+     */
     @Test
     public void deleteButton_showsConfirmationDialog() {
         launchFragment();
@@ -180,7 +195,9 @@ public class EditProfileFragmentTest {
         onView(withText("Delete Account")).check(matches(isDisplayed()));
     }
 
-
+    /**
+     * Test delete second confirmation dialog
+     */
     @Test
     public void deleteCancel_dismissesDialog() {
         launchFragment();

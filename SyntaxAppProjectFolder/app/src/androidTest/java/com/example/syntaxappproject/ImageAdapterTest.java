@@ -27,6 +27,9 @@ import org.mockito.ArgumentCaptor;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+/**
+ * Instrument test of Image Adapter
+ */
 @RunWith(AndroidJUnit4.class)
 public class ImageAdapterTest {
 

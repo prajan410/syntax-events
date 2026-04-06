@@ -37,6 +37,9 @@ public class AdminBrowseProfilesTest {
         MockitoAnnotations.openMocks(this);
     }
 
+    /**
+     * Test screen display
+     */
     @Test
     public void testAdminBrowseProfilesScreenDisplays() {
         FragmentScenario<AdminBrowseProfiles> scenario = FragmentScenario.launchInContainer(
@@ -52,6 +55,9 @@ public class AdminBrowseProfilesTest {
         onView(withId(R.id.loadingSpinner)).check(matches(isDisplayed()));
     }
 
+    /**
+     * Test navigation of done button
+     */
     @Test
     public void testDoneButtonNavigatesBack() {
         FragmentScenario<AdminBrowseProfiles> scenario = FragmentScenario.launchInContainer(

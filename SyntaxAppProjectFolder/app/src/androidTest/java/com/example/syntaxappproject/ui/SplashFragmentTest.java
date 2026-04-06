@@ -52,7 +52,10 @@ import com.example.syntaxappproject.ProfileRepository;
 
 import org.junit.Before;
 import org.junit.runner.RunWith;
-
+/**
+ * Instrumented test for {@link SplashFragment}.
+ * This class tests the display and logic of SplashFragment.
+ */
 @RunWith(AndroidJUnit4.class)
 public class SplashFragmentTest {
 
@@ -61,6 +64,9 @@ public class SplashFragmentTest {
     private NavController mockNavController;
     private Profile fakeProfile;
 
+    /**
+     * Set up the environment before test
+     */
     @Before
     public void setUp() {
         mockAuth = mock(AuthenticationService.class);
@@ -121,6 +127,9 @@ public class SplashFragmentTest {
         return scenario;
     }
 
+    /**
+     * Test new user navigate to set up profile after click enter button
+     */
     @Test
     public void enterButton_newUser_navigatesToProfile() {
         launchFragment(null);
@@ -128,6 +137,9 @@ public class SplashFragmentTest {
         verify(mockNavController).navigate(R.id.action_splash_to_profile);
     }
 
+    /**
+     * Test existing user navigate to home page after click enter button
+     */
     @Test
     public void enterButton_existingUser_navigatesToHome() {
         launchFragment(fakeProfile);
@@ -135,6 +147,9 @@ public class SplashFragmentTest {
         verify(mockNavController).navigate(R.id.action_splash_to_home);
     }
 
+    /**
+     * Test admin navigation to admin page after click enter button
+     */
     @Test
     public void enterButton_adminUser_navigatesToAdmin() {
         Profile adminProfile = new Profile(
